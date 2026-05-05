@@ -6,12 +6,13 @@
 
 generator client {
   provider = "prisma-client"
+  output = "../src/generated"
 }
 
 datasource db {
   provider = "postgresql"
-  // url       = env("DATABASE_URL")
-  // directUrl = env("DATABASE_URL_UNPOOLED") // uncomment next line if you use Prisma <5.10
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 
@@ -21,8 +22,12 @@ model User {
   password  String   
   name      String   
   role      Role     @default(PLAYER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  resetCode   String?
+  codeExpire  DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum Role {

@@ -1,12 +1,30 @@
 "use client"
 import { useRouter } from "next/navigation";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Data from "../Data";
 
 function Registration() {
 
-	const rout = useRouter();
-	const [loginData, setLoginData] = useState(Data.reset);
+
+	const	rout = useRouter();
+	const	[loginData, setLoginData] = useState(Data.registr.slice(1, 2));
+	const	[boolValue , setBoolValue] = useState(true);
+	let		newObject = {};
+
+	useEffect(() => {
+		if (boolValue) return;
+
+		let value = prompt("Confimation code");
+
+		let time = setTimeout(() =>  {
+			
+			if (value) {
+
+			}
+
+		}, 2 * 60 * 1000);
+
+	}, [boolValue])
 	
 return (
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >
@@ -27,20 +45,25 @@ return (
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
 				const form = e.currentTarget;
-
-				if (form.Password.value != form.ConfirmPassword.value)
+			
+				if (!boolValue && form.Password.value != form.ConfirmPassword.value)
 					return alert("Passwords do not match");
-				await fetch("http://localhost:4000/user/reset", {
+				
+				await fetch("http://localhost:4000/user/resetPassword", {
 					method: "POST",
 					headers: {
 						'Content-Type': 'application/json',
 					},
 					body: JSON.stringify( {
 						email: form.Email.value,
-						password: form.Password.value
 					})
 				})
-				.then((res) =>  res.ok ? rout.push('/Components/Auth/Login') : alert("Can not change the Password try again!"))
+				.then((res) => res.ok ? res.json() : alert("Wrong Email Address"))
+				.then((obj) => { console.log(obj)
+					// setBoolValue(false);
+					// setLoginData(Data.registr.slice(1, 4));
+
+				});
 			}}>
 				{loginData.map((item, i) => {
 					return (
@@ -81,18 +104,21 @@ return (
 				
 				<div className="m-5 text-center">
 					<div>
-						<button className={Data.formStyle.btn_submit} type="submit" > 
-							Reset password
+						<button 
+							className={Data.formStyle.btn_submit} type="submit"> 
+							{boolValue ? "Send code" :  "Reset password"}
 						</button>
 					</div>
 				</div>
+				
+				
 			</form>
 			<div className="text-center text-2xl ">
-				<button type="button" className="hover:border-b hover:border-blue-600 transform-y cursor-pointer transition-transform duration-300 hover:scale-110" onClick={(e) => rout.push("/Components/Auth/Login")}>
+				<button type="button" className="hover:border-b hover:border-blue-600 transform-y cursor-pointer hover:transition-transform duration-600 hover:scale-110" onClick={(e) => rout.push("/Components/Auth/Login")}>
 					Login 
 				</button>
 				<span className="text-2xl mr-2 ml-2"> / </span>
-				<button type="button" className="hover:border-b hover:border-blue-600 transform-y cursor-pointer transition-transform duration-300 hover:scale-110" onClick={(e) => rout.push("/Components/Auth/Registr")}>
+				<button type="button" className="hover:border-b hover:border-blue-600 transform-y cursor-pointer hover:transition-transform duration-600 hover:scale-105" onClick={(e) => rout.push("/Components/Auth/Registr")}>
 					Sign Up
 				</button>
 			</div>

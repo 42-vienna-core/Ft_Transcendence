@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller,Query ,Get, Post, Body, Patch, Param, Delete, ParseIntPipe , ValidationPipe} from '@nestjs/common';
 import { UserService } from './user.service';
-import { Prisma } from '@prisma/client';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, CreateLoginDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/updata-user.dto';
 
 @Controller('user')
@@ -9,12 +8,17 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
-  create(@Body() newUser: Prisma.UserCreateInput) {
+  create(@Body(ValidationPipe) newUser: CreateUserDto) {
     return this.userService.create(newUser);
   }
 
+  @Post("resetPassword")
+  resetPassword(@Body(ValidationPipe) newPassword: UpdateUserDto) {
+    return this.userService.resetPassword(newPassword);
+  }
+
   @Post('login')
-  login(@Body() body: Prisma.UserCreateInput) { // body: {email: string, password: string}
+  login(@Body(ValidationPipe) body: CreateLoginDto) {
     return this.userService.login(body);
   }
 
@@ -28,8 +32,9 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updatedUser: Prisma.UserCreateInput) {
+  update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) updatedUser: UpdateUserDto) {
     return this.userService.update(id, updatedUser);
   }
 

@@ -6,8 +6,7 @@ import Data from "../Data";
 function Registration() {
 
 	const	rout = useRouter();
-	const	[loginData, setLoginData] = useState(Data.login);
-
+	const	[loginData, setLoginData] = useState(Data.registr.slice(1, 3));
 return (
 
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >

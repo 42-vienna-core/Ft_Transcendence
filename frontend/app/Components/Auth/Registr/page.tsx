@@ -9,7 +9,6 @@ function Registration() {
 	const [labelFocus, setLabelFocus] = useState(Data.registr);
 	
 return (
-
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >
 
 		<div className="fixed top-10 left-2">
@@ -40,7 +39,7 @@ return (
 					headers: {
 						'Content-Type': 'application/json',
 					},
-					body: JSON.stringify( {
+					body: JSON.stringify({
 						email: form.Email.value,
 						password: form.Password.value,
 						name: form.Username.value,
@@ -48,6 +47,7 @@ return (
 					})
 				})
 				.then((res) => {
+					
 					if (res.ok)
 						return rout.push('/Components/Auth/Login');
 				})
