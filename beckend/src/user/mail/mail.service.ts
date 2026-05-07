@@ -1,10 +1,16 @@
-
 import { Injectable } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class MailService {
-  async sendMail(to: string, code: string) {
-    console.log(`Sending email to ${to}`);
-    console.log(`Code: ${code}`);
+  constructor(private mailerService: MailerService) {}
+
+  async sendResetCode(email: string, code: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Password Reset Code',
+      text: `Your reset code is: ${code}`,
+      html: `<b>Your reset code is: ${code}</b>`,
+    });
   }
 }

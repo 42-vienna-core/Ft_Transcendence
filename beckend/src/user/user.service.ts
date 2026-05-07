@@ -3,12 +3,16 @@ import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto , CreateLoginDto} from './dto/create-user.dto';
 import  * as bcrypt from "bcrypt"
 import { UpdateUserDto } from './dto/updata-user.dto';
- 
+import { MailService } from './mail/mail.service'; 
 
 @Injectable()
 export class UserService {
 
-	constructor(private readonly databaseService: DatabaseService) {}
+	constructor(
+		private readonly databaseService: DatabaseService,
+		private mailService: MailService
+
+	) {}
 
 	async create(body: CreateUserDto) {
 
@@ -20,13 +24,13 @@ export class UserService {
 		return this.databaseService.user.create({ data: newUser });
 	}
 
-	async resetPassword(body: UpdateUserDto)
+	async findUser(body: UpdateUserDto)
 	{
 		const code = Math.floor(100000 + Math.random() * 900000).toString();
 		const user = await this.databaseService.user.findUnique({ 
 			where: { email: body.email} 
 		}) 
-		if (!user) throw ('User not found');
+		if (!user) throw ({message: 'User not found'});
 
 		await this.databaseService.user.update({
 			where: {
@@ -37,11 +41,20 @@ export class UserService {
 				codeExpire: new Date(Date.now() + 2 * 60 * 1000)
 			}
 		})
-		//await this.minlService.sendMail(user.email, code);
-
+		await this.mailService.sendResetCode(user.email, code);
 		return {message: "Code sent to email"};
 	}
 
+	async resetCode(body: UpdateUserDto) {
+		const user = await this.databaseService.user.findUnique({ 
+			where: { email: body.email} 
+		}) 
+		if (!user) throw ({message: 'User not found'});
+
+		if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
+			throw ({ message: 'Time is over' });
+		return {mesagge: "Successful"};
+	}
 	async login(body: CreateLoginDto) {
 		const user = await this.databaseService.user.findUnique({
 			where: {email: body.email}

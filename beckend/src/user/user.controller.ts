@@ -12,11 +12,16 @@ export class UserController {
     return this.userService.create(newUser);
   }
 
-  @Post("resetPassword")
-  resetPassword(@Body(ValidationPipe) newPassword: UpdateUserDto) {
-    return this.userService.resetPassword(newPassword);
+  @Post("find")
+  findUser(@Body(ValidationPipe) newPassword: UpdateUserDto) {
+    return this.userService.findUser(newPassword);
   }
 
+  @Post("code")
+  resetCode(@Body(ValidationPipe) code: UpdateUserDto) {
+    return this.userService.resetCode(code);
+  }
+  
   @Post('login')
   login(@Body(ValidationPipe) body: CreateLoginDto) {
     return this.userService.login(body);

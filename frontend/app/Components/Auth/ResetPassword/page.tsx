@@ -3,29 +3,24 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react"
 import Data from "../Data";
 
+function request(url: string, obj: Object)
+{
+	fetch("http://localhost:4000/user/" + url, {
+		method: "POST",
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify (obj)
+	})
+	.then((res) => res.ok)
+}
+
 function Registration() {
 
-
 	const	rout = useRouter();
+	const   object = { email: undefined, code : undefined };
 	const	[loginData, setLoginData] = useState(Data.registr.slice(1, 2));
-	const	[boolValue , setBoolValue] = useState(true);
-	let		newObject = {};
 
-	useEffect(() => {
-		if (boolValue) return;
-
-		let value = prompt("Confimation code");
-
-		let time = setTimeout(() =>  {
-			
-			if (value) {
-
-			}
-
-		}, 2 * 60 * 1000);
-
-	}, [boolValue])
-	
 return (
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >
 
@@ -46,24 +41,20 @@ return (
 				e.preventDefault();
 				const form = e.currentTarget;
 			
-				if (!boolValue && form.Password.value != form.ConfirmPassword.value)
+				if (object.email && object.code && form.Password.value != form.ConfirmPassword.value)
 					return alert("Passwords do not match");
-				
-				await fetch("http://localhost:4000/user/resetPassword", {
-					method: "POST",
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify( {
-						email: form.Email.value,
-					})
-				})
-				.then((res) => res.ok ? res.json() : alert("Wrong Email Address"))
-				.then((obj) => { console.log(obj)
-					// setBoolValue(false);
-					// setLoginData(Data.registr.slice(1, 4));
 
-				});
+				if (object.email === undefined)
+				{
+					request("reset", {...object, email: form.Email});
+				}
+				else if (object.email && object.code === undefined)
+				{
+					const code = prompt("Confirmation code");
+					request("code", {...object, code,});
+				}
+				else if (object.email && object.code)
+					request("reset", {email: object.email, password: form.Password})
 			}}>
 				{loginData.map((item, i) => {
 					return (
@@ -104,14 +95,11 @@ return (
 				
 				<div className="m-5 text-center">
 					<div>
-						<button 
-							className={Data.formStyle.btn_submit} type="submit"> 
-							{boolValue ? "Send code" :  "Reset password"}
+						<button className={Data.formStyle.btn_submit} type="submit"> 
+							{object.email ? "Send code" : "Reset password"}
 						</button>
 					</div>
 				</div>
-				
-				
 			</form>
 			<div className="text-center text-2xl ">
 				<button type="button" className="hover:border-b hover:border-blue-600 transform-y cursor-pointer hover:transition-transform duration-600 hover:scale-110" onClick={(e) => rout.push("/Components/Auth/Login")}>
