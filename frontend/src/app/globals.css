@@ -1,0 +1,151 @@
+@import "tailwindcss";
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+:root {
+  --bg-void: #050507;
+  --bg-deep: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-elevated: #1a1a24;
+  --border-subtle: #1f1f2e;
+  --border-strong: #2a2a3e;
+
+  --neon-green: #00ff9c;
+  --neon-green-glow: rgba(0, 255, 156, 0.4);
+  --neon-pink: #ff2a6d;
+  --neon-blue: #00f0ff;
+  --neon-yellow: #ffd60a;
+  --neon-orange: #ff6b35;
+
+  --text-bright: #f0f0f5;
+  --text-base: #c4c4d0;
+  --text-muted: #6b6b80;
+  --text-faint: #3f3f55;
+}
+
+.display { font-family: 'Bungee', cursive; letter-spacing: 0.02em; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+h1, h2, h3, h4 { color: var(--text-bright); font-weight: 700; }
+h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -0.01em; }
+h3 { font-size: 1.5rem; line-height: 1.2; }
+h4 { font-size: 1.125rem; line-height: 1.3; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 255, 156, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 156, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 1;
+} 
+ 
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 0%, var(--bg-void) 70%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.glass {
+  transition: all 1.5s;
+  /* background: rgba(255, 255, 255, 0.50); */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass:hover {
+  -webkit-backdrop-filter: blur(7.5px);
+  backdrop-filter: blur(7.5px);
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px var(--neon-green-glow), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+/* 
+.b {
+  background-image: url("/assets/backgroundSnake.webp");
+  background-position: center;
+  background-repeat: no-repeat ;
+  background-size: cover;
+} */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: var(--neon-green);
+  color: var(--bg-void);
+  box-shadow: 0 0 0 0 var(--neon-green-glow), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px var(--neon-green-glow), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+.btnPrimary:active { transform: translateY(0); }
+
+.btnSecondary {
+  background: var(--bg-card);
+  color: var(--text-bright);
+  border-color: var(--border-strong);
+}
+.btnSecondary:hover { background: var(--bg-elevated); border-color: var(--text-muted); }
+
+.btnGhost {
+  background: transparent;
+  color: var(--text-base);
+}
+.btnGhost:hover { color: var(--text-bright); background: var(--bg-card); }
+
+.btnDanger {
+  background: var(--neon-pink);
+  color: var(--bg-void);
+}
+.btnDanger:hover { box-shadow: 0 0 24px rgba(255, 42, 109, 0.4); }
+
+.btnLarge { padding: 16px 32px; font-size: 1.0625rem; }
+.btnBlock { width: 100%; }
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== Container ===== */
+/* .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; } */
+.container-narrow { max-width: 480px; margin: 0 auto; padding: 0 32px; }
+
+
+@keyframes snakeGridRunner {
+  0%, 100% { opacity: 0; background-color: transparent; }
+  10% { opacity: 1; background-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+  30% { opacity: 0.1; background-color: transparent; }
+}
+
+.animate-grid-snake {
+  animation: snakeGridRunner 8s infinite linear;
+}

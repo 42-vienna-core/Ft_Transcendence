@@ -1,0 +1,97 @@
+.hero {
+  padding: 80px 32px 120px;
+  text-align: center;
+  position: relative;
+}
+
+.heroEyebrow {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--neon-green);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--neon-green);
+  border-radius: 100px;
+  margin-bottom: 32px;
+  background: rgba(0, 255, 156, 0.05);
+}
+
+.hero h1 {
+  margin-bottom: 24px;
+}
+.hero h1 .accent {
+  color: var(--neon-green);
+  text-shadow: 0 0 40px var(--neon-green-glow);
+}
+
+.heroSub {
+  font-size: 1.25rem;
+  color: var(--text-base);
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+.heroActions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 80px;
+  flex-wrap: wrap;
+}
+
+/* Snake animation on hero */
+.heroGamePreview {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.heroGamePreview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(0, 255, 156, 0.08), transparent 50%);
+  pointer-events: none;
+}
+
+.previewCanvas {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: var(--bg-deep);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.previewSnake {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--neon-green);
+  box-shadow: 0 0 12px var(--neon-green-glow);
+}
+
+.previewFood {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--neon-pink);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(255, 42, 109, 0.6);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}

@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sentFriendships     Friendship[]      @relation("FriendshipRequester")
+  receivedFriendships Friendship[]      @relation("FriendshipAddressee")
+  gameParticipations  GameParticipant[]
+  hostedRooms         Room[]
+}
+
+model Room {
+  id         Int        @id @default(autoincrement())
+  code       String     @unique
+  status     RoomStatus @default(WAITING)
+  maxPlayers Int        @default(4)
+  createdAt  DateTime   @default(now())
+
+  host   User @relation(fields: [hostId], references: [id])
+  hostId Int
+
+  participants GameParticipant[]
+  result       GameResult?
+}
+
+enum RoomStatus {
+  WAITING
+  IN_PROGRESS
+  FINISHED
+}
+
+model GameParticipant {
+  id    Int    @id @default(autoincrement())
+  score Int    @default(0)
+  color String
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  room   Room @relation(fields: [roomId], references: [id])
+  roomId Int
+
+  gameResult   GameResult? @relation(fields: [gameResultId], references: [id])
+  gameResultId Int?
+
+  @@unique([userId, roomId])
+}
+
+model GameResult {
+  id          Int      @id @default(autoincrement())
+  playedAt    DateTime @default(now())
+  durationSec Int
+
+  room   Room @relation(fields: [roomId], references: [id])
+  roomId Int  @unique
+
+  participants GameParticipant[]
+}
+
+model Friendship {
+  id        Int              @id @default(autoincrement())
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+
+  requester   User @relation("FriendshipRequester", fields: [requesterId], references: [id])
+  requesterId Int
+
+  addressee   User @relation("FriendshipAddressee", fields: [addresseeId], references: [id])
+  addresseeId Int
+
+  @@unique([requesterId, addresseeId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}

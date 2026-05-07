@@ -1,36 +1,84 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.*
+!.env.example
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
+# ========================
+# Node modules
+# ========================
+node_modules/
+backend/node_modules/
+frontend/node_modules/
 
-# testing
-/coverage
+# ========================
+# Build outputs
+# ========================
+backend/dist/
+frontend/.next/
+frontend/out/
+frontend/build/
 
-# next.js
-/.next/
-/out/
+# ========================
+# Prisma
+# ========================
+backend/prisma/generated/
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# ========================
+# Logs
+# ========================
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+logs/
 
-# local env files
-.env*.local
-.env
+# ========================
+# TLS / Certs
+# ========================
+nginx/certs/*.pem
+nginx/certs/*.crt
+nginx/certs/*.key
+nginx/certs/*.csr
 
-# vercel
-.vercel
+# ========================
+# OS
+# ========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
 
-# typescript
+# ========================
+# Editors & IDEs
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========================
+# TypeScript
+# ========================
 *.tsbuildinfo
-next-env.d.ts
+
+# ========================
+# Testing
+# ========================
+coverage/
+backend/coverage/
+frontend/coverage/
+.nyc_output/
+
+# ========================
+# Misc
+# ========================
+*.pdf
+pdf_script_creator.js
