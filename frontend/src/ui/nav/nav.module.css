@@ -1,0 +1,124 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  background: rgba(5, 5, 7, 0.7);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: 'Bungee', cursive;
+  font-size: 1.5rem;
+  color: var(--text-bright);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoMark {
+  width: 32px;
+  height: 32px;
+  background: var(--neon-green);
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 0 24px var(--neon-green-glow);
+}
+.logoMark::before,
+.logoMark::after {
+  content: '';
+  position: absolute;
+  background: var(--bg-void);
+  border-radius: 50%;
+}
+.logoMark::before { width: 5px; height: 5px; top: 8px; left: 8px; }
+.logoMark::after  { width: 5px; height: 5px; top: 8px; right: 8px; }
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navLink {
+  padding: 8px 16px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.navLink:hover  { color: var(--text-bright); background: var(--bg-card); }
+.navLink.active { color: var(--neon-green); }
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btnPrimary {
+  background: var(--neon-green);
+  color: var(--bg-void);
+  box-shadow: 0 0 0 0 var(--neon-green-glow), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+.btnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px var(--neon-green-glow), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+.btnPrimary:active { transform: translateY(0); }
+
+.btnSecondary {
+  background: var(--bg-card);
+  color: var(--text-bright);
+  border-color: var(--border-strong);
+}
+.btnSecondary:hover { background: var(--bg-elevated); border-color: var(--text-muted); }
+
+.btnGhost {
+  background: transparent;
+  color: var(--text-base);
+}
+.btnGhost:hover { color: var(--text-bright); background: var(--bg-card); }
+
+.btnDanger {
+  background: var(--neon-pink);
+  color: var(--bg-void);
+}
+.btnDanger:hover { box-shadow: 0 0 24px rgba(255, 42, 109, 0.4); }
+
+.btnLarge { padding: 16px 32px; font-size: 1.0625rem; }
+.btnBlock  { width: 100%; }
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
