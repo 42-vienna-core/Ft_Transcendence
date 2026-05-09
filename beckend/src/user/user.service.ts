@@ -53,7 +53,12 @@ export class UserService {
 
 		if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
 			throw ({ message: 'Time is over' });
-		return {mesagge: "Successful"};
+
+		const	hashedPassword = await bcrypt.hash(String(body.password), 10);
+		return await this.databaseService.user.update({
+			where: {id: user.id},
+			data: {password: hashedPassword},
+		})
 	}
 	async login(body: CreateLoginDto) {
 		const user = await this.databaseService.user.findUnique({

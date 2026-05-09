@@ -1,7 +1,7 @@
 "use client"
 import { useRouter } from "next/navigation";
 import { useState } from "react"
-import Data from "../Data";
+import Data from "../../../styles";
 
 function Registration() {
 
@@ -9,15 +9,9 @@ function Registration() {
 	const [labelFocus, setLabelFocus] = useState(Data.registr);
 	
 return (
+	
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >
 
-		<div className="fixed top-10 left-2">
-			<div className="">
-				<button className="cursor-pointer" type="button" onClick={(e) => rout.push("/")}>
-						<img src="/png/home.png" alt="home" className="w-16  transition-transform duration-300 hover:scale-105"/>
-				</button>
-			</div>
-		</div>
 		<div className="w-full max-w-md min-w-md mx-auto p-6 glass rounded-2xl">
 
 			<div className="w-full text-center my-3">
@@ -30,10 +24,7 @@ return (
 				const form = e.currentTarget;
 				
 				if (form.Password.value != form.ConfirmPassword.value)
-				{
-					alert("Passwords do not match");
-					return ;
-				}
+					return alert("Passwords do not match");
 				await fetch("http://localhost:4000/user/register", {
 					method: "POST",
 					headers: {
@@ -49,7 +40,7 @@ return (
 				.then((res) => {
 					
 					if (res.ok)
-						return rout.push('/Components/Auth/Login');
+						return rout.push('/Login');
 				})
 			}}>
 				{labelFocus.map((item, i) => {
@@ -100,7 +91,7 @@ return (
 							Already have an account ? /
 							<button  className={Data.formStyle.btn_sin_log}
 								type="button" onClick={() => {
-									rout.push("/Components/Auth/Login");
+									rout.push("/Login");
 								}} >
 								 Login
 							</button>
