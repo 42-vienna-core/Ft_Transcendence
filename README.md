@@ -55,4 +55,6 @@
 ## For instaling bcrypt 
     * npm install bcrypt 
     * npm install -D @types/bcrypt 
-
+## For cookies and JWT authentication in Nest.js
+    * npm i @nestjs/jwt @nestjs/passport passport passport-jwt cookie-parser
+    * npm i -D @types/passport-jwt @types/cookie-parser

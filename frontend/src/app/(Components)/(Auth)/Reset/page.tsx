@@ -1,36 +1,33 @@
 "use client"
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react"
-import Data from "../../../styles";
+import Styles from "../../../styles";
+import Data from "../../../data";
+import Appi from "../../../appi"
 
-async function request(url: string, opbject: Object) {
-	let resutl = false;
-	await fetch("http://localhost:4000/user/" + url,  {
-			method: "POST",
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify (opbject)
-		})
-		.then((res) => resutl = res.ok);
-	return resutl;
-}
 function Registration() {
 
 	const	rout = useRouter();
-	const	[loginData, setLoginData] = useState(Data.registr.slice(1, 4));
-	const	[object, setObject] = useState({email: undefined, password: undefined, code:undefined});
+	const	[loginData, setLoginData] = useState(Data.data.slice(1, 4));
+	const	[object, setObject] = useState({email: undefined, password: undefined, resetCode:undefined});
 	
 	useEffect(() => {
 		if (object.email == undefined) return;
-	 	let value = request("find", {email: object.email});
-		if (!value) 
-			return 	alert("Email not found");
-		let code =  prompt("Enter the code sent to your email");
-		value = request("code", {...object, code,});
-		if (!value)
-			return alert("Wrong code");
-		rout.push("/Login");
+		Appi.postRequest("find", {email: object.email})
+		.then((res) => {
+			if (!res.ok)
+				throw new Error("User not found");
+		} );
+			
+		let resetCode =  prompt("Enter the code sent to your email");
+		Appi.postRequest("code", {...object, resetCode: resetCode})
+		.then((res) => { 
+			if (res.ok)
+				return rout.push("/Login");
+			console.log(res);
+			alert("Wrong code or time is over")
+		});
+
 	}, [object])
 
 return (
@@ -56,18 +53,18 @@ return (
 			}}>
 				{loginData.map((item, i) => {
 					return (
-						<div className={Data.formStyle.inputDiv} key={i}>
+						<div className={Styles.formStyle.inputDiv} key={i}>
 							
 							<label htmlFor={item.name} className="cursor-pointer">
 								<input required placeholder={item.bol ? (item.name === "Password" ? "New " + item.name : item.name === "ConfirmPassword" ? "Confirm Password" : item.name) : ""}
-									type={item.type} name={item.name} id={item.id} value={item.value} className={Data.formStyle.inputs}
+									type={item.type} name={item.name} id={item.id} value={item.value} className={Styles.formStyle.inputs}
 									onFocus={(e) => { setLoginData((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: false} : item)); }}
 									onChange={(e) => { setLoginData((prev) => prev.map((item) => item.id === e.target.id ? {...item, value: e.target.value} : item)); }}
 									onBlur={(e) => { setLoginData((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: true} : item)); }}
 								/>
 							</label>
 
-							<div className={Data.formStyle.imgDiv}>
+							<div className={Styles.formStyle.imgDiv}>
 								<img src={`${item.src}`} alt="icon" id={item.id} className="w-15  min-w-8 cursor-pointer"
 									onClick={(e) => {
 										const target = e.currentTarget;
@@ -93,7 +90,7 @@ return (
 				
 				<div className="m-5 text-center">
 					<div>
-						<button className={Data.formStyle.btn_submit} type="submit"> 
+						<button className={Styles.formStyle.btn_submit} type="submit"> 
 							Reset password
 						</button>
 					</div>

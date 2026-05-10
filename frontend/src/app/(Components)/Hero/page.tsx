@@ -1,24 +1,15 @@
-"use client"
+// import { cookies } from 'next/headers';
+// import {redirect } from 'next/navigation';
 
-import Link from 'next/link';
-import style from "../../styles";
-import { useState } from 'react';
+import Hero from './Hero';
 
-function Hero() {
-    const [value, setValue] = useState(true);
+export default async function Page() {
 
-    return (
-        <div className={style.hero.hero}>
-                <h1 className="font-bungee text-6xl text-text-bright">SLITHER. STRIKE.
-                    <span className={`${style.hero.heroAccent} block`}>SURVIVE.</span>
-                </h1>
-                <p className={style.hero.heroSub}>A multiplayer snake battleground where four serpents enter, one slithers out. Real-time. Cross-platform. No mercy.</p>
-                <div className={style.hero.heroActions}>
-                    <Link onClick={() => setValue(!value)} href="" className={value ? style.btnPrimary : style.btnSecondary}>▶ Start Playing</Link>
-                    <Link onClick={() => setValue(!value)} href="" className={!value ? style.btnPrimary : style.btnSecondary}>Browse Rooms</Link>
-                </div>
-        </div>
-    )
+    // const cookieStore = await cookies();
+    // const token = cookieStore.get("token");
+
+    // if (!token) {
+    //     redirect("/Register");
+    // }
+    return <Hero />;
 }
-
-export default Hero

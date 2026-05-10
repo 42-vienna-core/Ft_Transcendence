@@ -1,12 +1,14 @@
 "use client"
 import { useRouter } from "next/navigation";
 import { useState } from "react"
-import Data from "../../../styles";
+import Data from "../../../data";
+import Styles from "../../../styles";
+import Appi from "../../../appi"
 
-function Registration() {
+export default function Register() {
 
 	const rout = useRouter();
-	const [labelFocus, setLabelFocus] = useState(Data.registr);
+	const [labelFocus, setLabelFocus] = useState(Data.data);
 	
 return (
 	
@@ -25,37 +27,27 @@ return (
 				
 				if (form.Password.value != form.ConfirmPassword.value)
 					return alert("Passwords do not match");
-				await fetch("http://localhost:4000/user/register", {
-					method: "POST",
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
+				Appi.postRequest("register", {
 						email: form.Email.value,
 						password: form.Password.value,
 						name: form.Username.value,
 						role: "PLAYER"
-					})
 				})
-				.then((res) => {
-					
-					if (res.ok)
-						return rout.push('/Login');
-				})
+				.then((res) => res.ok ? rout.push('/Login') : alert("Try again") )
 			}}>
 				{labelFocus.map((item, i) => {
 					return (
-						<div className={Data.formStyle.inputDiv} key={i}>
+						<div className={Styles.formStyle.inputDiv} key={i}>
 							<label htmlFor={item.name} className="cursor-pointer">
 								<input required placeholder={item.bol ? item.name : ""}
-									type={item.type} name={item.name} id={item.id} value={item.value} className={Data.formStyle.inputs}
+									type={item.type} name={item.name} id={item.id} value={item.value} className={Styles.formStyle.inputs}
 									onFocus={(e) => { setLabelFocus((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: false} : item)); }}
 									onChange={(e) => { setLabelFocus((prev) => prev.map((item) => item.id === e.target.id ? {...item, value: e.target.value} : item)); }}
 									onBlur={(e) => { setLabelFocus((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: true} : item)); }}
 								/>
 								
 							</label>
-							<div className={Data.formStyle.imgDiv}>
+							<div className={Styles.formStyle.imgDiv}>
 								<img src={`${item.src}`} alt="icon" id={item.id} className="w-15  min-w-8 cursor-pointer"
 									onClick={(e) => {
 										const target = e.currentTarget;
@@ -82,14 +74,14 @@ return (
 				
 				<div className="m-5 text-center">
 					<div>
-						<button className={Data.formStyle.btn_submit} type="submit" >
+						<button className={Styles.formStyle.btn_submit} type="submit" >
 							Sign Up
 						</button>
 					</div>
 					<div className="p-4 text-lg font-bold flex justify-between">
 						<p> 
 							Already have an account ? /
-							<button  className={Data.formStyle.btn_sin_log}
+							<button  className={Styles.formStyle.btn_sin_log}
 								type="button" onClick={() => {
 									rout.push("/Login");
 								}} >
@@ -104,5 +96,3 @@ return (
 		</div>
 	</div>
 )}
-
-export default Registration

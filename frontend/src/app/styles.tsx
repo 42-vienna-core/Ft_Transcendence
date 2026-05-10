@@ -1,41 +1,5 @@
 
-let Data = {
-    registr:
-    [
-        {
-            id: "1",
-            type: "text",
-            name: "Username",
-            src : "/png/users.png",
-            value: "",
-            bol: true,
-        },
-        {
-            id: "2",
-            type: "email",
-            name: "Email",
-            src : "/png/email.png",
-            value: "",
-            bol: true,
-        },
-        {
-            id: "3",
-            type: "password",
-            name: "Password",
-            src : "/png/secret.png",
-            value: "",
-            bol: true,
-        },
-        {
-            id: '4',
-            type: "password",
-            name: "ConfirmPassword",
-            src : "/png/secret.png",
-            value: "",
-            bol: true,
-        }
-    ],
-    
+let Styles = {
     formStyle: 
     {
         inputDiv: "flex justify-between border-b-black border-b-2 max-5 my-4 py-1 m-4",
@@ -80,4 +44,4 @@ let Data = {
     btnSecondary: "btn  bg-bg-card text-text-bright border-border-strong hover:bg-bg-elevated hover:border-text-muted"
 }
 
-export default Data;
+export default Styles;

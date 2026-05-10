@@ -30,7 +30,8 @@ export class UserService {
 		const user = await this.databaseService.user.findUnique({ 
 			where: { email: body.email} 
 		}) 
-		if (!user) throw ({message: 'User not found'});
+		if (!user)
+			throw ({message: 'User not found'});
 
 		await this.databaseService.user.update({
 			where: {
@@ -54,10 +55,17 @@ export class UserService {
 		if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
 			throw ({ message: 'Time is over' });
 
+		if (user.resetCode !== body.resetCode)
+			throw ({ message: 'Wrong code' });
+
 		const	hashedPassword = await bcrypt.hash(String(body.password), 10);
 		return await this.databaseService.user.update({
 			where: {id: user.id},
-			data: {password: hashedPassword},
+			data:	{
+						password: hashedPassword,
+						resetCode: null,
+						codeExpire: null,
+					},
 		})
 	}
 	async login(body: CreateLoginDto) {
