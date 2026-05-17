@@ -27,13 +27,20 @@ return (
 				
 				if (form.Password.value != form.ConfirmPassword.value)
 					return alert("Passwords do not match");
-				Appi.postRequest("register", {
+				Appi.postRequest("http://localhost:4000/user/register", {
 						email: form.Email.value,
 						password: form.Password.value,
 						name: form.Username.value,
 						role: "PLAYER"
 				})
-				.then((res) => res.ok ? rout.push('/Login') : alert("Try again") )
+				.then((res) => {
+						res.ok	? rout.push('/Login') 
+						:
+
+						//alert("Try again");
+						res.json().then((data) => console.log(data))
+					}
+				)
 			}}>
 				{labelFocus.map((item, i) => {
 					return (

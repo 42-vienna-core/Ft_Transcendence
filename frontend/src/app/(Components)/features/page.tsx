@@ -1,6 +1,6 @@
 import style from "../../styles"
 
-function Features () {
+export default function Features () {
     return (
     <div className={style.features.features}>
         <div className={style.features.titleGrid}>
@@ -36,5 +36,3 @@ function Features () {
     </div>
     );
 }
-
-export default Features

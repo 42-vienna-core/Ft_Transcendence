@@ -1,6 +1,6 @@
 const Appi = {
     postRequest: async (url: string, obj: object) => {
-        const res = await fetch("http://localhost:4000/user/" + url,  {
+        const res = await fetch(url,  {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -10,5 +10,4 @@ const Appi = {
         return res;
     }
 }
-
 export default Appi;

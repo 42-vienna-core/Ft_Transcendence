@@ -13,7 +13,7 @@ export default function Navbar() {
         <Link href="/">Snake.io</Link>
       </div>
       <div className={Styles.Nav.navLinks}>
-        <Link onClick={() => setValue(!value)} className={!value ? Styles.btnPrimary : Styles.btnSecondary} href="/Login">Log in</Link>
+        <Link onClick={() => setValue(!value)} className={!value ? Styles.btnPrimary : Styles.btnSecondary} href="/Login">Sign in</Link>
         <Link onClick={() => setValue(!value)} className={value ? Styles.btnPrimary : Styles.btnSecondary} href="/Register">Sign up</Link>
       </div>
     </nav>

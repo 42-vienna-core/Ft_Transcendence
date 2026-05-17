@@ -13,14 +13,14 @@ function Registration() {
 	
 	useEffect(() => {
 		if (object.email == undefined) return;
-		Appi.postRequest("find", {email: object.email})
+		Appi.postRequest("http://localhost:4000/user/find", {email: object.email})
 		.then((res) => {
 			if (!res.ok)
 				throw new Error("User not found");
 		} );
 			
 		let resetCode =  prompt("Enter the code sent to your email");
-		Appi.postRequest("code", {...object, resetCode: resetCode})
+		Appi.postRequest("http://localhost:4000/user/code", {...object, resetCode: resetCode})
 		.then((res) => { 
 			if (res.ok)
 				return rout.push("/Login");

@@ -23,9 +23,13 @@ return (
 			<form onSubmit={(e) => { 
 				e.preventDefault();
 				const form = e.currentTarget;
-				Appi.postRequest("login", {email: form.Email.value, password: form.Password.value})
-				.then((res) => res.ok ? rout.push("/") : alert("Wrong email or password"));
-				}}>
+				Appi.postRequest("http://localhost:4000/user/login", {email: form.Email.value, password: form.Password.value})
+				.then((res) => res.ok ? res.json() : alert("Wrong email or password"))
+				.then((data) => {
+					document.cookie = `token=${data.access_token}; path=/`;
+					rout.push("/");
+				})
+				 }}>
 				{loginData.map((item, i) => {
 					return (
 						<div className={Styles.formStyle.inputDiv} key={i}>
@@ -86,3 +90,12 @@ return (
 		</div>
 	</div>
 )}
+
+
+// 	if (res.ok)
+				// 	{
+				// 		console.log(res);
+				// 		localStorage.setItem("token", res.access_token);
+				// 		return rout.push("/");
+				// 	}
+				// 

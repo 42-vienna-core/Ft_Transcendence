@@ -1,27 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto , CreateLoginDto} from './dto/create-user.dto';
-import  * as bcrypt from "bcrypt"
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { MailService } from './mail/mail.service'; 
+import { JwtService } from '@nestjs/jwt';
+import  * as bcrypt from "bcrypt"
 
 @Injectable()
 export class UserService {
 
 	constructor(
 		private readonly databaseService: DatabaseService,
-		private mailService: MailService
+		private mailService: MailService,
+		private JwtService: JwtService,
 
 	) {}
 
 	async create(body: CreateUserDto) {
-
+		
 		const	hashedPassword = await bcrypt.hash(body.password, 10);
 		const	newUser = {
 			...body,
 			password: hashedPassword
 		}
-		return this.databaseService.user.create({ data: newUser });
+		const res = await this.databaseService.user.create({ data: newUser });
+		console.log(res.id)
+		return res;
 	}
 
 	async findUser(body: UpdateUserDto)
@@ -74,10 +78,16 @@ export class UserService {
 		})
 		if (!user)
 			throw new Error ('User not found');
+		
 		const isMatch = await bcrypt.compare(body.password, user.password);
 		if (!isMatch)
 			throw new Error('Wrong password');
-		return user;
+		const payload = { email: user.email, id : user.id };
+		const access_token = await this.JwtService.signAsync(payload);
+		return {access_token};
+	}
+	async getProfile(req: any) {
+		return req.user;
 	}
 
 	async findAll(role?: 'ADMIN' | 'PLAYER') {
@@ -112,5 +122,5 @@ export class UserService {
 			{
 				where: { id },
 			});
-		}
+	}
 }

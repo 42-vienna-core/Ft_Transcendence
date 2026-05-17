@@ -1,7 +1,8 @@
-import { Controller,Query ,Get, Post, Body, Patch, Param, Delete, ParseIntPipe , ValidationPipe} from '@nestjs/common';
+import { Controller,Query ,Get, Post, Body, Patch, Param, Delete, ParseIntPipe , ValidationPipe, Req, UseGuards} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, CreateLoginDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/updata-user.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -27,10 +28,17 @@ export class UserController {
     return this.userService.login(body);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Req() req: Request)  {
+    return this.userService.getProfile(req);
+  }
+
   @Get()
   findAll(@Query('role') role?: 'ADMIN' | 'PLAYER') {
     return this.userService.findAll(role);
   }
+
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
