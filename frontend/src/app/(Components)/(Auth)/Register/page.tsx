@@ -1,4 +1,5 @@
 "use client"
+
 import { useRouter } from "next/navigation";
 import { useState } from "react"
 import Data from "../../../data";
@@ -20,14 +21,13 @@ return (
 				<h2 className="text-4xl font-bold"> Sign Up
 				</h2>
 			</div>
-			
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
 				const form = e.currentTarget;
 				
 				if (form.Password.value != form.ConfirmPassword.value)
 					return alert("Passwords do not match");
-				Appi.postRequest("http://localhost:4000/user/register", {
+				Appi.postRequest("http://localhost:4000/api/user/register", {
 						email: form.Email.value,
 						password: form.Password.value,
 						name: form.Username.value,
@@ -99,7 +99,6 @@ return (
 				</div>
 
 			</form>
-			
 		</div>
 	</div>
 )}

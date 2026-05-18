@@ -1,9 +1,10 @@
 "use client"
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react"
-import Styles from "../../../styles";
-import Data from "../../../data";
-import Appi from "../../../appi"
+
+import { useRouter }			from "next/navigation";
+import { useEffect, useState }	from "react"
+import Styles					from "../../../styles";
+import Data						from "../../../data";
+import Appi						from "../../../appi"
 
 function Registration() {
 
@@ -12,49 +13,43 @@ function Registration() {
 	const	[object, setObject] = useState({email: undefined, password: undefined, resetCode:undefined});
 	
 	useEffect(() => {
-		if (object.email == undefined) return;
-		Appi.postRequest("http://localhost:4000/user/find", {email: object.email})
+		if (object.email == undefined) 
+			return;
+		Appi.postRequest("http://localhost:4000/api/user/find", {email: object.email})
 		.then((res) => {
 			if (!res.ok)
 				throw new Error("User not found");
-		} );
-			
-		let resetCode =  prompt("Enter the code sent to your email");
-		Appi.postRequest("http://localhost:4000/user/code", {...object, resetCode: resetCode})
-		.then((res) => { 
-			if (res.ok)
-				return rout.push("/Login");
-			console.log(res);
-			alert("Wrong code or time is over")
 		});
-
-	}, [object])
+		let resetCode = prompt("Enter the code sent to your email");
+		Appi.postRequest("http://localhost:4000/api/user/code", {
+			...object, resetCode: resetCode})
+		.then( (res) => res.ok ?  rout.push("/Login") :  alert("Wrong code or time is over") );
+	}, [object]);
 
 return (
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >
 
 		<div className="w-full max-w-md min-w-md mx-auto p-6 glass rounded-2xl">
-
 			<div className="w-full text-center my-3">
 				<h2 className="text-4xl font-bold"> Reset password</h2>
 			</div>
-			
+
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
 				const form = e.currentTarget;
-			
+
 				if (form.Password.value != form.ConfirmPassword.value)
 					return alert("Passwords do not match");
 				setObject({
 					...object,
 					email: form.Email.value,
 					password: form.Password.value,
-				}); 
+				});
 			}}>
 				{loginData.map((item, i) => {
 					return (
 						<div className={Styles.formStyle.inputDiv} key={i}>
-							
+
 							<label htmlFor={item.name} className="cursor-pointer">
 								<input required placeholder={item.bol ? (item.name === "Password" ? "New " + item.name : item.name === "ConfirmPassword" ? "Confirm Password" : item.name) : ""}
 									type={item.type} name={item.name} id={item.id} value={item.value} className={Styles.formStyle.inputs}
@@ -84,10 +79,10 @@ return (
 									}}
 								/>
 							</div>
+
 						</div>
 					)
 				})}
-				
 				<div className="m-5 text-center">
 					<div>
 						<button className={Styles.formStyle.btn_submit} type="submit"> 
@@ -96,9 +91,7 @@ return (
 					</div>
 				</div>
 			</form>
-			
 		</div>
-		
 	</div>
 )}
 

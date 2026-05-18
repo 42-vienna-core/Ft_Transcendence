@@ -1,13 +1,17 @@
-import { Controller,Query ,Get, Post, Body, Patch, Param, Delete, ParseIntPipe , ValidationPipe, Req, UseGuards} from '@nestjs/common';
+import { Controller,Query ,Get, Post, Body, Patch, Param, Delete, ParseIntPipe , ValidationPipe, Req, UseGuards, Ip} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, CreateLoginDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
+  private readonly logger = new LoggerService(UserController.name);
 
+  @Throttle({ "long": { ttl: 60000, limit: 5 } })
   @Post('register')
   create(@Body(ValidationPipe) newUser: CreateUserDto) {
     return this.userService.create(newUser);
@@ -35,17 +39,17 @@ export class UserController {
   }
 
   @Get()
-  findAll(@Query('role') role?: 'ADMIN' | 'PLAYER') {
+  findAll(@Ip() ip: string, @Query('role') role?: 'ADMIN' | 'PLAYER') {
+    this.logger.log(`IP ${ip} requested user list with role filter: ${role}`);
     return this.userService.findAll(role);
   }
 
-
+  @SkipThrottle()
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
   }
 
-  
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body(ValidationPipe) updatedUser: UpdateUserDto) {
     return this.userService.update(id, updatedUser);

@@ -11,8 +11,7 @@ export default async function Page() {
     {
         redirect("/Login");
     }
-    console.log("token is true")
-    const res = await fetch("http://localhost:4000/user/profile", {
+    const res = await fetch("http://localhost:4000/api/user/profile", {
         headers: {
             Authorization: `Bearer ${token}`,
         },

@@ -23,11 +23,17 @@ return (
 			<form onSubmit={(e) => { 
 				e.preventDefault();
 				const form = e.currentTarget;
-				Appi.postRequest("http://localhost:4000/user/login", {email: form.Email.value, password: form.Password.value})
-				.then((res) => res.ok ? res.json() : alert("Wrong email or password"))
-				.then((data) => {
-					document.cookie = `token=${data.access_token}; path=/`;
+				Appi.postRequest("http://localhost:4000/api/user/login",  {
+					email: form.Email.value, 
+					password: form.Password.value
+				})
+				.then((strim) => strim.json())
+				.then((res) => {
+					document.cookie = `token=${res.access_token}; path=/`;
 					rout.push("/");
+				}).catch((error) => {
+					console.log(error);
+					alert("Wrong email or password")
 				})
 				 }}>
 				{loginData.map((item, i) => {
