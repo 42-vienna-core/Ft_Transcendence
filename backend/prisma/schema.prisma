@@ -1,18 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
-  // output = "../src/generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
@@ -27,6 +19,43 @@ model User {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  rooms       RoomUser[]
+  message     Message[]
+}
+
+model Room {
+  id        String    @id @default(uuid())
+  name      String 
+  maxUsers  Int       @default(4)
+  createdAT DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  users     RoomUser[]
+  messages  Message[]
+}
+
+model RoomUser {
+  id        String  @id @default(uuid())
+  roomId    String
+  userId    Int
+  socketId  String?
+
+  room  Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+model Message {
+  id        String @id @default(uuid())
+  content   String
+  roomId    String
+  userId    Int
+  createdAt DateTime @default(now())
+
+  room  Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

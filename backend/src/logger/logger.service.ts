@@ -15,6 +15,7 @@ export class LoggerService  extends ConsoleLogger {
             console.error('Failed to write log to file:', error);
         }
     }
+    
     log (message: any, logContext?: string) {
         this.writeLogToFile(message, logContext);
         super.log(message, logContext);

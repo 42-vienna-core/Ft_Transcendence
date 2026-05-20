@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule,  ThrottlerGuard} from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from './logger/logger.module';
+import { RoomModule } from './room/room.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { LoggerModule } from './logger/logger.module';
       limit: 100,
     }
   ]),
-    LoggerModule
+    LoggerModule,
+    RoomModule
   ],
   controllers: [AppController],
   providers: [AppService, {

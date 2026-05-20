@@ -27,4 +27,3 @@ export class CreateLoginDto {
      @IsNotEmpty()
     "password": string;
 }
-
