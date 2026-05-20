@@ -36,7 +36,7 @@ function Login() {
     const email = fields.find((f) => f.name === "Email")?.value ?? "";
     const password = fields.find((f) => f.name === "Password")?.value ?? "";
 
-    const res = await fetch("http://localhost:4000/user/login", {
+    const res = await fetch("http://localhost:4000/api/user/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

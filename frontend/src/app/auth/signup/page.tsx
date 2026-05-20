@@ -51,7 +51,7 @@ function Signup() {
       return;
     }
 
-    const res = await fetch("http://localhost:4000/user/register", {
+    const res = await fetch("http://localhost:4000/api/user/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, name: username, role: "PLAYER" }),
