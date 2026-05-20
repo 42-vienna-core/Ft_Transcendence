@@ -24,8 +24,10 @@ export class UserController {
 
   @Post("code")
   resetCode(@Body(ValidationPipe) code: UpdateUserDto) {
+    console.log("this is the rout ")
     return this.userService.resetCode(code);
   }
+  
   
   @Post('login')
   login(@Body(ValidationPipe) body: CreateLoginDto) {

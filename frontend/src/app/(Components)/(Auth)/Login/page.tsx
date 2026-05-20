@@ -89,7 +89,7 @@ return (
 
 			</form>
 			<div className="text-center  ">
-				<button onClick={() =>  rout.push('/Register') } type="button" className="hover:border-b hover:border-blue-400 transform-y cursor-pointer">
+				<button onClick={() =>  rout.push('/Reset') } type="button" className="hover:border-b hover:border-blue-400 transform-y cursor-pointer">
 					Forgot your password 
 				</button>
 			</div>

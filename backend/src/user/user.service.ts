@@ -46,16 +46,19 @@ export class UserService {
 				codeExpire: new Date(Date.now() + 2 * 60 * 1000)
 			}
 		})
+		console.log(code);
 		await this.mailService.sendResetCode(user.email, code);
 		return {message: "Code sent to email"};
 	}
 
 	async resetCode(body: UpdateUserDto) {
 		const user = await this.databaseService.user.findUnique({ 
-			where: { email: body.email} 
+			where: { email: body.email}
 		}) 
+		
 		if (!user) throw ({message: 'User not found'});
 
+		console.log("hello");
 		if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
 			throw ({ message: 'Time is over' });
 

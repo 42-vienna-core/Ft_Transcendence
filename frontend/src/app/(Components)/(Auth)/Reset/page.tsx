@@ -13,7 +13,7 @@ function Registration() {
 	const	[object, setObject] = useState({email: undefined, password: undefined, resetCode:undefined});
 	
 	useEffect(() => {
-		if (object.email == undefined) 
+		if (object.email === undefined) 
 			return;
 		Appi.postRequest("http://localhost:4000/api/user/find", {email: object.email})
 		.then((res) => {
@@ -23,7 +23,7 @@ function Registration() {
 		let resetCode = prompt("Enter the code sent to your email");
 		Appi.postRequest("http://localhost:4000/api/user/code", {
 			...object, resetCode: resetCode})
-		.then( (res) => res.ok ?  rout.push("/Login") :  alert("Wrong code or time is over") );
+		.then( (res) => res.ok ?  rout.push("/Login") : alert("Wrong code or time is over") );
 	}, [object]);
 
 return (
@@ -79,7 +79,6 @@ return (
 									}}
 								/>
 							</div>
-
 						</div>
 					)
 				})}
