@@ -8,7 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategis/jwt.strategy';
 import {StringValue} from 'ms';
-
+import {RedisModule} from '../redis/redis.module';
 @Module({
   imports: [
     PassportModule,
@@ -24,6 +24,7 @@ import {StringValue} from 'ms';
     }),
     DatabaseModule,
     MailModule,
+    RedisModule
   ],
   controllers: [UserController],
   providers: [UserService, JwtStrategy],

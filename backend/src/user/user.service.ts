@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/updata-user.dto';
 import { MailService } from './mail/mail.service'; 
 import { JwtService } from '@nestjs/jwt';
 import  * as bcrypt from "bcrypt"
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class UserService {
@@ -13,9 +14,17 @@ export class UserService {
 		private readonly databaseService: DatabaseService,
 		private mailService: MailService,
 		private JwtService: JwtService,
+		private redisService: RedisService
 
 	) {}
 
+	async saveToken(userId: number, token: string) {
+    	await this.redisService.set(`token:${userId}`, token);
+  	}
+
+	async getToken(userId: number) {
+		return await this.redisService.get(`token:${userId}`);
+	}
 	async create(body: CreateUserDto) {
 		
 		const	hashedPassword = await bcrypt.hash(body.password, 10);
