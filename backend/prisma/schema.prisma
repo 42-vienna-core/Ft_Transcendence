@@ -10,23 +10,27 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String   
-  name      String   
-  role      Role     @default(PLAYER)
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String @map("password_hash")
+  name     String
+  role     Role   @default(PLAYER)
 
-  resetCode   String?
-  codeExpire  DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  isVerified Boolean @default(false) @map("is_verified")
+  isBlocked  Boolean @default(false) @map("is_blocked")
+
+  sessions Session[]
+
+  @@map("users")
 }
 
 enum Role {
@@ -34,3 +38,22 @@ enum Role {
   ADMIN
 }
 
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  refreshTokenHash String @unique @map("refresh_token_hash")
+
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  userAgent String? @map("user_agent")
+  ip        String? @map("ip")
+
+  @@index([userId])
+  @@map("sessions")
+}

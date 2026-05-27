@@ -1,0 +1,134 @@
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { RegisterRequest } from './dto/register.dto';
+import { UserService } from 'src/user/user.service';
+import { TokenService } from 'src/token/token.service';
+import { SessionService } from 'src/session/session.service';
+import type { Response } from 'express';
+import { LoginRequest } from './dto/login.dto';
+import { verify } from 'argon2';
+
+@Injectable()
+export class AuthService {
+
+    constructor(
+        private readonly userService: UserService,
+        private readonly tokenService: TokenService,
+        private readonly sessionService: SessionService,
+    ) { }
+
+    public async register(res: Response, dto: RegisterRequest, userAgent?: string, ip?: string) {
+        // TODO REDIS - Rate Limiting
+        const email = dto.email.toLowerCase().trim()
+        dto.email = email
+        const user = await this.userService.findByEmail(email)
+
+        if (user) {
+            throw new ConflictException('User already exists')
+        }
+
+        const newUser = await this.userService.create(dto)
+        const refreshToken = await this.tokenService.generateRefreshToken()
+        const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip)
+        const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id)
+
+        this.setRefreshCookie(res, refreshToken)
+        return { accessToken }
+    }
+
+    public async login(res: Response, dto: LoginRequest, userAgent?: string, ip?: string) {
+        // TODO REDIS - Rate Limiting
+        const email = dto.email.toLowerCase().trim()
+        dto.email = email
+        const user = await this.userService.findByEmail(email)
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials')
+        }
+
+        const isPasswordValid = await verify(user.password, dto.password)
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Invalid credentials')
+        }
+
+        const refreshToken = await this.tokenService.generateRefreshToken()
+        const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip)
+        const accessToken = await this.tokenService.generateAccessToken(user.id, session.id)
+        this.setRefreshCookie(res, refreshToken)
+        return { accessToken }
+    }
+
+    public async refresh(res: Response, refreshToken: string, userAgent?: string, ip?: string) {
+
+        if (!refreshToken) {
+            throw new UnauthorizedException('Refresh token missing');
+        }
+
+        const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
+        const session = await this.sessionService.findSessionByHash(tokenHash);
+        if (!session) {
+            throw new UnauthorizedException('Invalid or expired session');
+        }
+
+        // todo: delete session?
+        await this.sessionService.revokeSession(session.id);
+
+        const newRefreshToken = await this.tokenService.generateRefreshToken()
+        const newSession = await this.sessionService.createSession(session.userId, newRefreshToken, userAgent, ip)
+        const accessToken = await this.tokenService.generateAccessToken(session.userId, newSession.id)
+        this.setRefreshCookie(res, newRefreshToken)
+        return { accessToken }
+    }
+
+    public async logout(res: Response, refreshToken: string) {
+        if (!refreshToken) {
+            throw new UnauthorizedException('Refresh token missing');
+        }
+
+        const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
+
+        const session = await this.sessionService.findSessionByHash(tokenHash);
+        if (session) {
+            await this.sessionService.revokeSession(session.id);
+        }
+        this.clearRefreshCookie(res);
+    }
+
+    public async logoutAll(res: Response, refreshToken: string) {
+        if (!refreshToken) {
+            throw new UnauthorizedException('Refresh token missing');
+        }
+        const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
+        const session = await this.sessionService.findSessionByHash(tokenHash);
+
+        if (!session) throw new UnauthorizedException();
+
+        await this.sessionService.revokeAllUserSessions(session.userId);
+        this.clearRefreshCookie(res);
+    }
+
+    private setRefreshCookie(
+        res: Response,
+        refreshToken: string
+    ) {
+        res.cookie(
+            'refreshToken',
+            refreshToken,
+            {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: true,
+                path: '/api/auth',
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+            },
+        )
+    }
+
+    private clearRefreshCookie(res: Response) {
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: true,
+            path: '/api/auth',
+        });
+    }
+}
