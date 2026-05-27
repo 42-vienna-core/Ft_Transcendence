@@ -9,11 +9,11 @@ import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from './logger/logger.module';
 import { RoomModule } from './room/room.module';
 import { RedisModule } from './redis/redis.module';
+import { SocketService } from './socket/socket.service';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
-  imports: [
-    UserModule, 
-    DatabaseModule, 
+  imports: [UserModule,  DatabaseModule, 
     ConfigModule.forRoot({ isGlobal: true, }),
     ThrottlerModule.forRoot([{
       name: 'short',
@@ -26,15 +26,13 @@ import { RedisModule } from './redis/redis.module';
       limit: 100,
     }
   ]),
-    LoggerModule,
-    RoomModule,
-    RedisModule
+    LoggerModule, RoomModule, RedisModule, SocketModule
   ],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_GUARD,
     useClass: ThrottlerGuard
-  }],
+  }, SocketService],
 })
 
 export class AppModule {}

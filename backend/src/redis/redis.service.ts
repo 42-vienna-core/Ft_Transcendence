@@ -31,4 +31,26 @@ export class RedisService implements OnModuleInit {
   async del(key: string) {
     await this.client.del(key);
   }
+
+  async saveToken(userId: number, token: string) {
+        await this.client.set(`token:${userId}`, token);
+      }
+  
+    async getToken(userId: number) {
+      return await this.client.get(`token:${userId}`);
+    }
+
+    async deleteToken(userId: number) {
+      await this.client.del(`token:${userId}`);
+    }
+
+    async setEx(key: string, secound: number, value: string) {
+      await this.client.setEx(key, secound, value);
+    }
+   
+    async exists(key: string) {
+      return await this.client.exists(key);
+    }
+
+
 }

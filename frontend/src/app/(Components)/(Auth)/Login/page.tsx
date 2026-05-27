@@ -4,7 +4,7 @@ import { useState} from "react"
 
 import Styles from "../../../styles";
 import Data from "../../../data"
-import Appi from "../../../appi"
+import API from "../../../api"
 
 export default function Login() {
 
@@ -23,7 +23,7 @@ return (
 			<form onSubmit={(e) => { 
 				e.preventDefault();
 				const form = e.currentTarget;
-				Appi.postRequest("http://localhost:4000/api/user/login",  {
+				API.postRequest("http://localhost:4000/api/user/login",  {
 					email: form.Email.value, 
 					password: form.Password.value
 				})

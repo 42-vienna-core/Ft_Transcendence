@@ -4,7 +4,7 @@ import { useRouter }			from "next/navigation";
 import { useEffect, useState }	from "react"
 import Styles					from "../../../styles";
 import Data						from "../../../data";
-import Appi						from "../../../appi"
+import Appi						from "../../../api"
 
 function Registration() {
 

@@ -1,4 +1,4 @@
-import { Controller, Body, Post } from '@nestjs/common';
+import { Controller, Body, Post, Get, Delete, Param } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomService } from './room.service';
 
@@ -6,8 +6,19 @@ import { RoomService } from './room.service';
 export class RoomController {
     constructor(private readonly roomService: RoomService) {}
 
+    @Get()
+    findAll() {
+        return this.roomService.findAll();
+    }
+
     @Post()
     async createRoom(@Body() dto: CreateRoomDto) {
         return this.roomService.createRoom(dto);
+    }
+
+    @Delete(':nmae')
+    async deleteRoom(@Param('name') name: string)
+    {
+        return await this.roomService.deleteRoom(name);
     }
 }

@@ -1,4 +1,4 @@
-const Appi = {
+const Api = {
     postRequest: async (url: string, obj: object) => {
         const res = await fetch(url,  {
             method: "POST",
@@ -10,4 +10,4 @@ const Appi = {
         return res;
     }
 }
-export default Appi;
+export default Api;

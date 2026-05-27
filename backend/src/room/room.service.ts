@@ -21,4 +21,21 @@ export class RoomService {
         this.roomGateway.server.emit("room_created", room);
         return room;
     }
+
+    async  findAll() {
+        const res = await this.db.room.findMany();
+        
+        return res;
+    }
+
+    async deleteRoom(name: string)
+    {
+        const res = await this.db.room.deleteMany({
+            where: {
+                name,
+            }
+        })
+        console.log(res);
+        return res;
+    }
 }

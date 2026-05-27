@@ -15,16 +15,8 @@ export class UserService {
 		private mailService: MailService,
 		private JwtService: JwtService,
 		private redisService: RedisService
-
 	) {}
 
-	async saveToken(userId: number, token: string) {
-    	await this.redisService.set(`token:${userId}`, token);
-  	}
-
-	async getToken(userId: number) {
-		return await this.redisService.get(`token:${userId}`);
-	}
 	async create(body: CreateUserDto) {
 		
 		const	hashedPassword = await bcrypt.hash(body.password, 10);
@@ -33,7 +25,6 @@ export class UserService {
 			password: hashedPassword
 		}
 		const res = await this.databaseService.user.create({ data: newUser });
-		console.log(res.id)
 		return res;
 	}
 
@@ -55,7 +46,6 @@ export class UserService {
 				codeExpire: new Date(Date.now() + 2 * 60 * 1000)
 			}
 		})
-		console.log(code);
 		await this.mailService.sendResetCode(user.email, code);
 		return {message: "Code sent to email"};
 	}
@@ -67,7 +57,6 @@ export class UserService {
 		
 		if (!user) throw ({message: 'User not found'});
 
-		console.log("hello");
 		if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
 			throw ({ message: 'Time is over' });
 
@@ -96,8 +85,10 @@ export class UserService {
 			throw new Error('Wrong password');
 		const payload = { email: user.email, id : user.id };
 		const access_token = await this.JwtService.signAsync(payload);
+		await this.redisService.saveToken(user.id, access_token);
 		return {access_token};
 	}
+
 	async getProfile(req: any) {
 		return req.user;
 	}
@@ -122,17 +113,20 @@ export class UserService {
 	}
 
 	async update(id: number, updateUserDto: UpdateUserDto) {
-		return this.databaseService.user.update(
+		const user = await this.databaseService.user.update(
 		{
 			where: { id },
 			data: updateUserDto,
 		});
+		return user;
 	}
 
 	async remove(id: number) {
-			return this.databaseService.user.delete(
-			{
-				where: { id },
-			});
+		const user = await this.databaseService.user.delete(
+		{
+			where: { id },
+		});
+		await this.redisService.deleteToken(user.id);
+		return user;
 	}
 }
