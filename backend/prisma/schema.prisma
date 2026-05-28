@@ -1,91 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
+  // output = "../src/generated"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  email        String   @unique
-  passwordHash String
-  avatarUrl    String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String @map("password_hash")
+  name     String
+  role     Role   @default(PLAYER)
 
-  sentFriendships     Friendship[]      @relation("FriendshipRequester")
-  receivedFriendships Friendship[]      @relation("FriendshipAddressee")
-  gameParticipations  GameParticipant[]
-  hostedRooms         Room[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  isVerified Boolean @default(false) @map("is_verified")
+  isBlocked  Boolean @default(false) @map("is_blocked")
+
+  sessions Session[]
+
+  @@map("users")
 }
 
-model Room {
-  id         Int        @id @default(autoincrement())
-  code       String     @unique
-  status     RoomStatus @default(WAITING)
-  maxPlayers Int        @default(4)
-  createdAt  DateTime   @default(now())
-
-  host   User @relation(fields: [hostId], references: [id])
-  hostId Int
-
-  participants GameParticipant[]
-  result       GameResult?
+enum Role {
+  PLAYER
+  ADMIN
 }
 
-enum RoomStatus {
-  WAITING
-  IN_PROGRESS
-  FINISHED
-}
+model Session {
+  id String @id @default(uuid()) @db.Uuid
 
-model GameParticipant {
-  id    Int    @id @default(autoincrement())
-  score Int    @default(0)
-  color String
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user   User @relation(fields: [userId], references: [id])
-  userId Int
+  refreshTokenHash String @unique @map("refresh_token_hash")
 
-  room   Room @relation(fields: [roomId], references: [id])
-  roomId Int
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  revokedAt DateTime? @map("revoked_at")
 
-  gameResult   GameResult? @relation(fields: [gameResultId], references: [id])
-  gameResultId Int?
+  userAgent String? @map("user_agent")
+  ip        String? @map("ip")
 
-  @@unique([userId, roomId])
-}
-
-model GameResult {
-  id          Int      @id @default(autoincrement())
-  playedAt    DateTime @default(now())
-  durationSec Int
-
-  room   Room @relation(fields: [roomId], references: [id])
-  roomId Int  @unique
-
-  participants GameParticipant[]
-}
-
-model Friendship {
-  id        Int              @id @default(autoincrement())
-  status    FriendshipStatus @default(PENDING)
-  createdAt DateTime         @default(now())
-
-  requester   User @relation("FriendshipRequester", fields: [requesterId], references: [id])
-  requesterId Int
-
-  addressee   User @relation("FriendshipAddressee", fields: [addresseeId], references: [id])
-  addresseeId Int
-
-  @@unique([requesterId, addresseeId])
-}
-
-enum FriendshipStatus {
-  PENDING
-  ACCEPTED
-  BLOCKED
+  @@index([userId])
+  @@map("sessions")
 }
