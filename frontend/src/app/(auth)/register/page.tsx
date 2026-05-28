@@ -1,63 +1,55 @@
 "use client";
+
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../auth.module.css";
+import { FormField, State } from "@/lib/definitions";
+import { fetchRegister } from "@/lib/action";
+import { signIn } from "next-auth/react";
 
-type FormField = {
-  id: string;
-  type: string;
-  name: string;
-  src: string;
-  value: string;
-  showPlaceholder: boolean;
-};
-
-const INITIAL_FIELDS: FormField[] = [
-  { id: "username", type: "text", name: "Username", src: "/png/users.png", value: "", showPlaceholder: true },
-  { id: "email", type: "email", name: "Email", src: "/png/email.png", value: "", showPlaceholder: true },
-  { id: "password", type: "password", name: "Password", src: "/png/secret.png", value: "", showPlaceholder: true },
-  { id: "confirm-password", type: "password", name: "ConfirmPassword", src: "/png/secret.png", value: "", showPlaceholder: true },
-];
+const initialState: State = {
+  message: "",
+  success: false,
+  pending: false,
+  refresh: false
+}
 
 function getPlaceholder(field: FormField): string {
   if (!field.showPlaceholder) return "";
-  if (field.name === "ConfirmPassword") return "Confirm Password";
+  if (field.name === "confirmPassword") return "confirm Password";
   return field.name;
 }
 
 function Signup() {
   const router = useRouter();
   const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
+  const [state,  setState] = useState<State>(initialState);
 
   function updateField(id: string, patch: Partial<FormField>) {
     setFields((prev) => prev.map((f) => f.id === id ? { ...f, ...patch } : f));
   }
 
   function togglePasswordVisibility(field: FormField) {
-    if (field.name !== "Password" && field.name !== "ConfirmPassword") return;
+    if (field.name !== "password" && field.name !== "confirmPassword") return;
     if (field.type === "text") updateField(field.id, { type: "password", src: "/png/secret.png" });
     else updateField(field.id, { type: "text", src: "/png/eye.png" });
   }
 
-  async function handleSubmit(e: { preventDefault: () => void }) {
-    e.preventDefault();
-    const username = fields.find((f) => f.name === "Username")?.value ?? "";
-    const email = fields.find((f) => f.name === "Email")?.value ?? "";
-    const password = fields.find((f) => f.name === "Password")?.value ?? "";
-    const confirmPassword = fields.find((f) => f.name === "ConfirmPassword")?.value ?? "";
+  const handleRegistration = async (formData: FormData) => {
+    setFields(INITIAL_FIELDS);
+    setState({...state, pending: true});
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
+    const res = await fetchRegister(formData);
+    setState({...state, ...res});
+
+    if (!state.success) {
+      setState({...state, ...res, pending: false});
       return;
     }
 
-    const res = await fetch("http://localhost:4000/user/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name: username, role: "PLAYER" }),
-    });
+    router.push('/login');
+    router.refresh();
 
-    if (res.ok) router.push("/auth/login");
   }
 
   return (
@@ -68,7 +60,7 @@ function Signup() {
           <h2>Sign Up</h2>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form action={handleRegistration}>
           {fields.map((field) => (
             <div className={styles.inputRow} key={field.id}>
               <label htmlFor={field.id} className={styles.inputLabel}>
@@ -95,9 +87,11 @@ function Signup() {
               </div>
             </div>
           ))}
-
+          <div className={styles.errorBox}>
+            <p className={styles.errorMessage}>{state?.message}</p>
+          </div>
           <div className={styles.actions}>
-            <button className={styles.submitBtn} type="submit">
+            <button className={styles.submitBtn} type="submit" disabled={state.pending}>
               Sign Up
             </button>
             <div className={styles.switchRow}>
@@ -106,7 +100,7 @@ function Signup() {
                 <button
                   className={styles.switchBtn}
                   type="button"
-                  onClick={() => router.push("/auth/login")}
+                  onClick={() => router.push("/login")}
                 >
                   Login
                 </button>
@@ -118,5 +112,40 @@ function Signup() {
     </div>
   );
 }
+
+const INITIAL_FIELDS: FormField[] = [
+  { 
+    id: "username", 
+    type: "text", 
+    name: "username", 
+    src: "/png/users.png", 
+    value: "", 
+    showPlaceholder: true 
+  },
+  { 
+    id: "email",
+    type: "email", 
+    name: "email", 
+    src: "/png/email.png", 
+    value: "", 
+    showPlaceholder: true 
+  },
+  { 
+    id: "password", 
+    type: "password", 
+    name: "password", 
+    src: "/png/secret.png", 
+    value: "", 
+    showPlaceholder: true 
+  },
+  { 
+    id: "confirm-password", 
+    type: "password", 
+    name: "confirmPassword", 
+    src: "/png/secret.png", 
+    value: "", 
+    showPlaceholder: true 
+  }
+];
 
 export default Signup;

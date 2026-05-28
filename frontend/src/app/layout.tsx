@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Providers } from './providers';
 import './globals.css'
 import {bungee, inter} from '../ui/font'
 import Nav from '../ui/nav/index'
@@ -21,9 +22,10 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Background>
+          <Nav />
           <main>
-            <Nav />
-            {children}
+            {/* {children} */}
+            <Providers>{children}</Providers>
           </main>
         </Background>
       </body>

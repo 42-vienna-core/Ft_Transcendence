@@ -1,7 +1,18 @@
-import style from '@/ui/nav/nav.module.css';
-import Link from 'next/link';
+'use server'
 
-function nav() {
+import { getServerSession } from 'next-auth';
+import style from './nav.module.css';
+import Link from 'next/link';
+import { authOptions } from '@/lib/auth';
+import LogoutBotton from '@/app/(auth)/logout/page';
+
+async function Nav(){
+  const session = await getServerSession(authOptions);
+
+  function handleLogout (){
+    
+  }
+
   return (
     <nav className={style.nav}>
       <div className={style.logo}>
@@ -9,11 +20,20 @@ function nav() {
         <Link href="/">Snake.io</Link>
       </div>
       <div className={style.navLinks}>
-        <Link className={style.navLink} href="/auth/login">Log in</Link>
-        <Link className={`${style.btn} ${style.btnPrimary}`} href="/auth/signup">Sign up</Link>
+        {session ? (
+            <>
+              <Link className={`${style.btn} ${style.btnPrimary}`} href="#">Profile</Link>
+              <LogoutBotton/>
+            </>
+          ): (
+            <>
+              <Link className={style.navLink} href="/login">Log in</Link>
+              <Link className={`${style.btn} ${style.btnPrimary}`} href="/register">Sign up</Link>
+            </>
+          )}
       </div>
     </nav>
   );
 }
 
-export default nav;
+export default Nav;
