@@ -3,14 +3,14 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 export const Authorized = createParamDecorator(
     (data: string | undefined, ctx: ExecutionContext) => {
         const request = ctx.switchToHttp().getRequest();
-        const user = request.user; // Сюда Passport складывает то, что вернул метод validate()
+        const user = request.user;
 
-        // Если запросили конкретное поле (например, @Authorized('userId'))
+        // example: @Authorized('userId') - return userId from JwtPayload
         if (data) {
             return user?.[data];
         }
 
-        // Иначе возвращаем весь объект пользователя/payload
+        // example: @Authorized() - return JwtPayload
         return user;
     },
 );

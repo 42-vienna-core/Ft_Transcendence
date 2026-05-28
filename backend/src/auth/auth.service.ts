@@ -18,92 +18,76 @@ export class AuthService {
 
     public async register(res: Response, dto: RegisterRequest, userAgent?: string, ip?: string) {
         // TODO REDIS - Rate Limiting
-        const email = dto.email.toLowerCase().trim()
-        dto.email = email
-        const user = await this.userService.findByEmail(email)
+        const email = dto.email.toLowerCase().trim();
+        dto.email = email;
+        const user = await this.userService.findByEmail(email);
 
         if (user) {
-            throw new ConflictException('User already exists')
+            throw new ConflictException('User already exists');
         }
 
-        const newUser = await this.userService.create(dto)
-        const refreshToken = await this.tokenService.generateRefreshToken()
-        const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip)
-        const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id)
+        const newUser = await this.userService.create(dto);
+        const refreshToken = await this.tokenService.generateRefreshToken();
+        const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
+        const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
 
-        this.setRefreshCookie(res, refreshToken)
-        return { accessToken }
+        this.setRefreshCookie(res, refreshToken);
+        return { accessToken };
     }
 
     public async login(res: Response, dto: LoginRequest, userAgent?: string, ip?: string) {
         // TODO REDIS - Rate Limiting
-        const email = dto.email.toLowerCase().trim()
-        dto.email = email
-        const user = await this.userService.findByEmail(email)
+        const email = dto.email.toLowerCase().trim();
+        dto.email = email;
+        const user = await this.userService.findByEmail(email);
 
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials')
+            throw new UnauthorizedException('Invalid credentials');
         }
 
-        const isPasswordValid = await verify(user.password, dto.password)
+        const isPasswordValid = await verify(user.password, dto.password);
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials')
+            throw new UnauthorizedException('Invalid credentials');
         }
 
-        const refreshToken = await this.tokenService.generateRefreshToken()
-        const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip)
-        const accessToken = await this.tokenService.generateAccessToken(user.id, session.id)
-        this.setRefreshCookie(res, refreshToken)
-        return { accessToken }
+        const refreshToken = await this.tokenService.generateRefreshToken();
+        const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
+        const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
+        this.setRefreshCookie(res, refreshToken);
+        return { accessToken };
     }
 
-    public async refresh(res: Response, refreshToken: string, userAgent?: string, ip?: string) {
+    public async refresh(res: Response, refreshToken: string) {
 
         if (!refreshToken) {
             throw new UnauthorizedException('Refresh token missing');
         }
-
         const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
         const session = await this.sessionService.findSessionByHash(tokenHash);
         if (!session) {
             throw new UnauthorizedException('Invalid or expired session');
         }
+        const newRefreshToken = await this.tokenService.generateRefreshToken();
 
-        // todo: delete session?
-        await this.sessionService.revokeSession(session.id);
-
-        const newRefreshToken = await this.tokenService.generateRefreshToken()
-        const newSession = await this.sessionService.createSession(session.userId, newRefreshToken, userAgent, ip)
-        const accessToken = await this.tokenService.generateAccessToken(session.userId, newSession.id)
-        this.setRefreshCookie(res, newRefreshToken)
-        return { accessToken }
+        await this.sessionService.rotateSession(session.id, newRefreshToken);
+        const accessToken = await this.tokenService.generateAccessToken(session.userId, session.id);
+        this.setRefreshCookie(res, newRefreshToken);
+        return { accessToken };
     }
 
-    public async logout(res: Response, refreshToken: string) {
-        if (!refreshToken) {
-            throw new UnauthorizedException('Refresh token missing');
-        }
-
-        const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
-
-        const session = await this.sessionService.findSessionByHash(tokenHash);
-        if (session) {
-            await this.sessionService.revokeSession(session.id);
-        }
+    public async logout(res: Response, sessionId: string) {
+        const count = await this.sessionService.deleteSession(sessionId);
+        //redis - delete session
         this.clearRefreshCookie(res);
+        return count;
     }
 
-    public async logoutAll(res: Response, refreshToken: string) {
-        if (!refreshToken) {
-            throw new UnauthorizedException('Refresh token missing');
-        }
-        const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
-        const session = await this.sessionService.findSessionByHash(tokenHash);
+    public async logoutAll(res: Response, userId: number) {
 
-        if (!session) throw new UnauthorizedException();
-
-        await this.sessionService.revokeAllUserSessions(session.userId);
+        //todo redis - delete all user sessions
+        const count = await this.sessionService.deleteAllUserSessions(userId);
         this.clearRefreshCookie(res);
+        return count;
     }
 
     private setRefreshCookie(
@@ -120,7 +104,7 @@ export class AuthService {
                 path: '/api/auth',
                 maxAge: 30 * 24 * 60 * 60 * 1000,
             },
-        )
+        );
     }
 
     private clearRefreshCookie(res: Response) {

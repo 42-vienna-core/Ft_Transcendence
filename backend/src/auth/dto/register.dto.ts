@@ -6,17 +6,17 @@ export class RegisterRequest {
     @IsString()
     @MinLength(3)
     @MaxLength(40)
-    name!: string
+    name!: string;
 
 
     @IsNotEmpty()
     @IsString()
     @IsEmail()
-    email!: string
+    email!: string;
 
     @IsNotEmpty()
     @IsString()
     @MinLength(8)
     @MaxLength(128)
-    password!: string
+    password!: string;
 }

@@ -6,7 +6,10 @@ import { JwtPayload } from "../interfaces/jwt.interface";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(configService: ConfigService) {
+    constructor(
+        configService: ConfigService,
+        //redisService: RedisService, 
+    ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -15,12 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPayload) {
-        // todo: redis - revoke session validation
-        // const session = await sessionService.findById(payload.sessionId);
-
-        // if (!session || session.revokedAt) {
-        //     throw new UnauthorizedException();
-        // }
+        // todo: redis - check if session deleted?
         return payload;
-    }
+    };
 }

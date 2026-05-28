@@ -4,6 +4,8 @@ import { RegisterRequest } from './dto/register.dto';
 import type { Request, Response } from 'express';
 import { LoginRequest } from './dto/login.dto';
 import { Cookie } from 'src/common/decorators/cookies.decorator';
+import { Authorization } from 'src/common/decorators/authorization.decorator';
+import { Authorized } from 'src/common/decorators/authorized.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +18,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.authService.register(res, dto, req.headers['user-agent'], req.ip)
+    return await this.authService.register(res, dto, req.headers['user-agent'], req.ip);
   }
 
   @Post('login')
@@ -26,36 +28,37 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.authService.login(res, dto, req.headers['user-agent'], req.ip)
+    return await this.authService.login(res, dto, req.headers['user-agent'], req.ip);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   public async refresh(
     @Cookie('refreshToken') token: string,
-    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.authService.refresh(res, token, req.headers['user-agent'], req.ip);
+    return await this.authService.refresh(res, token);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @Authorization()
   public async logout(
-    @Cookie('refreshToken') token: string,
+    @Authorized('sessionId') sessionId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logout(res, token);
-    return { success: true };
+    const count = await this.authService.logout(res, sessionId);
+    return { success: true, count };
   }
 
   @Post('logout-all')
   @HttpCode(HttpStatus.OK)
+  @Authorization()
   public async logoutAll(
-    @Cookie('refreshToken') token: string,
+    @Authorized('userId') userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logoutAll(res, token);
-    return { success: true };
+    const count = await this.authService.logoutAll(res, Number(userId));
+    return { success: true, count };
   }
 }

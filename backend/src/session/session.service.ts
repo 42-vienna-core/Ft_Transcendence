@@ -34,7 +34,6 @@ export class SessionService {
         const session = await this.prisma.session.findFirst({
             where: {
                 refreshTokenHash: tokenHash,
-                revokedAt: null,
                 expiresAt: {
                     gt: new Date(),
                 },
@@ -43,27 +42,60 @@ export class SessionService {
         return session;
     }
 
-    public async revokeSession(sessionId: string) {
-        return await this.prisma.session.update({
-            where: { id: sessionId },
+    public async rotateSession(sessionId: string, refreshToken: string) {
+
+        const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken)
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+
+        return this.prisma.session.update({
+            where: {
+                id: sessionId,
+            },
             data: {
-                revokedAt: new Date(),
+                refreshTokenHash,
+                expiresAt,
+            }
+        })
+    }
+
+    public async deleteSession(sessionId: string) {
+        return this.prisma.session.deleteMany({
+            where: {
+                id: sessionId,
             },
         })
     }
 
-    public async revokeAllUserSessions(userId: number) {
-        return this.prisma.session.updateMany({
+    public async deleteAllUserSessions(userId: number) {
+        return this.prisma.session.deleteMany({
             where: {
                 userId,
-                revokedAt: null,
             },
-            data: {
-                revokedAt: new Date(),
-            },
-        });
+        })
     }
 }
+
+
+// public async revokeSession(sessionId: string) {
+//     return await this.prisma.session.update({
+//         where: { id: sessionId },
+//         data: {
+//             revokedAt: new Date(),
+//         },
+//     })
+// }
+
+// public async revokeAllUserSessions(userId: number) {
+//     return this.prisma.session.updateMany({
+//         where: {
+//             userId,
+//             revokedAt: null,
+//         },
+//         data: {
+//             revokedAt: new Date(),
+//         },
+//     });
+// }
 
 // public async findAllSessions(userId: number) {
 //     const sessions = await this.prisma.session.findMany({

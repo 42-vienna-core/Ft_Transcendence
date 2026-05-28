@@ -4,5 +4,5 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard'; // Проверь св�
 export function Authorization() {
     return applyDecorators(
         UseGuards(JwtAuthGuard),
-    )
+    );
 }

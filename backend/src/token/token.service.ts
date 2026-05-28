@@ -25,10 +25,10 @@ export class TokenService {
     }
 
     public async generateRefreshToken(): Promise<string> {
-        return randomBytes(48).toString('hex');
+        return randomBytes(64).toString('base64url')
     }
 
     public async hashRefreshToken(token: string): Promise<string> {
-        return createHash('sha256').update(token).digest('hex');
+        return createHash('sha256').update(token).digest('hex')
     }
 }
