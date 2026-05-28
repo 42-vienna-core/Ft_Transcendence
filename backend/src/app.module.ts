@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from  './user/user.module';
-import { DatabaseModule } from './database/database.module';
+import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule,  ThrottlerGuard} from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from './logger/logger.module';
+import { TokenModule } from './token/token.module';
+import { AuthModule } from './auth/auth.module';
+import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
-    UserModule, 
-    DatabaseModule, 
+    UserModule,
     ConfigModule.forRoot({ isGlobal: true, }),
     ThrottlerModule.forRoot([{
       name: 'short',
@@ -23,8 +24,11 @@ import { LoggerModule } from './logger/logger.module';
       ttl: 60000,
       limit: 100,
     }
-  ]),
-    LoggerModule
+    ]),
+    LoggerModule,
+    TokenModule,
+    AuthModule,
+    SessionModule
   ],
   controllers: [AppController],
   providers: [AppService, {
@@ -33,4 +37,4 @@ import { LoggerModule } from './logger/logger.module';
   }],
 })
 
-export class AppModule {}
+export class AppModule { }
