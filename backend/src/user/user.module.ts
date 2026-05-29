@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { MailModule } from 'src/mail/mail.modul';
+import { MailModule } from '../mail/mail.modul';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({

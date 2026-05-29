@@ -12,10 +12,6 @@ RUN npm config set fetch-retries 5 && \
     npm config set fetch-retry-maxtimeout 120000 && \
     npm ci
 
-# Generate the client here so it exists in the 'base' node_modules
-# Ensure your file is named schema.prisma or rename it here
-RUN npx prisma generate
-
 # Development stage
 FROM base AS dev
 RUN npm install -g @nestjs/cli prisma

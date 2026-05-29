@@ -1,49 +1,65 @@
 "use client";
+
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import styles from "../auth.module.css";
+import { FormField, State } from "@/lib/definitions";
+import { fatchLogin } from "@/lib/action";
+import { signIn } from "next-auth/react";
 
-type FormField = {
-  id: string;
-  type: string;
-  name: string;
-  src: string;
-  value: string;
-  showPlaceholder: boolean;
-};
-
-const INITIAL_FIELDS: FormField[] = [
-  { id: "email", type: "email", name: "Email", src: "/png/email.png", value: "", showPlaceholder: true },
-  { id: "password", type: "password", name: "Password", src: "/png/secret.png", value: "", showPlaceholder: true },
-];
+const initialState: State = {
+  message: "",
+  success: false,
+  pending: false,
+  refresh: false
+}
 
 function Login() {
   const router = useRouter();
   const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
+  const [state,  setState] = useState<State>(initialState);
 
   function updateField(id: string, patch: Partial<FormField>) {
     setFields((prev) => prev.map((f) => f.id === id ? { ...f, ...patch } : f));
   }
 
   function togglePasswordVisibility(field: FormField) {
-    if (field.name !== "Password" && field.name !== "ConfirmPassword") return;
-    if (field.type === "text") updateField(field.id, { type: "password", src: "/png/secret.png" });
-    else updateField(field.id, { type: "text", src: "/png/eye.png" });
+    if (field.name !== "password" && field.name !== "confirmPassword") return;
+    if (field.type === "text") {
+      updateField(field.id, { type: "password", src: "/png/secret.png" });
+    } else {
+      updateField(field.id, { type: "text", src: "/png/eye.png" });
+    }
   }
 
-  async function handleSubmit(e: { preventDefault: () => void }) {
-    e.preventDefault();
-    const email = fields.find((f) => f.name === "Email")?.value ?? "";
-    const password = fields.find((f) => f.name === "Password")?.value ?? "";
+  const handleLogin = async (formData: FormData) => {
+    // setFields(INITIAL_FIELDS);
+    setState(prev => ({...prev, pending: true}));
 
-    const res = await fetch("http://localhost:4000/api/user/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
 
-    if (res.ok) router.push("/");
-    else alert("Wrong password or login");
+    const res = await fatchLogin(formData);
+    setState(prev => ({...prev, ...res}));
+
+    if (res.success) {
+      const registerResult = await signIn('credentials', {
+        email: formData.get('email'),
+        password: formData.get('password'),
+        redirect: false
+      });
+
+      if (registerResult?.error) {
+        setState(prev =>({
+          ...prev,
+          success: false, 
+          message: 'login failed', 
+          pending: false}));
+        return;
+      } 
+    }
+
+    router.push('/dashboard');
+    router.refresh();
+    
   }
 
   return (
@@ -53,7 +69,7 @@ function Login() {
           <h2>Login</h2>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form action={handleLogin}>
           {fields.map((field) => (
             <div className={styles.inputRow} key={field.id}>
               <label htmlFor={field.id} className={styles.inputLabel}>
@@ -80,10 +96,12 @@ function Login() {
               </div>
             </div>
           ))}
-
+          <div className={styles.errorBox}>
+            <p className={styles.errorMessage}>{state?.message}</p>
+          </div>
           <div className={styles.actions}>
-            <button className={`${styles.submitBtn} `} type="submit">
-              Login
+            <button className={`${styles.submitBtn} `} type="submit" disabled={state.pending}>
+              {state.pending ? 'Logging in...' : 'Login'}
             </button>
             <div className={styles.switchRow}>
               <p>
@@ -91,7 +109,7 @@ function Login() {
                 <button
                   className={styles.switchBtn}
                   type="button"
-                  onClick={() => router.push("/auth/signup")}
+                  onClick={() => router.push("/register")}
                 >
                   Sign Up
                 </button>
@@ -104,7 +122,7 @@ function Login() {
           <button
             className={styles.linkBtn}
             type="button"
-            onClick={() => router.push("/auth/reset-password")}
+            onClick={() => router.push("/reset-password")}
           >
             Forgot your password
           </button>
@@ -113,5 +131,21 @@ function Login() {
     </div>
   );
 }
+
+const INITIAL_FIELDS: FormField[] = [
+  { 
+    id: "email",
+    type: "email",
+    name: "email", 
+    src: "/png/email.png", 
+    value: "", showPlaceholder: true 
+  },
+  { id: "password", 
+    type: "password", 
+    name: "password", 
+    src: "/png/secret.png", 
+    value: "", showPlaceholder: true 
+  },
+];
 
 export default Login;

@@ -24,6 +24,14 @@
   --text-faint: #3f3f55;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: #c4c4d0;
+}
+
 .display { font-family: 'Bungee', cursive; letter-spacing: 0.02em; }
 .mono { font-family: 'JetBrains Mono', monospace; }
 

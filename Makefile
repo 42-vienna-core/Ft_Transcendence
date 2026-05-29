@@ -44,7 +44,7 @@ init_modules:
 	cd ./backend && npm ci
 
 ## Build and start all services
-up: env init_modules
+up: env
 	docker compose up --build
 
 ## Start in background
@@ -82,7 +82,7 @@ log:
 
 ## Run Prisma migrations inside the backend container
 migrate:
-	docker compose exec backend npx prisma migrate dev
+	docker compose exec ft_transcendence-backend-1 npx prisma migrate dev
 
 ## Open Prisma Studio (web-based DB GUI) — runs on port 5555
 studio:

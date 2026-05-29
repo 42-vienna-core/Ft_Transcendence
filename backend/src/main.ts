@@ -4,18 +4,16 @@ import { LoggerService } from './logger/logger.service';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 
+const port = Number(process.env.PORT);
+const prefix = process.env.API_PREFIX as string;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
   app.useLogger(app.get(LoggerService));
 
-  app.setGlobalPrefix('api');
-
-  app.enableCors({
-    origin: 'https://localhost', // check localhost:3000
-    credentials: true,
-  })
+  app.setGlobalPrefix(prefix);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -24,8 +22,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.use(cookieParser());
 
-  await app.listen(4000, '0.0.0.0');
+  app.use(cookieParser());
+  await app.listen(port, '0.0.0.0');
+  
 }
 bootstrap();

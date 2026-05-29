@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Authorization } from 'src/common/decorators/authorization.decorator';
-import { Authorized } from 'src/common/decorators/authorized.decorator';
+import { Authorization } from '../common/decorators/authorization.decorator';
+import { Authorized } from '../common/decorators/authorized.decorator';
 
 @Controller('user')
 export class UserController {
