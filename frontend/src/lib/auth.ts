@@ -14,14 +14,18 @@ export const authOptions: NextAuthOptions = {
             },
 
             async authorize(credentials) {
-                console.log(BACKEND_URL);
+                console.log(credentials);
+                const payload = {
+                    email: credentials?.email,
+                    password: credentials?.password,
+                }
 
                 const res = await fetch(`${BACKEND_URL}/auth/login`, {
                     method: 'POST',
-                    body: JSON.stringify(credentials),
+                    body: JSON.stringify(payload),
                     headers: {'Content-Type': 'application/json'}
                 })
-                console.log("after fetching");
+
                 if (!res.ok) return null;
                 const data = await res.json();
                 console.log(data);
