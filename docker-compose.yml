@@ -45,7 +45,8 @@ services:
       - app_network
     environment:
         PORT: ${PORT}
-        FRONTEND_URL: ${FRONTEND_URL}
+        API_PREFIX: ${API_PREFIX}
+        # FRONTEND_URL: ${FRONTEND_URL}
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
         DATABASE_URL: ${DATABASE_URL}

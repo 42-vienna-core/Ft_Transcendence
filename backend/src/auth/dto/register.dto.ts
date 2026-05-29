@@ -6,7 +6,7 @@ export class RegisterRequest {
     @IsString()
     @MinLength(3)
     @MaxLength(40)
-    name!: string;
+    username!: string;
 
 
     @IsNotEmpty()

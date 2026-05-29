@@ -49,7 +49,6 @@ function Signup() {
 
     router.push('/login');
     router.refresh();
-
   }
 
   return (

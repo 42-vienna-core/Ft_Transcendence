@@ -17,7 +17,7 @@ export class TokenService {
                 sessionId: sessionId,
             },
             {
-                secret: this.config.getOrThrow<string>('JWT_SECRET'),
+                secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
                 expiresIn: '15m',
             },
         );

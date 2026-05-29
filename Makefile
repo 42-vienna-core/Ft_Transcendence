@@ -44,7 +44,7 @@ init_modules:
 	cd ./backend && npm ci
 
 ## Build and start all services
-up: env 
+up: env
 	docker compose up --build
 
 ## Start in background

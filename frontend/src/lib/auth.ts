@@ -14,21 +14,21 @@ export const authOptions: NextAuthOptions = {
             },
 
             async authorize(credentials) {
-                console.log("authorize");
+                console.log(BACKEND_URL);
 
                 const res = await fetch(`${BACKEND_URL}/auth/login`, {
                     method: 'POST',
                     body: JSON.stringify(credentials),
                     headers: {'Content-Type': 'application/json'}
                 })
-                
+                console.log("after fetching");
                 if (!res.ok) return null;
-
                 const data = await res.json();
+                console.log(data);
 
                 return {
                     id: data.user.id,
-                    name: data.user.username,
+                    name: data.user.name,
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
                     accessTokenExpiry: createExpiredTime()

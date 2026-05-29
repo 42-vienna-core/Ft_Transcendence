@@ -6,14 +6,14 @@ import { signOut, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
  function HomePage() {
-  const session = useSession();
-  console.log(session.status);
+  // const session = useSession();
+  // console.log(session.status);
 
-  useEffect(() => {
-    if (session.data?.error === "RefreshAccessTokenError" || session.status === "unauthenticated") {
-      signOut({callbackUrl: "/login", redirect: true});
-    } 
-  }, [session]);
+  // useEffect(() => {
+  //   if (session.data?.error === "RefreshAccessTokenError" || session.status === "unauthenticated") {
+  //     signOut({callbackUrl: "/login", redirect: true});
+  //   } 
+  // }, [session]);
 
   return (
     <Container>

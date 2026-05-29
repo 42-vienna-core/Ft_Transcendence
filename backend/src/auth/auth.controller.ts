@@ -3,9 +3,9 @@ import { AuthService } from './auth.service';
 import { RegisterRequest } from './dto/register.dto';
 import type { Request, Response } from 'express';
 import { LoginRequest } from './dto/login.dto';
-import { Cookie } from 'src/common/decorators/cookies.decorator';
-import { Authorization } from 'src/common/decorators/authorization.decorator';
-import { Authorized } from 'src/common/decorators/authorized.decorator';
+import { Cookie } from '../common/decorators/cookies.decorator';
+import { Authorization } from '../common/decorators/authorization.decorator';
+import { Authorized } from '../common/decorators/authorized.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +18,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log("Registration", dto)
     return await this.authService.register(res, dto, req.headers['user-agent'], req.ip);
   }
 
@@ -28,6 +29,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log("Login", dto)
     return await this.authService.login(res, dto, req.headers['user-agent'], req.ip);
   }
 

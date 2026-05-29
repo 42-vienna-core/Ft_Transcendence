@@ -23,16 +23,17 @@ export async function fetchRegister(formData: FormData) {
 
     const { confirmPassword: _c, ...registerData } = validateFilds.data;
 
+    console.log(url);
+
     const response = await fetch(`${url}/auth/register`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(registerData)
     });
 
-    console.log(`response register: ${response.json()}`)
-
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
+        console.log(err);
         return {message: err?.message ?? 'Registration failed', success: false}
     }
 

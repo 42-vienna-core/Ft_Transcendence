@@ -1,8 +1,8 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
-import { UserService } from 'src/user/user.service';
-import { TokenService } from 'src/token/token.service';
-import { SessionService } from 'src/session/session.service';
+import { UserService } from '../user/user.service';
+import { TokenService } from '../token/token.service';
+import { SessionService } from '../session/session.service';
 import type { Response } from 'express';
 import { LoginRequest } from './dto/login.dto';
 import { verify } from 'argon2';
@@ -32,7 +32,7 @@ export class AuthService {
         const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
 
         this.setRefreshCookie(res, refreshToken);
-        return { accessToken };
+        return { accessToken, refreshToken };
     }
 
     public async login(res: Response, dto: LoginRequest, userAgent?: string, ip?: string) {
@@ -54,7 +54,7 @@ export class AuthService {
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
         this.setRefreshCookie(res, refreshToken);
-        return { accessToken };
+        return { accessToken, refreshToken, user: {id: user.id, name: user.name} };
     }
 
     public async refresh(res: Response, refreshToken: string) {
