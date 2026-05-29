@@ -67,15 +67,17 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     try {
         const res = await fetch(`${BACKEND_URL}/auth/refresh`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token.refreshToken}` }
+            body: JSON.stringify(token.refreshToken),
+            headers: {'Content-Type': 'application/json'}
         });
 
         if (!res.ok) throw new Error('refresh faild');
 
         const data = await res.json();
+
         return {
-            ...token,
             accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
             accessTokenExpiry: createExpiredTime(),
             error: undefined
         }

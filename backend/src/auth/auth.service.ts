@@ -54,7 +54,7 @@ export class AuthService {
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
         this.setRefreshCookie(res, refreshToken);
-        return { accessToken, refreshToken, user: {id: user.id, name: user.name} };
+        return { accessToken, refreshToken, user: {id: user.id, nama: user.name} };
     }
 
     public async refresh(res: Response, refreshToken: string) {

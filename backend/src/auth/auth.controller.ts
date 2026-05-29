@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { RegisterRequest } from './dto/register.dto';
 import type { Request, Response } from 'express';
 import { LoginRequest } from './dto/login.dto';
-import { Cookie } from '../common/decorators/cookies.decorator';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
 
@@ -36,7 +35,7 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   public async refresh(
-    @Cookie('refreshToken') token: string,
+    @Body('refreshToken') token: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     return await this.authService.refresh(res, token);
