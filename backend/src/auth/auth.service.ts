@@ -3,7 +3,6 @@ import { RegisterRequest } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
 import { SessionService } from '../session/session.service';
-import type { Response } from 'express';
 import { LoginRequest } from './dto/login.dto';
 import { verify } from 'argon2';
 
@@ -16,7 +15,7 @@ export class AuthService {
         private readonly sessionService: SessionService,
     ) { }
 
-    public async register(res: Response, dto: RegisterRequest, userAgent?: string, ip?: string) {
+    public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
         // TODO REDIS - Rate Limiting
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
@@ -30,12 +29,10 @@ export class AuthService {
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
-
-        this.setRefreshCookie(res, refreshToken);
         return { accessToken, refreshToken };
     }
 
-    public async login(res: Response, dto: LoginRequest, userAgent?: string, ip?: string) {
+    public async login(dto: LoginRequest, userAgent?: string, ip?: string) {
         // TODO REDIS - Rate Limiting
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
@@ -53,12 +50,10 @@ export class AuthService {
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
-        this.setRefreshCookie(res, refreshToken);
-        return { accessToken, refreshToken, user: {id: user.id, name: user.name} };
+        return { accessToken, refreshToken, user: { id: user.id, name: user.name } };
     }
 
-    public async refresh(res: Response, refreshToken: string) {
-
+    public async refresh(refreshToken: string) {
         if (!refreshToken) {
             throw new UnauthorizedException('Refresh token missing');
         }
@@ -68,51 +63,21 @@ export class AuthService {
             throw new UnauthorizedException('Invalid or expired session');
         }
         const newRefreshToken = await this.tokenService.generateRefreshToken();
-
         await this.sessionService.rotateSession(session.id, newRefreshToken);
         const accessToken = await this.tokenService.generateAccessToken(session.userId, session.id);
-        this.setRefreshCookie(res, newRefreshToken);
-        return { accessToken };
+        return { accessToken, refreshToken: newRefreshToken };
     }
 
-    public async logout(res: Response, sessionId: string) {
+    public async logout(sessionId: string) {
         const count = await this.sessionService.deleteSession(sessionId);
         //redis - delete session
-        this.clearRefreshCookie(res);
         return count;
     }
 
-    public async logoutAll(res: Response, userId: number) {
+    public async logoutAll(userId: number) {
 
         //todo redis - delete all user sessions
         const count = await this.sessionService.deleteAllUserSessions(userId);
-        this.clearRefreshCookie(res);
         return count;
-    }
-
-    private setRefreshCookie(
-        res: Response,
-        refreshToken: string
-    ) {
-        res.cookie(
-            'refreshToken',
-            refreshToken,
-            {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: true,
-                path: '/api/auth',
-                maxAge: 30 * 24 * 60 * 60 * 1000,
-            },
-        );
-    }
-
-    private clearRefreshCookie(res: Response) {
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            sameSite: 'strict',
-            secure: true,
-            path: '/api/auth',
-        });
     }
 }
