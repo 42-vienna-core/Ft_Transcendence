@@ -1,7 +1,7 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterRequest } from './dto/register.dto';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import { LoginRequest } from './dto/login.dto';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
@@ -15,10 +15,8 @@ export class AuthController {
   public async register(
     @Body() dto: RegisterRequest,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
   ) {
-    console.log("Registration", dto)
-    return await this.authService.register(res, dto, req.headers['user-agent'], req.ip);
+    return await this.authService.register(dto, req.headers['user-agent'], req.ip);
   }
 
   @Post('login')
@@ -26,19 +24,16 @@ export class AuthController {
   public async login(
     @Body() dto: LoginRequest,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
   ) {
-    console.log("Login", dto)
-    return await this.authService.login(res, dto, req.headers['user-agent'], req.ip);
+    return await this.authService.login(dto, req.headers['user-agent'], req.ip);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   public async refresh(
-    @Body('refreshToken') token: string,
-    @Res({ passthrough: true }) res: Response,
+    @Body('refreshToken') refreshToken: string,
   ) {
-    return await this.authService.refresh(res, token);
+    return await this.authService.refresh(refreshToken);
   }
 
   @Post('logout')
@@ -46,9 +41,8 @@ export class AuthController {
   @Authorization()
   public async logout(
     @Authorized('sessionId') sessionId: string,
-    @Res({ passthrough: true }) res: Response,
   ) {
-    const count = await this.authService.logout(res, sessionId);
+    const count = await this.authService.logout(sessionId);
     return { success: true, count };
   }
 
@@ -57,9 +51,8 @@ export class AuthController {
   @Authorization()
   public async logoutAll(
     @Authorized('userId') userId: string,
-    @Res({ passthrough: true }) res: Response,
   ) {
-    const count = await this.authService.logoutAll(res, Number(userId));
+    const count = await this.authService.logoutAll(Number(userId));
     return { success: true, count };
   }
 }
