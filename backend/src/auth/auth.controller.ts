@@ -3,8 +3,8 @@ import { AuthService } from './auth.service';
 import { RegisterRequest } from './dto/register.dto';
 import type { Request } from 'express';
 import { LoginRequest } from './dto/login.dto';
-import { Authorization } from 'src/common/decorators/authorization.decorator';
-import { Authorized } from 'src/common/decorators/authorized.decorator';
+import { Authorization } from '../common/decorators/authorization.decorator';
+import { Authorized } from '../common/decorators/authorized.decorator';
 
 @Controller('auth')
 export class AuthController {

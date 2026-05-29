@@ -14,14 +14,18 @@ export const authOptions: NextAuthOptions = {
             },
 
             async authorize(credentials) {
-                console.log(BACKEND_URL);
+                console.log(credentials);
+                const payload = {
+                    email: credentials?.email,
+                    password: credentials?.password,
+                }
 
                 const res = await fetch(`${BACKEND_URL}/auth/login`, {
                     method: 'POST',
-                    body: JSON.stringify(credentials),
+                    body: JSON.stringify(payload),
                     headers: {'Content-Type': 'application/json'}
                 })
-                console.log("after fetching");
+
                 if (!res.ok) return null;
                 const data = await res.json();
                 console.log(data);
@@ -67,15 +71,17 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     try {
         const res = await fetch(`${BACKEND_URL}/auth/refresh`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token.refreshToken}` }
+            body: JSON.stringify(token.refreshToken),
+            headers: {'Content-Type': 'application/json'}
         });
 
         if (!res.ok) throw new Error('refresh faild');
 
         const data = await res.json();
+
         return {
-            ...token,
             accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
             accessTokenExpiry: createExpiredTime(),
             error: undefined
         }

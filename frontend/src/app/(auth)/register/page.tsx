@@ -36,18 +36,29 @@ function Signup() {
   }
 
   const handleRegistration = async (formData: FormData) => {
-    setFields(INITIAL_FIELDS);
-    setState({...state, pending: true});
+   setState(prev => ({...prev, pending: true}));
 
     const res = await fetchRegister(formData);
-    setState({...state, ...res});
+    setState(prev => ({...prev, ...res}));
 
-    if (!state.success) {
-      setState({...state, ...res, pending: false});
-      return;
+    if (res.success) {
+      const registerResult = await signIn('credentials', {
+        email: formData.get('email'),
+        password: formData.get('password'),
+        redirect: false
+      });
+
+      if (registerResult?.error) {
+        setState(prev =>({
+          ...prev,
+          success: false, 
+          message: 'Registration failed', 
+          pending: false}));
+        return;
+      } 
     }
 
-    router.push('/login');
+    router.push('/dashboard');
     router.refresh();
   }
 
