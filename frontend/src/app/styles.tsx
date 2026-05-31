@@ -34,13 +34,18 @@ let Styles = {
     },
     Nav: 
     {
+        search: {
+            div: "flex items-center gap-2 bg-zinc-900/80 border border-zinc-700 rounded-full px-2 py-2 focus-within:border-zinc-500 focus-within:ring-2 focus-within:ring-zinc-500/20 transition-all duration-200",
+            input: "bg-transparent border-none outline-none text-sm text-zinc-200 placeholder-zinc-500 w-28 focus:w-34 transition-all duration-300",
+        },
+        nav: "sticky top-0 z-100 backdrop-blur-xl bg-black border-b border-border-subtle py-4.5 px-8 flex items-center justify-between",
         logo: "font-bungee text-2xl text-text-bright tracking-wider cursor-pointer select-none flex items-center gap-2.5",
         logoMark: "w-8 h-8 bg-neon-green rounded-md relative shadow-[0_0_24px_var(--neon-green-glow)] before:content-[''] before:absolute before:bg-bg-void before:rounded-full before:w-[5px] before:h-[5px] before:top-2 before:left-2 after:content-[''] after:absolute after:bg-bg-void after:rounded-full after:w-[5px] after:h-[5px] after:top-2 after:right-2",
         navLinks: "flex items-center gap-2",
         navLink: "py-2 px-4 text-text-muted no-underline font-medium text-sm tracking-wide rounded-md cursor-pointer transition-all duration-150 ease-in-out bg-transparent border-0 font-inherit hover:text-text-bright hover:bg-bg-card data-[active=true]:text-neon-green",
         btn: "inline-flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-inherit text-[0.9375rem] font-semibold tracking-wide cursor-pointer border border-transparent transition-all duration-150 ease-in-out no-underline whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed disabled:!transform-none disabled:!shadow-none",
     },
-    btnPrimary: "btn  bg-neon-green text-bg-void shadow-[0_0_0_0_var(--neon-green-glow),inset_0_-2px_0_rgba(0,0,0,0.2)] hover:-translate-y-px hover:shadow-[0_0_32px_var(--neon-green-glow),inset_0_-2px_0_rgba(0,0,0,0.2)] active:translate-y-0",
+    btnPrimary: "btn  bg-neon-green text-bg-void shadow-[0_0_0_0_var(--neon-green-glow),inset_0_-2px_0_rgba(0,0,0,0.2)] hover:-translate-y-px hover:shadow-[0_0_32px_var(--neon-green-glow),inset_0_-2px_0_rgba(0,0,0,0.2)] active:translate-y-0 mr-4",
     btnSecondary: "btn  bg-bg-card text-text-bright border-border-strong hover:bg-bg-elevated hover:border-text-muted"
 }
 

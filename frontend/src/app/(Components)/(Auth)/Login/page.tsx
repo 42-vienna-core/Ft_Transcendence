@@ -27,7 +27,6 @@ return (
 					email: form.Email.value, 
 					password: form.Password.value
 				})
-				.then((strim) => strim.json())
 				.then((res) => {
 					document.cookie = `token=${res.access_token}; path=/`;
 					rout.push("/");

@@ -96,3 +96,36 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+
+### 
+
+1. User login
+
+2. Frontend stores token
+
+3. User clicks "Create Room"
+
+4. Backend creates room
+
+5. Backend creates RoomUser row
+
+6. Frontend redirects to /room/:id
+
+7. Socket connects
+
+8. Other users open invite link
+
+9. Backend checks maxUsers
+
+10. Users join room
+
+11. Socket joins room
+
+12. When 4 users joined:
+      game starts
+
+13. Players send realtime moves
+
+14. Backend broadcasts updates

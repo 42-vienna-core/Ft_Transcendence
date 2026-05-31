@@ -8,54 +8,81 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String   
-  name      String   
-  role      Role     @default(PLAYER)
 
-  resetCode   String?
-  codeExpire  DateTime?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                Int           @id @default(autoincrement())
+  email             String        @unique
+  password          String   
+  name              String   
+  role              Role          @default(PLAYER)
+  resetCode         String?
+  codeExpire        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  rooms       RoomUser[]
-  message     Message[]
+  friendsSent       Friend    []  @relation("UserFriends")
+  friendsReceived   Friend    []  @relation("FriendUsers")
+  ownerRoom         Room      []
+  rooms             RoomUser  []
+  messages          Message   []
+
+}
+
+model Friend {
+
+  id        String @id @default(uuid())
+  userId    Int
+  friendId  Int
+  status    FriendStatus @default(PENDING)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user      User @relation("UserFriends", fields: [userId], references: [id])
+  friend    User @relation("FriendUsers", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
 }
 
 model Room {
+  
   id        String    @id @default(uuid())
   name      String 
   maxUsers  Int       @default(4)
-  createdAT DateTime  @default(now())
+  ownerId   Int?
+  createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  type      RoomType @default(PUBLIC)
+
   users     RoomUser[]
-  messages  Message[]
+  messages  Message []
+  owner     User? @relation(fields: [ownerId], references: [id])
 }
 
 model RoomUser {
+
   id        String  @id @default(uuid())
   roomId    String
   userId    Int
   socketId  String?
 
-  room  Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
+
 }
 
 model Message {
+
   id        String @id @default(uuid())
   content   String
   roomId    String
   userId    Int
   createdAt DateTime @default(now())
 
-  room  Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -63,3 +90,14 @@ enum Role {
   ADMIN
 }
 
+enum RoomType {
+  PUBLIC
+  PRIVATE
+}
+
+enum  FriendStatus {
+  PENDING
+  REJECTED
+  ACCEPTED
+  BLOCKED
+}

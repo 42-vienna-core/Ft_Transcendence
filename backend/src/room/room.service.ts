@@ -8,7 +8,6 @@ export class RoomService {
     constructor (
         private db: DatabaseService,
         private roomGateway: RoomGateway
-
     ) {}
 
     async createRoom(dto: CreateRoomDto) {
@@ -16,26 +15,26 @@ export class RoomService {
             data: {
                 name: dto.name,
                 maxUsers: dto.maxUsers,
+                type: dto.type,
             }
         });
         this.roomGateway.server.emit("room_created", room);
-        return room;
+        console.log(room);
+        return [room];
     }
 
     async  findAll() {
         const res = await this.db.room.findMany();
-        
-        return res;
+        return [...res];
     }
 
-    async deleteRoom(name: string)
+    async deleteRoom(id: string)
     {
-        const res = await this.db.room.deleteMany({
+        const res = await this.db.room.delete({
             where: {
-                name,
+                id,
             }
         })
-        console.log(res);
         return res;
     }
 }

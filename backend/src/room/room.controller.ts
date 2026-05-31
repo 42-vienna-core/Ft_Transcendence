@@ -2,7 +2,7 @@ import { Controller, Body, Post, Get, Delete, Param } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomService } from './room.service';
 
-@Controller('rooms')
+@Controller('room')
 export class RoomController {
     constructor(private readonly roomService: RoomService) {}
 
@@ -12,13 +12,13 @@ export class RoomController {
     }
 
     @Post()
-    async createRoom(@Body() dto: CreateRoomDto) {
-        return this.roomService.createRoom(dto);
+    async createRoom(@Body() obj: CreateRoomDto) {
+        return this.roomService.createRoom(obj);
     }
-
-    @Delete(':nmae')
-    async deleteRoom(@Param('name') name: string)
+    
+    @Delete(':id')
+    async deleteRoom(@Param('id') id: string)
     {
-        return await this.roomService.deleteRoom(name);
+        return await this.roomService.deleteRoom(id);
     }
 }

@@ -1,10 +1,9 @@
-import {redirect } from 'next/navigation';
-import {cookies} from "next/headers";
-
-import Hero from './Hero';
+import {redirect }  from 'next/navigation';
+import {cookies}    from "next/headers";
+import Hero         from './Hero';
 
 export default async function Page() {
-
+    let userId;
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
     if (!token)
@@ -16,7 +15,15 @@ export default async function Page() {
             Authorization: `Bearer ${token}`,
         },
     });
+    if (res.ok)
+    {
+        const user = await res.json();
+        userId = user.id;
+        console.log(user)
+    }
+
     if (!res.ok)
         redirect("/Login");
-    return ( <Hero /> )
+    
+    return ( <Hero userId={userId}/> );
 }

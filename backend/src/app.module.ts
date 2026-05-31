@@ -11,6 +11,7 @@ import { RoomModule } from './room/room.module';
 import { RedisModule } from './redis/redis.module';
 import { SocketService } from './socket/socket.service';
 import { SocketModule } from './socket/socket.module';
+import { FriendModule } from './friend/friend.module';
 
 @Module({
   imports: [UserModule,  DatabaseModule, 
@@ -26,7 +27,7 @@ import { SocketModule } from './socket/socket.module';
       limit: 100,
     }
   ]),
-    LoggerModule, RoomModule, RedisModule, SocketModule
+    LoggerModule, RoomModule, RedisModule, SocketModule, FriendModule
   ],
   controllers: [AppController],
   providers: [AppService, {

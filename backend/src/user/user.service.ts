@@ -90,6 +90,7 @@ export class UserService {
 	}
 
 	async getProfile(req: any) {
+		console.log(req.user, " this is the user")
 		return req.user;
 	}
 

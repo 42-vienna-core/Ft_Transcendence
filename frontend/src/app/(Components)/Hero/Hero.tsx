@@ -2,30 +2,54 @@
 
 import Link from 'next/link';
 import style from "../../styles";
-import {useState, useEffect } from 'react';
+import {useState, useEffect , useRef} from 'react';
 import Api from "../../api"
+import {io, Socket } from "socket.io-client"
 
-import {io } from "socket.io-client"
-
-export default  function  Hero() {
+export default  function  Hero({userId}: {userId: number}) {
 
     // const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const socket = io("http://localhost:2000/");
-    const [rooms, setRooms] = useState<any[]>([]);
-    const [cordinates, setCordinates] = useState({ x: 0, y: 0, w: 20, h: 20 , start: false});
+    const [rooms, setRooms] = useState<any>([]);
+    const socketRef = useRef<Socket | null>(null);
 
-    useEffect(() => {
-        
-        socket.on("connect", () => {
-            console.log("✅ Socket connected!", socket.id);
+    useEffect( ()  => {
 
-            setRooms((prev) => [...prev, rooms]);
+        socketRef.current = io("http://localhost:2000/");
+
+        socketRef.current.on("connect", () => {
+            console.log("✅ Socket connected!", socketRef.current?.id);
         });
+
+        socketRef.current.on("room-update", (data) => {
+            console.log("players:", data.players);
+        })
+
+        socketRef.current.on("gmae-start", () => {
+            console.log("Start Game");
+        })
+
+        let res;
+        (async () => {
+            res = await Api.getRequest("http://localhost:4000/api/room");
+            if (res.length === 0)
+            {
+                res = await Api.postRequest("http://localhost:4000/api/room", {
+                    name: "Room",
+                    maxUsers: 4,
+                    type: "PUBLIC"
+                })
+            }
+            
+            console.log(res);
+            setRooms(res.map((item: any) => {return {...item, Players: 0}}));
+        })();
         return () => {
-            socket.off("room_created");
+            socketRef.current?.disconnect();
         }
-    }, [])
+    }, []);
+
+   
 
     // useEffect(() => {
 
@@ -88,12 +112,8 @@ export default  function  Hero() {
 
             <div className={style.hero.heroActions}>
 
-                <Link onClick={() => setCordinates({...cordinates, start: !cordinates.start})}  href="" className={style.btnPrimary}> {!cordinates.start ? "▶ Start Playing" : "⏸  Pause Playing"} </Link>
-                <Link onClick={() => {
-                    Api.postRequest("http://localhost:4000/api/rooms", {"name": "Rafo", "maxUsers" : 4})
-                    .then((res) => res ? res.json() : console.log('Error'))
-                    .then((obj) => console.log(obj))
-                }}  href="" className={style.btnPrimary}> Browser Rooms </Link>
+                <Link  href="" className={style.btnPrimary}> ▶ Start Playing </Link>
+                <Link  href="" className={style.btnPrimary}> Browser Rooms </Link>
 
             </div>
             
@@ -103,29 +123,51 @@ export default  function  Hero() {
                    
                 </canvas> */}
                 {
-                    rooms.map((room, index) => {
+                    rooms.map((room : any, index: number) => {
                         return (
                             <div key={index} className={style.features.featureCard}>
-                                <h1>Room</h1>
-                                <h2>{`Name: ${room.name}`}</h2>
-                                <h2> {`Max users: `}</h2>
+                                <h1>Name {room.name}</h1>
+                                <h2> Max users:  {room.maxUsers}</h2>
+                                <h2> Room type: {room.type} </h2>
+                                <h2> Players : {room.Players}</h2>
 
-
+                                <button name={room.id} onClick={(e) => {
+                                    const id = e.currentTarget.name;
+                                    setRooms((priv : any) => (priv.filter((item : any) => item.id !== id)));
+                                    Api.deleteRequest("http://localhost:4000/api/rooms/" + id);
+                                }}
+                                    type="button" className={style.btnPrimary}>Delete Room</button>
+                                <button name={String(index)}
+                                onClick={(e) => {
+                                    socketRef.current?.emit("join-room", {
+                                        roomId: rooms[Number(e.currentTarget.name)].id,
+                                        userId: userId,
+                                    });
+                                }}
+                                    type='button' 
+                                    className={style.btnPrimary}>
+                                        {room.type === "PUBLIC" ? "Join Room " : "Invate to play "}
+                                </button>
                             </div>
                         )
                     })
                 }
-                <div className={style.features.featureCard}>
-                    <div className={style.features.featureIcon}>🏆</div>
-                    <h3>Global Leaderboards</h3>
-                    <p>
-                        Track wins, scores, win rates. Climb the ranks and prove you're
-                        the apex serpent.
-                    </p>
-                </div>
                
-              
-
+            </div>
+            <div className='m-5'>
+                <button 
+                    onClick={ async () => {
+                     const obj = await Api.postRequest("http://localhost:4000/api/rooms/", {
+                            name: "Room",
+                            maxUser: 4,
+                            type: "PRIVATE"
+                        });
+                        if (obj.statusCode){
+                            return console.log("request fould ");
+                        }
+                        setRooms ((prev : any) => [...prev, obj]);
+                    }}
+                    type='button' className={style.btnPrimary}> Create private room </button>
             </div>
 
         </div>

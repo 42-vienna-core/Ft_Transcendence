@@ -33,14 +33,10 @@ return (
 						name: form.Username.value,
 						role: "PLAYER"
 				})
-				.then((res) => {
-						res.ok	? rout.push('/Login') 
-						:
-
-						//alert("Try again");
-						res.json().then((data) => console.log(data))
-					}
-				)
+				.then((data) => {
+					if (!data.statusCode)
+						rout.push("/Login");
+				})
 			}}>
 				{labelFocus.map((item, i) => {
 					return (
