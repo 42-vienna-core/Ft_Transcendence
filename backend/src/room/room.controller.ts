@@ -12,6 +12,11 @@ export class RoomController {
     return this.roomService.findAll();
   }
 
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.roomService.findOne(id);
+  }
+
   @Post()
   async createRoom(@Body() obj: CreateRoomDto) {
     return this.roomService.createRoom(obj);

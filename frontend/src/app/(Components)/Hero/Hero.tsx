@@ -144,15 +144,26 @@ export default  function  Hero({userId}: {userId: {id: number, email: string} })
                                 }}
                                     type="button" className={style.btnPrimary}>Delete Room</button>
                                 <button name={String(index)}
-                                onClick={(e) => {
+                                onClick={ () => {
                                     socketRef.current?.emit("join-room", {
-                                        roomId: rooms[Number(e.currentTarget.name)].id,
-                                        userId: userId,
+                                        roomId: room.id,
+                                        userId: userId.id,
                                     });
+                                    setRooms([...rooms]);
+
                                 }}
                                     type='button' 
                                     className={style.btnPrimary}>
                                         {room.type === "PUBLIC" ? "Join Room " : "Invate to play "}
+                                </button>
+                                <button onClick={() => {
+                                    socketRef.current?.emit("leave-room", {
+                                        roomId: room.id,
+                                        userId: userId.id,
+                                    })
+                                }}
+                                    type="button" className={`${style.btnPrimary} w-1/4`}> 
+                                    Live room 
                                 </button>
                             </div>
                         )
@@ -164,7 +175,7 @@ export default  function  Hero({userId}: {userId: {id: number, email: string} })
                     onClick={ async () => {
                      const obj = await Api.postRequest("http://localhost:4000/api/room/private", {
                             name: "Room",
-                            maxUser: 4,
+                            maxUsers: 4,
                             type: "PRIVATE",
                             ownerId: userId.id,
                         });

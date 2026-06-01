@@ -7,11 +7,9 @@ export class CreatePrivateRoom {
   @IsNumber()
   'maxUsers': number;
 
-  @IsEmpty()
   @IsNumber()
   'ownerId': number;
 
-  @IsEmpty()
   @IsEnum(['PRIVATE', 'PUBLIC'], {
     message: 'Valid role required',
   })
