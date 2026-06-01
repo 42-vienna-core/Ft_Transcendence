@@ -1,3 +1,1 @@
-export class JoinRoomDto {
-    
-}
+export class JoinRoomDto {}

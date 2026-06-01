@@ -7,9 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategis/jwt.strategy';
-import {StringValue} from 'ms';
-import {RedisModule} from '../redis/redis.module';
-
+import { StringValue } from 'ms';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
@@ -19,14 +18,14 @@ import {RedisModule} from '../redis/redis.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') as string,
-        signOptions: { 
-          expiresIn: configService.get<string>('JWT_EXPIRATION') as StringValue
-        }
-      })
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRATION') as StringValue,
+        },
+      }),
     }),
     DatabaseModule,
     MailModule,
-    RedisModule
+    RedisModule,
   ],
   controllers: [UserController],
   providers: [UserService, JwtStrategy],

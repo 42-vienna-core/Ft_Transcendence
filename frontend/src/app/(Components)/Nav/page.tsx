@@ -3,6 +3,7 @@ import Styles from "../../styles"
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import Api from "../../api";
+
 export default function Navbar() {
 
   const usersRef = useRef([]);
@@ -69,7 +70,9 @@ export default function Navbar() {
                     <div key={i}  className="px-4 py-2 cursor-pointer flex justify-between" >
                       <div>{item.name}</div>
                       <div>
-                          <button onClick={(e) => {setFiltered([])}}
+                          <button onClick={(e) => {
+                            console.log(e.currentTarget);
+                          }}
                             type="button" className=" border rounded-lg p-4 py-0 text-sm bg-neon-green  cursor-pointer">Envait</button>
                       </div>
                     </div>

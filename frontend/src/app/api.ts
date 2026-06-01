@@ -1,3 +1,4 @@
+
 const Api = {
     postRequest: async (url: string, obj: object) => {
         const res = await fetch(url,  {
@@ -26,5 +27,6 @@ const Api = {
         }).then((strim) => strim.json());
         return res;
     }
+
 }
 export default Api;

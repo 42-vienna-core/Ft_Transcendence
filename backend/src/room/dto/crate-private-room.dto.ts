@@ -1,11 +1,15 @@
 import { IsString, IsEmpty, IsEnum, IsNumber } from 'class-validator';
-export class CreateRoomDto {
+export class CreatePrivateRoom {
   @IsString()
   @IsEmpty()
   'name': string;
 
   @IsNumber()
   'maxUsers': number;
+
+  @IsEmpty()
+  @IsNumber()
+  'ownerId': number;
 
   @IsEmpty()
   @IsEnum(['PRIVATE', 'PUBLIC'], {

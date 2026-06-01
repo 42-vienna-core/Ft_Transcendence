@@ -8,10 +8,12 @@ async function bootstrap() {
   });
   app.useLogger(app.get(LoggerService));
   app.setGlobalPrefix('api');
-  app.enableCors ({
+  app.enableCors({
     origin: 'http://localhost:3000',
     Credential: false,
-  })
+  });
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+bootstrap()
+  .then((res) => console.log(res))
+  .catch((erro) => console.log(erro));
