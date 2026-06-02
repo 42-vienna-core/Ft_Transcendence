@@ -1,17 +1,20 @@
-'use server'
-
 import { getServerSession } from 'next-auth';
 import style from './nav.module.css';
 import Link from 'next/link';
 import { authOptions } from '@/lib/auth';
-import LogoutBotton from '@/app/(auth)/logout/page';
+import clsx from 'clsx';
+import LogoutButton from '../logoutButton'; 
+import { headers } from 'next/headers';
+import CustomLink from '../link';
 
-async function Nav(){
+async function Nav() {
   const session = await getServerSession(authOptions);
-
-  function handleLogout (){
-    
-  }
+  const headersList = await headers();
+  const referer = headersList.get('referer');
+  const currentUrl = headersList.get("x-url") || referer || "unknown";
+  
+  const isLoginActive = currentUrl.includes('/login');
+  const isRegisterActive = currentUrl.includes('/register');
 
   return (
     <nav className={style.nav}>
@@ -21,16 +24,25 @@ async function Nav(){
       </div>
       <div className={style.navLinks}>
         {session ? (
-            <>
-              <Link className={`${style.btn} ${style.btnPrimary}`} href="#">Profile</Link>
-              <LogoutBotton/>
-            </>
-          ): (
-            <>
-              <Link className={style.navLink} href="/login">Log in</Link>
-              <Link className={`${style.btn} ${style.btnPrimary}`} href="/register">Sign up</Link>
-            </>
-          )}
+          <>
+            <Link className={clsx(style.btn, style.btnPrimary)} href="#">
+              Profile
+            </Link>
+            <LogoutButton />
+          </>
+        ) : (
+          <>
+            <CustomLink 
+              // className={clsx(style.btn, isLoginActive ? style.btnPrimary : style.navLink)} 
+              url={"/login"}
+              label={"Log in"}
+            />
+            <CustomLink 
+              url={"/register"}
+              label={"Sign in"}
+            />
+          </>
+        )}
       </div>
     </nav>
   );

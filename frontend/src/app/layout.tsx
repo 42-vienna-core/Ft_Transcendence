@@ -24,7 +24,6 @@ export default function RootLayout({
         <Background>
           <Nav />
           <main>
-            {/* {children} */}
             <Providers>{children}</Providers>
           </main>
         </Background>

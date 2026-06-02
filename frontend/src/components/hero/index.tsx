@@ -11,7 +11,7 @@ function Hero() {
             </h1>
             <p className={style.heroSub}>A multiplayer snake battleground where four serpents enter, one slithers out. Real-time. Cross-platform. No mercy.</p>
             <div className={style.heroActions}>
-                <Link href="" className="btn btnPrimary btnLarge">▶ Start Playing</Link>
+                <Link href="/dashboard" className="btn btnPrimary btnLarge">▶ Start Playing</Link>
                 <Link href="" className="btn btnSecondary btnLarge">Browse Rooms</Link>
             </div>
         </div>

@@ -10,8 +10,6 @@ export type FormField = {
 export type State = {
   message: string;
   success: boolean;
-  pending: boolean;
-  refresh: boolean;
 }
 
 
