@@ -6,12 +6,11 @@ import styles from "../auth.module.css";
 import { FormField, State } from "@/lib/definitions";
 import { fetchRegister } from "@/lib/action";
 import { signIn } from "next-auth/react";
+import SubmitButton from "@/ui/submitButton";
 
 const initialState: State = {
   message: "",
   success: false,
-  pending: false,
-  refresh: false
 }
 
 function getPlaceholder(field: FormField): string {
@@ -36,7 +35,6 @@ function Signup() {
   }
 
   const handleRegistration = async (formData: FormData) => {
-   setState(prev => ({...prev, pending: true}));
 
     const res = await fetchRegister(formData);
     setState(prev => ({...prev, ...res}));
@@ -53,7 +51,7 @@ function Signup() {
           ...prev,
           success: false, 
           message: 'Registration failed', 
-          pending: false}));
+        }));
         return;
       } 
     }
@@ -101,12 +99,10 @@ function Signup() {
             <p className={styles.errorMessage}>{state?.message}</p>
           </div>
           <div className={styles.actions}>
-            <button className={styles.submitBtn} type="submit" disabled={state.pending}>
-              Sign Up
-            </button>
+            <SubmitButton label="Register" loadingLabel="Registering..."/>
             <div className={styles.switchRow}>
               <p>
-                Already have an account? /
+                New to Snake /
                 <button
                   className={styles.switchBtn}
                   type="button"

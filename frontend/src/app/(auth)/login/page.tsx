@@ -1,17 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "../auth.module.css";
 import { FormField, State } from "@/lib/definitions";
 import { fatchLogin } from "@/lib/action";
 import { signIn } from "next-auth/react";
+import SubmitButton from "@/ui/submitButton";
 
 const initialState: State = {
   message: "",
   success: false,
-  pending: false,
-  refresh: false
 }
 
 function Login() {
@@ -33,9 +32,6 @@ function Login() {
   }
 
   const handleLogin = async (formData: FormData) => {
-    // setFields(INITIAL_FIELDS);
-    setState(prev => ({...prev, pending: true}));
-
 
     const res = await fatchLogin(formData);
     setState(prev => ({...prev, ...res}));
@@ -52,7 +48,7 @@ function Login() {
           ...prev,
           success: false, 
           message: 'login failed', 
-          pending: false}));
+        }));
         return;
       } 
     }
@@ -100,9 +96,7 @@ function Login() {
             <p className={styles.errorMessage}>{state?.message}</p>
           </div>
           <div className={styles.actions}>
-            <button className={`${styles.submitBtn} `} type="submit" disabled={state.pending}>
-              {state.pending ? 'Logging in...' : 'Login'}
-            </button>
+            <SubmitButton label="Login" loadingLabel="Logging..."/>
             <div className={styles.switchRow}>
               <p>
                 Don&apos;t have an account? /

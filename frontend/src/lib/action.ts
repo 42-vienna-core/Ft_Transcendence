@@ -1,7 +1,7 @@
 'use server'
-
 import { loginSchema, registerSchema } from '@/lib/schema'
-// import { signin } from 'next-auth/react';
+import { getServerSession } from 'next-auth';
+import { authOptions } from './auth';
 
 const url = process.env.INTERNAL_API_URL;
 
@@ -55,4 +55,28 @@ export async function fatchLogin(formData: FormData) {
     }
 
     return {success: true};
+}
+
+export async function fetchLogout() {
+
+    try {
+
+         await new Promise((resolve) => setTimeout(resolve, 4000));
+
+        const session = await getServerSession(authOptions);
+        if (!session?.error) return {success: true}
+
+        await fetch(`${url}/auth/logout`, {
+            method: 'Post',
+            headers: {
+                'Authorization': `Bearer ${session.accessToken}`,
+                'Content-Type': 'application/json' 
+            }
+        });
+
+        return {success: true}
+    } catch (error) {
+        console.log("Log out error: ", error);
+    }
+
 }

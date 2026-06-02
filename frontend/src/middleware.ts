@@ -4,12 +4,9 @@ import { NextResponse } from 'next/server';
 export default withAuth(
     function middleware(req) {
         const token = req.nextauth.token;
-        console.log(token);
+        const path = req.nextUrl.pathname;
         
-        const isAuthPage =  req.nextUrl.pathname.startsWith('/login') ||
-                            req.nextUrl.pathname.startsWith('/register');
-        
-        if (isAuthPage && token) {
+        if (token && (path === "/login" || path === "/register") ) {
             return NextResponse.redirect(new URL('/dashboard', req.url));
         }
 
@@ -22,8 +19,9 @@ export default withAuth(
     {
         callbacks: {
             authorized: ({token, req }) => {
+                const path = req.nextUrl.pathname;
                 const publicPath = ['/', '/login', '/register'];
-                if (publicPath.includes(req.nextUrl.pathname)) return true;
+                if (publicPath.includes(path)) return true;
                 return !!token;
             }
         }
@@ -32,6 +30,7 @@ export default withAuth(
 
 export const config = {
     matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css)$).*设计*)',
+    '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css)$).*)',
+    "/dashboard/:path*",
   ],
 };
