@@ -70,13 +70,10 @@ export class AuthService {
 
     public async logout(sessionId: string) {
         const count = await this.sessionService.deleteSession(sessionId);
-        //redis - delete session
         return count;
     }
 
     public async logoutAll(userId: number) {
-
-        //todo redis - delete all user sessions
         const count = await this.sessionService.deleteAllUserSessions(userId);
         return count;
     }

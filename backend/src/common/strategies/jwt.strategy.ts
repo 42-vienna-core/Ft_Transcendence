@@ -1,14 +1,15 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { ConfigService } from "@nestjs/config";
 import { JwtPayload } from "../interfaces/jwt.interface";
+import { RedisService } from "src/redis/redis.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
-        configService: ConfigService,
-        //redisService: RedisService, 
+        readonly configService: ConfigService,
+        private readonly redisService: RedisService, 
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -18,7 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPayload) {
-        // todo: redis - check if session deleted?
+        const isSessionInBlackList = await this.redisService.isSessionBlacklisted(payload.sessionId);
+        if (isSessionInBlackList) {
+            throw new UnauthorizedException();
+        }
         return payload;
     };
 }
