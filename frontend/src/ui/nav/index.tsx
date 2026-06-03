@@ -25,10 +25,10 @@ async function Nav() {
       <div className={style.navLinks}>
         {session ? (
           <>
-            <Link className={clsx(style.btn, style.btnPrimary)} href="#">
-              Profile
+            <Link className={style.profile} href="/profile">
+              <span>Igor V.</span>
+              <span className={style.ava}>IV</span>
             </Link>
-            <LogoutButton />
           </>
         ) : (
           <>

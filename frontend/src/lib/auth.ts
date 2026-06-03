@@ -14,7 +14,6 @@ export const authOptions: NextAuthOptions = {
             },
 
             async authorize(credentials) {
-                console.log(credentials);
                 const payload = {
                     email: credentials?.email,
                     password: credentials?.password,
@@ -43,7 +42,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({token, user}) {
             if (user) return {...token, ...user}
-            
+            console.log("CHECK accessTokenExpiry: ", Date.now() < (token.accessTokenExpiry as number))
             if (Date.now() < (token.accessTokenExpiry as number)) return token;
 
             return await refreshAccessToken(token);
@@ -66,12 +65,10 @@ export const authOptions: NextAuthOptions = {
 }
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
-    console.log("refreshAccessToken");
-
     try {
         const res = await fetch(`${BACKEND_URL}/auth/refresh`, {
             method: 'POST',
-            body: JSON.stringify(token.refreshToken),
+            body: JSON.stringify({refreshToken:token.refreshToken}),
             headers: {'Content-Type': 'application/json'}
         });
 
