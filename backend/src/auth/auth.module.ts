@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { getJwtConfig } from '../common/configs/jwt.config';
 import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { UserModule } from '../user/user.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { UserModule } from '../user/user.module';
       useFactory: getJwtConfig,
     }),
     PrismaModule,
-    UserModule, SessionModule, TokenModule],
+    UserModule, SessionModule, TokenModule, RedisModule],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
 })

@@ -1,61 +1,48 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 
 @Injectable()
-export class RedisService implements OnModuleDestroy {
-  readonly client: Redis;
-  readonly subscriber: Redis;
-  readonly publisher: Redis;
-
-  private readonly handlers = new Map<string, (message: unknown) => void>();
+export class RedisService implements OnModuleInit, OnModuleDestroy {
+  private readonly client: Redis;
 
   constructor() {
     const url = process.env.REDIS_URL || 'redis://redis:6379';
     this.client = new Redis(url);
-    this.subscriber = new Redis(url);
-    this.publisher = new Redis(url);
 
-    this.subscriber.on('message', (chan: string, msg: string) => {
-      this.handlers.get(chan)?.(JSON.parse(msg));
+    this.client.on('connect', () => {
+      console.log('Redis connected');
+    });
+
+    this.client.on('error', (err) => {
+      console.error('Redis error', err);
     });
   }
 
+  async onModuleInit() {
+    await this.client.ping();
+    console.log("Redis init");
+  }
+
   async onModuleDestroy() {
-    await Promise.all([
-      this.client.quit(),
-      this.subscriber.quit(),
-      this.publisher.quit(),
-    ]);
+    await this.client.quit();
+    console.log("Redis destroy");
   }
 
-  // ── Game state ──────────────────────────────────────────────────────────────
+  // Sessions
 
-  async setGameState(roomId: string, state: unknown): Promise<void> {
-    await this.client.set(`game:${roomId}`, JSON.stringify(state), 'EX', 3600);
+  async addSessionToBlackList(sessionId: string): Promise<void> {
+    await this.client.set(`session:blacklist:${sessionId}`, 'true', 'EX', 15 * 60); //todo ttl
   }
 
-  async getGameState<T>(roomId: string): Promise<T | null> {
-    const data = await this.client.get(`game:${roomId}`);
-    return data ? (JSON.parse(data) as T) : null;
+  async isSessionBlacklisted(sessionId: string): Promise<boolean> {
+    const isInBlackList = await this.client.exists(
+      `session:blacklist:${sessionId}`,
+    );
+    return isInBlackList === 1;
   }
 
-  async deleteGameState(roomId: string): Promise<void> {
-    await this.client.del(`game:${roomId}`);
+  async deleteSessionFromBlackList(sessionId: string): Promise<void> {
+    await this.client.del(`session:blacklist:${sessionId}`);
   }
 
-  // ── Pub/Sub — enables game events to sync across multiple backend instances ─
-
-  async publish(channel: string, message: unknown): Promise<void> {
-    await this.publisher.publish(channel, JSON.stringify(message));
-  }
-
-  async subscribe(channel: string, handler: (message: unknown) => void): Promise<void> {
-    this.handlers.set(channel, handler);
-    await this.subscriber.subscribe(channel);
-  }
-
-  async unsubscribe(channel: string): Promise<void> {
-    this.handlers.delete(channel);
-    await this.subscriber.unsubscribe(channel);
-  }
 }
