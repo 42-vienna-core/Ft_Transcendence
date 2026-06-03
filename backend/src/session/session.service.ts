@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RedisService } from 'src/redis/redis.service';
 import { TokenService } from 'src/token/token.service';
 
 @Injectable()
@@ -8,12 +9,12 @@ export class SessionService {
     public constructor(
         private readonly prisma: PrismaService,
         private readonly tokenService: TokenService,
-
+        private readonly redisService: RedisService,
     ) { }
 
     public async createSession(userId: number, refreshToken: string, userAgent?: string, ip?: string) {
-        const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken)
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken);
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         const session = await this.prisma.session.create({
             data: {
                 userId: userId,
@@ -26,8 +27,8 @@ export class SessionService {
                 id: true,
                 expiresAt: true,
             },
-        })
-        return session
+        });
+        return session;
     }
 
     public async findSessionByHash(tokenHash: string) {
@@ -43,9 +44,8 @@ export class SessionService {
     }
 
     public async rotateSession(sessionId: string, refreshToken: string) {
-
-        const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken)
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken);
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
         return this.prisma.session.update({
             where: {
@@ -55,57 +55,35 @@ export class SessionService {
                 refreshTokenHash,
                 expiresAt,
             }
-        })
+        });
     }
 
     public async deleteSession(sessionId: string) {
-        return this.prisma.session.deleteMany({
+        const result = await this.prisma.session.deleteMany({
             where: {
                 id: sessionId,
             },
-        })
+        });
+        await this.redisService.addSessionToBlackList(sessionId);
+        return result;
     }
 
     public async deleteAllUserSessions(userId: number) {
-        return this.prisma.session.deleteMany({
+        const sessions = await this.prisma.session.findMany({
             where: {
                 userId,
             },
-        })
+            select: {
+                id: true
+            },
+        });
+        const deletedCount = await this.prisma.session.deleteMany({
+            where: { userId },
+        });
+
+        for (const session of sessions) {
+            await this.redisService.addSessionToBlackList(session.id);
+        }
+        return deletedCount;
     }
 }
-
-
-// public async revokeSession(sessionId: string) {
-//     return await this.prisma.session.update({
-//         where: { id: sessionId },
-//         data: {
-//             revokedAt: new Date(),
-//         },
-//     })
-// }
-
-// public async revokeAllUserSessions(userId: number) {
-//     return this.prisma.session.updateMany({
-//         where: {
-//             userId,
-//             revokedAt: null,
-//         },
-//         data: {
-//             revokedAt: new Date(),
-//         },
-//     });
-// }
-
-// public async findAllSessions(userId: number) {
-//     const sessions = await this.prisma.session.findMany({
-//         where: {
-//             userId,
-//             revokedAt: null,
-//             expiresAt: {
-//                 gt: new Date(),
-//             },
-//         },
-//     })
-//     return sessions;
-// }
