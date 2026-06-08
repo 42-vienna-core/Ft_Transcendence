@@ -14,6 +14,7 @@ const initialState: State = {
 }
 
 function Login() {
+
   const router = useRouter();
   const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
   const [state,  setState] = useState<State>(initialState);
@@ -34,6 +35,7 @@ function Login() {
   const handleLogin = async (formData: FormData) => {
 
     const res = await fatchLogin(formData);
+    console.log(formData);
     setState(prev => ({...prev, ...res}));
 
     if (res.success) {
@@ -55,7 +57,6 @@ function Login() {
 
     router.push('/dashboard');
     router.refresh();
-    
   }
 
   return (

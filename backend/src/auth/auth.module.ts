@@ -10,7 +10,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { getJwtConfig } from '../common/configs/jwt.config';
 import { JwtStrategy } from '../common/strategies/jwt.strategy';
-import { UserModule } from '../user/user.module';
+import { UserModule } from '../users/users.module';
 import { RedisModule } from 'src/redis/redis.module';
 
 @Module({

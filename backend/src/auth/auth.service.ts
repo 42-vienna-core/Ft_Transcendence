@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
-import { UserService } from '../user/user.service';
+import { UsersService } from '../users/users.service';
 import { TokenService } from '../token/token.service';
 import { SessionService } from '../session/session.service';
 import { LoginRequest } from './dto/login.dto';
@@ -10,7 +10,7 @@ import { verify } from 'argon2';
 export class AuthService {
 
     constructor(
-        private readonly userService: UserService,
+        private readonly userService: UsersService,
         private readonly tokenService: TokenService,
         private readonly sessionService: SessionService,
     ) { }

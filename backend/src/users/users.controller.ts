@@ -1,18 +1,18 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
 
-@Controller('user')
-export class UserController {
+@Controller('users')
+export class UsersController {
 
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly usersService: UsersService) { }
 
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('me')
   public async findProfile(@Authorized('userId') userId: number) {
-    return this.userService.findById(userId);
+    return this.usersService.findById(userId);
   }
 }
 

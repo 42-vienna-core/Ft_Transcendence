@@ -9,7 +9,7 @@ import { Authorized } from '../common/decorators/authorized.decorator';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
-
+  
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   public async register(

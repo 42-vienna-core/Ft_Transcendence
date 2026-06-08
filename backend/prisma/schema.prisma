@@ -14,22 +14,27 @@ datasource db {
   url       = env("DATABASE_URL")
 }
 
-model User {
+model Users {
+
   id       Int    @id @default(autoincrement())
   email    String @unique
   password String @map("password_hash")
   name     String
   role     Role   @default(PLAYER)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())  @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
 
-  isVerified Boolean @default(false) @map("is_verified")
-  isBlocked  Boolean @default(false) @map("is_blocked")
+  resetCode         String?
+  codeExpire        DateTime?
+  friendsSent       Friend    []  @relation("UserFriends")
+  friendsReceived   Friend    []  @relation("FriendUsers")
+  ownerRoom         Room      []
+  rooms             RoomUser  []
+  // isVerified Boolean @default(false) @map("is_verified")
+  // isBlocked  Boolean @default(false) @map("is_blocked")
 
-  sessions Session[]
-
-  @@map("users")
+  sessions Sessions[]
 }
 
 enum Role {
@@ -37,11 +42,12 @@ enum Role {
   ADMIN
 }
 
-model Session {
-  id String @id @default(uuid()) @db.Uuid
+model Sessions {
 
-  userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid()) @db.Uuid
+
+  userId  Int   @map("user_id")
+  user    Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   refreshTokenHash String @unique @map("refresh_token_hash")
 
@@ -50,9 +56,66 @@ model Session {
   updatedAt DateTime  @updatedAt @map("updated_at")
   revokedAt DateTime? @map("revoked_at")
 
-  userAgent String? @map("user_agent")
-  ip        String? @map("ip")
+  userAgent String?   @map("user_agent")
+  ip        String?   @map("ip")
 
   @@index([userId])
-  @@map("sessions")
 }
+
+model Room {
+  
+  id        String    @id @default(uuid())
+  name      String 
+  maxUsers  Int       @default(4)
+  ownerId   Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  type      RoomType @default(PUBLIC)
+
+  users     RoomUser[]
+  owner     Users? @relation(fields: [ownerId], references: [id])
+}
+
+model RoomUser {
+
+  id        String  @id @default(uuid())
+  roomId    String
+  userId    Int
+  socketId  String?
+
+  room      Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+
+}
+
+model Friend {
+
+  id        String @id @default(uuid())
+  userId    Int
+  friendId  Int
+  status    FriendStatus @default(PENDING)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user      Users @relation("UserFriends", fields: [userId], references: [id])
+  friend    Users @relation("FriendUsers", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
+}
+
+enum RoomType {
+  PUBLIC
+  PRIVATE
+}
+
+enum  FriendStatus {
+  PENDING
+  REJECTED
+  ACCEPTED
+  BLOCKED
+}
+

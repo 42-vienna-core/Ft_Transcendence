@@ -6,6 +6,7 @@ import { authOptions } from './auth';
 const url = process.env.INTERNAL_API_URL;
 
 export async function fetchRegister(formData: FormData) {
+    
     const username = formData.get('username');
     const email = formData.get('email');
     const password = formData.get('password');
@@ -23,7 +24,6 @@ export async function fetchRegister(formData: FormData) {
 
     const { confirmPassword: _c, ...registerData } = validateFilds.data;
 
-    console.log(url);
 
     const response = await fetch(`${url}/auth/register`, {
         method: 'POST',
@@ -41,6 +41,7 @@ export async function fetchRegister(formData: FormData) {
 }
 
 export async function fatchLogin(formData: FormData) {
+
     const email = formData.get('email');
     const password = formData.get('password');
 
@@ -53,7 +54,6 @@ export async function fatchLogin(formData: FormData) {
         })
         return {message: message, success: false};
     }
-
     return {success: true};
 }
 
@@ -61,7 +61,7 @@ export async function fetchLogout() {
 
     try {
 
-         await new Promise((resolve) => setTimeout(resolve, 4000));
+        await new Promise((resolve) => setTimeout(resolve, 4000));
 
         const session = await getServerSession(authOptions);
         if (!session?.error) return {success: true}

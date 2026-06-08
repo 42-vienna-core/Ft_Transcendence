@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
+import { UsersService } from './users.service';
+import { UsersController } from './users.controller';
 import { MailModule } from '../mail/mail.modul';
 import { JwtService } from '@nestjs/jwt';
 
@@ -8,8 +8,8 @@ import { JwtService } from '@nestjs/jwt';
   imports: [
     MailModule
   ],
-  exports: [UserService],
-  controllers: [UserController],
-  providers: [UserService, JwtService],
+  exports: [UsersService],
+  controllers: [UsersController],
+  providers: [UsersService, JwtService],
 })
 export class UserModule { }
