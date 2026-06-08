@@ -37,7 +37,7 @@ function Login() {
     const res = await fatchLogin(formData);
     console.log(formData);
     setState(prev => ({...prev, ...res}));
-
+    
     if (res.success) {
       const registerResult = await signIn('credentials', {
         email: formData.get('email'),
