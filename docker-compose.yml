@@ -7,6 +7,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/certs:/etc/nginx/certs:ro
+      - avatars:/uploads/avatars:ro
     depends_on:
       - frontend
       - backend
@@ -41,6 +42,7 @@ services:
     volumes:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
+      - avatars:/uploads/avatars
     networks:
       - app_network
     environment:
@@ -95,6 +97,7 @@ services:
 volumes:
   pgdata:
   redisdata:
+  avatars:
 
 networks:
   app_network:

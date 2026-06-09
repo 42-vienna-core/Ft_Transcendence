@@ -5,6 +5,7 @@ import type { Request } from 'express';
 import { LoginRequest } from './dto/login.dto';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -50,9 +51,19 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Authorization()
   public async logoutAll(
-    @Authorized('userId') userId: string,
+    @Authorized('userId') userId: number,
   ) {
-    const count = await this.authService.logoutAll(Number(userId));
+    const count = await this.authService.logoutAll(userId);
     return { success: true, count };
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @Authorization()
+  public async changePassword(
+    @Authorized('userId') userId: number,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return await this.authService.changePassword(userId, dto);
   }
 }

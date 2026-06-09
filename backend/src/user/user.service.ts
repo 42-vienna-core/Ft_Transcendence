@@ -1,10 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { hash } from 'argon2';
+import { UpdateUserDto } from './dto/updata-user.dto';
+
+import { unlink } from 'fs/promises';
+import { join } from 'path';
+import { fileTypeFromFile } from 'file-type';
+
+export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
 
 @Injectable()
 export class UserService {
+
 	public constructor(
 		private readonly prismaService: PrismaService,
 	) { }
@@ -12,145 +19,107 @@ export class UserService {
 	public async findByEmail(email: string) {
 		const user = await this.prismaService.user.findUnique({
 			where: { email }
-		})
-		return user
+		});
+		return user;
 	}
 
 	public async findById(id: number) {
 		const user = await this.prismaService.user.findUnique({
 			where: { id }
-		})
-		return user
+		});
+		return user;
 	}
 
-	public async create(dto: RegisterRequest) {
+	public async create(dto: RegisterRequest, passwordHash: string) {
 		const user = await this.prismaService.user.create({
 			data: {
 				name: dto.username,
 				email: dto.email,
-				password: await hash(dto.password),
+				password: passwordHash,
 			},
 			select: {
 				id: true,
 			},
-		})
-		return user
+		});
+		return user;
+	}
+
+	public async update(userId: number, dto: UpdateUserDto) {
+		await this.prismaService.user.update({
+			where: {
+				id: userId,
+			},
+			data: {
+				name: dto.username,
+			},
+		});
+		return { success: true };
+	}
+
+	public async updatePassword(userId: number, passwordHash: string) {
+	 	await this.prismaService.user.update({
+			where: {
+				id: userId,
+			},
+			data: {
+				password: passwordHash,
+			},
+		});
+	}
+
+	private async removeFile(filename: string) {
+		try {
+			const filePath = join(AVATAR_UPLOAD_DIR, filename);
+			await unlink(filePath);
+		} catch (error: unknown) {
+			const err = error as NodeJS.ErrnoException;
+			if (err.code !== 'ENOENT') {
+				console.error(`Failed to delete avatar: ${filename}`, error);
+			}
+		}
+	}
+	
+	public async updateAvatar(
+		userId: number,
+		file: Express.Multer.File,
+	) {
+		if (!file) {
+			throw new BadRequestException('Avatar file is required');
+		}
+		const allowedMimeTypes = [
+			'image/jpeg',
+			'image/jpg',
+			'image/png',
+			'image/webp',
+		];
+		const type = await fileTypeFromFile(file.path);
+		if (!type || !allowedMimeTypes.includes(type.mime)) {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Invalid image');
+		}
+		const user = await this.prismaService.user.findUnique({
+			where: { id: userId },
+		});
+		if (!user) {
+			await this.removeFile(file.filename);
+			throw new NotFoundException('User not found');
+		}
+
+		const oldAvatar = user.avatar;
+		const avatarPath = file.filename;
+
+		await this.prismaService.user.update({
+			where: { id: userId },
+			data: {
+				avatar: avatarPath,
+			},
+		});
+		if (oldAvatar) {
+			await this.removeFile(oldAvatar);
+		}
+		return {
+			success: true,
+			avatar: "https://localhost/avatars/" + avatarPath,
+		};
 	}
 }
-
-// constructor(
-// private readonly databaseService: DatabaseService,
-// private mailService: MailService,
-// private JwtService: JwtService,
-
-// ) { }
-
-
-// async create(body: CreateUserDto) {
-
-// 	const	hashedPassword = await bcrypt.hash(body.password, 10);
-// 	const	newUser = {
-// 		...body,
-// 		password: hashedPassword
-// 	}
-// 	const res = await this.databaseService.user.create({ data: newUser });
-// 	console.log(res.id)
-// 	return res;
-// }
-
-// async findUser(body: UpdateUserDto)
-// {
-// 	const code = Math.floor(100000 + Math.random() * 900000).toString();
-// 	const user = await this.databaseService.user.findUnique({
-// 		where: { email: body.email}
-// 	})
-// 	if (!user)
-// 		throw ({message: 'User not found'});
-
-// 	await this.databaseService.user.update({
-// 		where: {
-// 			id: user.id
-// 		},
-// 		data : {
-// 			resetCode: code,
-// 			codeExpire: new Date(Date.now() + 2 * 60 * 1000)
-// 		}
-// 	})
-// 	await this.mailService.sendResetCode(user.email, code);
-// 	return {message: "Code sent to email"};
-// }
-
-// async resetCode(body: UpdateUserDto) {
-// 	const user = await this.databaseService.user.findUnique({
-// 		where: { email: body.email}
-// 	})
-// 	if (!user) throw ({message: 'User not found'});
-
-// 	if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
-// 		throw ({ message: 'Time is over' });
-
-// 	if (user.resetCode !== body.resetCode)
-// 		throw ({ message: 'Wrong code' });
-
-// 	const	hashedPassword = await bcrypt.hash(String(body.password), 10);
-// 	return await this.databaseService.user.update({
-// 		where: {id: user.id},
-// 		data:	{
-// 					password: hashedPassword,
-// 					resetCode: null,
-// 					codeExpire: null,
-// 				},
-// 	})
-// }
-// async login(body: CreateLoginDto) {
-// 	const user = await this.databaseService.user.findUnique({
-// 		where: {email: body.email}
-// 	})
-// 	if (!user)
-// 		throw new Error ('User not found');
-
-// 	const isMatch = await bcrypt.compare(body.password, user.password);
-// 	if (!isMatch)
-// 		throw new Error('Wrong password');
-// 	const payload = { email: user.email, id : user.id };
-// 	const access_token = await this.JwtService.signAsync(payload);
-// 	return {access_token};
-// }
-// async getProfile(req: any) {
-// 	return req.user;
-// }
-
-// async findAll(role?: 'ADMIN' | 'PLAYER') {
-// 	if (role)
-// 	{
-// 		return this.databaseService.user.findMany( {
-// 			where: {
-// 				role,
-// 			}
-// 		});
-// 	}
-// 	return this.databaseService.user.findMany();
-// }
-
-// async findOne(id: number) {
-// 	return this.databaseService.user.findUnique(
-// 	{
-// 		where: {id}
-// 	});
-// }
-
-// async update(id: number, updateUserDto: UpdateUserDto) {
-// 	return this.databaseService.user.update(
-// 	{
-// 		where: { id },
-// 		data: updateUserDto,
-// 	});
-// }
-
-// async remove(id: number) {
-// 		return this.databaseService.user.delete(
-// 		{
-// 			where: { id },
-// 		});
-// }
-// }
