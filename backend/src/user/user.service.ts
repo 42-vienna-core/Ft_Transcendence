@@ -71,11 +71,17 @@ export class UserService {
 
 	private async removeFile(filename: string) {
 		try {
+
 			const safeName = basename(filename);
-			const filePath = join(AVATAR_UPLOAD_DIR, safeName);
-			if (!filePath.startsWith(resolve(AVATAR_UPLOAD_DIR))) {
+			// const filePath = join(AVATAR_UPLOAD_DIR, safeName);
+
+			const baseDir = resolve(AVATAR_UPLOAD_DIR);
+			const filePath = resolve(baseDir, safeName);
+
+			if (!filePath.startsWith(baseDir)) {
 				throw new Error('Path traversal detected');
 			}
+
 			console.log('[FILE][DELETE]', filePath);
 			await unlink(filePath);
 		} catch (error: any) {
