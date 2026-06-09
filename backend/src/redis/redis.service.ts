@@ -45,4 +45,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.del(`session:blacklist:${sessionId}`);
   }
 
+  // TODO: User rate limits
+
 }

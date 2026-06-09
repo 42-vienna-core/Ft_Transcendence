@@ -4,7 +4,8 @@ import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
 import { SessionService } from '../session/session.service';
 import { LoginRequest } from './dto/login.dto';
-import { verify } from 'argon2';
+import { hash, verify } from 'argon2';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,6 @@ export class AuthService {
     ) { }
 
     public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
-        // TODO REDIS - Rate Limiting
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
         const user = await this.userService.findByEmail(email);
@@ -24,8 +24,8 @@ export class AuthService {
         if (user) {
             throw new ConflictException('User already exists');
         }
-
-        const newUser = await this.userService.create(dto);
+        const passwordHash = await hash(dto.password);
+        const newUser = await this.userService.create(dto, passwordHash);
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
@@ -50,7 +50,16 @@ export class AuthService {
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
-        return { accessToken, refreshToken, user: { id: user.id, name: user.name } };
+        
+        return {
+            accessToken,
+            refreshToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                avatar: "https://localhost/avatars/" + user.avatar,
+            }
+        };
     }
 
     public async refresh(refreshToken: string) {
@@ -77,4 +86,20 @@ export class AuthService {
         const count = await this.sessionService.deleteAllUserSessions(userId);
         return count;
     }
+
+    public async changePassword(userId: number, dto: ChangePasswordDto) {
+        const user = await this.userService.findById(userId);
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        const isPasswordValid = await verify(user.password, dto.oldPassword);
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        const passwordHash = await hash(dto.newPassword);
+
+        await this.userService.updatePassword(userId, passwordHash);
+        await this.sessionService.deleteAllUserSessions(userId);
+        return { success: true };
+	}
 }
