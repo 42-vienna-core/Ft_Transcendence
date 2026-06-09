@@ -4,8 +4,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
 
 import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { basename, join, resolve } from 'path';
 import { fileTypeFromFile } from 'file-type';
+import sharp from 'sharp';
+import { randomUUID } from 'crypto';
 
 export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
 
@@ -69,12 +71,17 @@ export class UserService {
 
 	private async removeFile(filename: string) {
 		try {
-			const filePath = join(AVATAR_UPLOAD_DIR, filename);
+			const safeName = basename(filename);
+			const filePath = join(AVATAR_UPLOAD_DIR, safeName);
+			if (!filePath.startsWith(resolve(AVATAR_UPLOAD_DIR))) {
+				throw new Error('Path traversal detected');
+			}
+			console.log('[FILE][DELETE]', filePath);
 			await unlink(filePath);
-		} catch (error: unknown) {
+		} catch (error: any) {
 			const err = error as NodeJS.ErrnoException;
 			if (err.code !== 'ENOENT') {
-				console.error(`Failed to delete avatar: ${filename}`, error);
+				console.error('[FILE][DELETE][ERROR]', err);
 			}
 		}
 	}
@@ -83,19 +90,18 @@ export class UserService {
 		userId: number,
 		file: Express.Multer.File,
 	) {
+		const MAX_WIDTH = 4096;
+		const MAX_HEIGHT = 4096;
+		const MAX_PIXELS = 16_000_000;
+
+		console.log('[UPLOAD][START]', {
+			userId,
+			file: file?.filename,
+			size: file?.size,
+		});
+
 		if (!file) {
 			throw new BadRequestException('Avatar file is required');
-		}
-		const allowedMimeTypes = [
-			'image/jpeg',
-			'image/jpg',
-			'image/png',
-			'image/webp',
-		];
-		const type = await fileTypeFromFile(file.path);
-		if (!type || !allowedMimeTypes.includes(type.mime)) {
-			await this.removeFile(file.filename);
-			throw new BadRequestException('Invalid image');
 		}
 		const user = await this.prismaService.user.findUnique({
 			where: { id: userId },
@@ -105,21 +111,122 @@ export class UserService {
 			throw new NotFoundException('User not found');
 		}
 
-		const oldAvatar = user.avatar;
-		const avatarPath = file.filename;
+		let type;
+		try {
+			type = await fileTypeFromFile(file.path);
+			console.log('[UPLOAD][FILETYPE]', type);
+		} catch (err) {
+			console.error('[UPLOAD][FILETYPE ERROR]', err);
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Cannot detect file type');
+		}
+		if (!type) {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Unknown file type');
+		}
 
-		await this.prismaService.user.update({
-			where: { id: userId },
-			data: {
-				avatar: avatarPath,
-			},
-		});
+		if (type.mime === 'image/svg+xml') {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('SVG is not allowed (XSS protection)');
+		}
+		const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+		if (!allowed.has(type.mime)) {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Invalid image type');
+		}
+
+		let image: sharp.Sharp;
+		let metadata: sharp.Metadata;
+		
+		try {
+			image = sharp(file.path, {
+				limitInputPixels: MAX_PIXELS,
+				failOn: 'error',
+				sequentialRead: true,
+			});
+			metadata = await image.metadata();
+			console.log('[UPLOAD][METADATA]', metadata);
+		} catch (err) {
+			console.error('[UPLOAD][SHARP ERROR]', err);
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Invalid image');
+		}
+		if (!metadata.width || !metadata.height) {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Cannot read image dimensions');
+		}
+
+		const allowedFormats = new Set([
+			'jpeg',
+			'png',
+			'webp',
+		]);
+
+		if (!allowedFormats.has(metadata.format ?? '')) {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Invalid image format');
+		}
+
+		if (
+			metadata.width > MAX_WIDTH ||
+			metadata.height > MAX_HEIGHT ||
+			metadata.width * metadata.height > MAX_PIXELS
+		) {
+			await this.removeFile(file.filename);
+			throw new BadRequestException('Image too large');
+		}
+
+		const avatarFilename = `${randomUUID()}.webp`;
+		const outputPath = join(AVATAR_UPLOAD_DIR, avatarFilename);
+
+		try {
+			await image
+				.rotate()
+				.resize(200, 200, {
+					fit: 'cover',
+					withoutEnlargement: true,
+				})
+				.webp({
+					quality: 85,
+				})
+				.toFile(outputPath);
+			
+			console.log('[UPLOAD][PROCESSED]', outputPath);
+
+			await this.removeFile(file.filename);
+		} catch (error) {
+			console.error('[UPLOAD][PROCESS ERROR]', error);
+
+			await this.removeFile(file.filename);
+			await this.removeFile(avatarFilename);
+			throw new BadRequestException('Failed to process image');
+		}
+		
+		const oldAvatar = user.avatar;
+
+		try {
+			await this.prismaService.user.update({
+				where: { id: userId },
+				data: { avatar: avatarFilename },
+			});
+		} catch (error) {
+			console.error('[DB][UPDATE AVATAR ERROR]', error);
+
+			await this.removeFile(avatarFilename);
+			throw error;
+		}
 		if (oldAvatar) {
 			await this.removeFile(oldAvatar);
 		}
+
+		console.log('[UPLOAD][DONE]', {
+			avatar: avatarFilename,
+		});
+
 		return {
 			success: true,
-			avatar: "https://localhost/avatars/" + avatarPath,
+			avatar: `https://localhost/avatars/${avatarFilename}`,
 		};
 	}
 }
