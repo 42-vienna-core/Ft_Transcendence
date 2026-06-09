@@ -92,11 +92,11 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        const isPasswordValid = await verify(user.password, dto.oldPassword);
+        const isPasswordValid = await verify(user.password, dto.old);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        const passwordHash = await hash(dto.newPassword);
+        const passwordHash = await hash(dto.new);
 
         await this.userService.updatePassword(userId, passwordHash);
         await this.sessionService.deleteAllUserSessions(userId);
