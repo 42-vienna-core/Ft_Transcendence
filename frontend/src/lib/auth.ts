@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
                 return {
                     id: data.user.id,
                     name: data.user.name,
+                    avatar: data.user.avatar,
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
                     accessTokenExpiry: createExpiredTime()
@@ -42,11 +43,14 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({token, user, trigger, session}) {
             console.log("CHECK user: ", user);
+            console.log("CHECK token: ", token);
+
 
             if (user) return {...token, ...user}
 
-            if (trigger === "update" && session?.user.username) {
+            if (trigger === "update" && session?.user) {
                 token.name = session.user.username;
+                token.avatar = session.user.avatar;
             }
 
             if (Date.now() < (token.accessTokenExpiry as number)) return token;
@@ -56,6 +60,7 @@ export const authOptions: NextAuthOptions = {
         async session({session, token}) {
             session.user.id = token.id as string;
             session.user.username = token.name as string;
+            session.user.avatar = token.avatar as string | null;
             session.accessToken = token.accessToken as string;
             session.error = token.error as string | undefined;
             return session;

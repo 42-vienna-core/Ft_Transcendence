@@ -3,18 +3,22 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from './auth';
 
-// lib/api-client.ts
-
 interface CustomApiOptions extends RequestInit {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 }
 
 export async function apiFetch(endpoint: string, options: CustomApiOptions = {}) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL
+  const baseUrl = process.env.INTERNAL_API_URL
   const url = `${baseUrl}/${endpoint}`;
+
+  const session = await getServerSession(authOptions);
+
+  console.log(url);
 
   const headers = new Headers(options.headers);
   
+  headers.set('Authorization',`Bearer ${session?.accessToken}`);
+
   if (options.body && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }

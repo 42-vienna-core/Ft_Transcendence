@@ -1,23 +1,11 @@
 'use client'
 
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import { useState } from 'react';
 import style from './edit.module.css'
 import { apiFetch } from '@/lib/api-client';
 import { useSession } from 'next-auth/react';
-// import { update } from 'next-auth/react';
 import { useFormStatus } from 'react-dom';
-
-const fakeApiSaveName = (newValidName: string): Promise<{ success: boolean }> => {
-    return new Promise((resolve, reject) => {
-      // Имитируем задержку сети в 1.5 секунды (1500 миллисекунд)
-      setTimeout(() => {
-        // Здесь можно даже добавить фейковую ошибку для проверки, например:
-        // if (newValidName === "") return reject(new Error("Имя не может быть пустым"));
-        
-        resolve({ success: true });
-      }, 4000);
-    });
-  };
+import { useProfile } from '@/providers/ProfileContext';
 
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB Limit
@@ -46,13 +34,14 @@ export default function EditForm () {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isActive, setActive] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>("");
-
-  useEffect(() => {
-    if (session?.user.username) {
-      setUsername(session.user.username);
-    }
-  }, [session])
+  
+  const {
+    username, 
+    avatar, 
+    updateSessionUsername, 
+    updateNameOnChange,
+    updateAvatar
+  } = useProfile();
 
   const handleEditSubmit = async (fd: FormData) => {
     setLoading(true);
@@ -72,38 +61,28 @@ export default function EditForm () {
       console.log(error);
 
       const formData = new FormData();
-      formData.append("avatar", file);
+      formData.append("file", file);
 
-      try {
-        // const res = await apiFetch('/users/me/avatar', {
-        //   method: 'POST',
-        //   body: formData
-        // });
+      const res = await apiFetch('user/me/avatar', {
+        method: 'PATCH',
+        body: formData
+      });
       
-      await fakeApiSaveName(username);
-
-      // console.log(res)
-
-      } catch (error) {
-        console.log(error);
+      if (res.success) {
+        updateAvatar(res.avatar);
       }
     }
 
     if (session?.user && session?.user.username !== username) {
-      try {
-        // const res = await apiFetch('/users/me', {
-        //   method: 'PATCH',
-        //   body: JSON.stringify({username: username})
-        // });
-        // console.log(res)
-      await fakeApiSaveName(username);
+      const res = await apiFetch('user/me', {
+        method: 'PATCH',
+        body: JSON.stringify({username: username})
+      })  
 
-      } catch (error) {
-        console.log(error);
-      } 
+      if (res.success) {
+        updateSessionUsername(username);
+      }
     }
-
-    await update({user: {username: username}});
 
     setLoading(false);
     setActive(false);
@@ -112,7 +91,8 @@ export default function EditForm () {
   return (
     <form action={handleEditSubmit}>
       <div className={style.pfTop}>
-        <div className={style.pfAvatar}>IV<span className="edit" aria-label="Change avatar"><i className={`${style.ti} ${style.tiPencil}`} aria-hidden="true"></i></span>
+        <div className={style.pfAvatar}>
+          <img src={avatar ? avatar : "#"} alt="avatar" />
           <label className={`${isActive ? 'block': 'hidden'} absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-colors flex items-center justify-center border-2 border-white`}>
             <svg
               xmlns="http://w3.org"
@@ -137,7 +117,6 @@ export default function EditForm () {
             <input 
               type="file" 
               name="avatar" 
-              // onChange={handleFileChange}
               accept="image/jpeg, image/jpg, image/png, image/webp" 
               className="hidden" 
             />
@@ -151,7 +130,7 @@ export default function EditForm () {
               name="username"
               value={username}
               autoComplete="off"
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => updateNameOnChange(e.target.value)}
               className="w-full border-none focus:outline-none  text-gray-900 text-lg"
             />
           </label>

@@ -4,7 +4,7 @@ import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { avatarMulterOptions } from 'src/common/multer/avatar.multer';
+import { avatarMulterOptions } from '../common/multer/avatar.multer';
 
 @Controller('user')
 export class UserController {
