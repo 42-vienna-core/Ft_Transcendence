@@ -80,10 +80,11 @@ export class UserService {
 		});
 	}
 
-	public async updateAvatar(
-		userId: number,
-		file: Express.Multer.File,
-	) {
-		return await this.avatarService.updateAvatar(userId, file);
+	public async updateAvatar(userId: number, file: Express.Multer.File) {
+		return this.avatarService.updateAvatar(userId, file);
+	}
+
+	public async deleteAvatar(userId: number) {
+		return this.avatarService.deleteAvatar(userId);
 	}
 }

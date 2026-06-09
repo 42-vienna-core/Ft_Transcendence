@@ -57,11 +57,9 @@ export class UserController {
     @Authorized('userId') userId: number,
   ) {
     void userId;
-    return { success: false };
+    this.userService.deleteAvatar(userId);
   }
 }
-
-
 
 // private readonly logger = new LoggerService(UserController.name);
 

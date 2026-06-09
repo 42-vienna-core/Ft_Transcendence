@@ -86,4 +86,18 @@ export class AvatarService {
             avatar: `https://localhost/avatars/${avatarFilename}`,
         };
     }
+
+    public async deleteAvatar(userId: number) {
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        const avatar = user.avatar;
+        if (avatar) {
+            await this.fileService.removeFile(avatar);
+        }
+        return { success: true };
+    }
 }
