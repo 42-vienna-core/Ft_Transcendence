@@ -57,7 +57,7 @@ export class AuthService {
             user: {
                 id: user.id,
                 name: user.name,
-                avatar: "https://localhost/avatars/" + user.avatar,
+                avatar: user.avatar ? `https://localhost/avatars/${user.avatar}` : null,
             }
         };
     }

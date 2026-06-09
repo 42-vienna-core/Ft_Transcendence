@@ -9,6 +9,7 @@ import { LoggerModule } from './logger/logger.module';
 import { TokenModule } from './token/token.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
+import { AvatarModule } from './avatar/avatar.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { SessionModule } from './session/session.module';
     LoggerModule,
     TokenModule,
     AuthModule,
-    SessionModule
+    SessionModule,
+    AvatarModule,
   ],
   controllers: [AppController],
   providers: [AppService, {
