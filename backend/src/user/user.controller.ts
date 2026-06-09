@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, MaxFileSizeValidator, ParseFilePipe, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
@@ -37,21 +37,34 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   public async updateAvatar(
     @Authorized('userId') userId: number,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({
+            maxSize: 2 * 1024 * 1024,
+          }),
+          // new FileTypeValidator({
+          //   fileType: /^image\/(png|jpeg|jpg|webp)$/
+          // }),
+        ],
+      }),
+    ) file: Express.Multer.File,
   ) {
     return this.userService.updateAvatar(userId, file);
+  }
+
+  @Authorization()
+  @HttpCode(HttpStatus.OK)
+  @Delete('me/avatar')
+  public async deletaAvatar(
+    @Authorized('userId') userId: number,
+  ) {
+    void userId;
+    return { success: false };
   }
 }
 
 
-// @Authorization()
-// @HttpCode(HttpStatus.OK)
-// @Delete('me/avatar')
-// public async deletaAvatar(
-//   @Authorized('userId') userId: number,
-// ) {
-//   return this.userService.deleteAvatar(userId);
-// }
 
 // private readonly logger = new LoggerService(UserController.name);
 

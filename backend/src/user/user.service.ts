@@ -69,11 +69,13 @@ export class UserService {
 
 	private async removeFile(filename: string) {
 		try {
-		//   const filePath = join(process.cwd(), 'uploads/avatars', filename);
 			const filePath = join(AVATAR_UPLOAD_DIR, filename);
 			await unlink(filePath);
-		} catch {
-		  // игнорируем ошибки удаления (файл может не существовать)
+		} catch (error: unknown) {
+			const err = error as NodeJS.ErrnoException;
+			if (err.code !== 'ENOENT') {
+				console.error(`Failed to delete avatar: ${filename}`, error);
+			}
 		}
 	}
 	
@@ -81,25 +83,20 @@ export class UserService {
 		userId: number,
 		file: Express.Multer.File,
 	) {
-		// 1. Проверяем, существует ли файл вообще
 		if (!file) {
 			throw new BadRequestException('Avatar file is required');
 		}
 		const allowedMimeTypes = [
 			'image/jpeg',
+			'image/jpg',
 			'image/png',
 			'image/webp',
 		];
-		if (!allowedMimeTypes.includes(file.mimetype)) {
-			await this.removeFile(file.filename);
-			throw new BadRequestException('Invalid image type');
-		}
 		const type = await fileTypeFromFile(file.path);
 		if (!type || !allowedMimeTypes.includes(type.mime)) {
 			await this.removeFile(file.filename);
 			throw new BadRequestException('Invalid image');
 		}
-
 		const user = await this.prismaService.user.findUnique({
 			where: { id: userId },
 		});
@@ -108,24 +105,18 @@ export class UserService {
 			throw new NotFoundException('User not found');
 		}
 
-		// 4. Сохраняем старый аватар
 		const oldAvatar = user.avatar;
 		const avatarPath = file.filename;
 
-
-		// 5. Обновляем пользователя
 		await this.prismaService.user.update({
 			where: { id: userId },
 			data: {
 				avatar: avatarPath,
 			},
 		});
-
-		// 6. Удаляем старый файл (если есть)
 		if (oldAvatar) {
 			await this.removeFile(oldAvatar);
 		}
-
 		return {
 			success: true,
 			avatar: "https://localhost/avatars/" + avatarPath,
