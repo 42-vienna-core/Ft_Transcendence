@@ -1,7 +1,7 @@
 'use server'
 import { loginSchema, registerSchema } from '@/lib/schema'
 import { getServerSession } from 'next-auth';
-import { authOptions } from './auth';
+import { authOptions } from '../auth';
 
 const url = process.env.INTERNAL_API_URL;
 

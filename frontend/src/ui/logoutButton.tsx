@@ -1,5 +1,5 @@
 'use client'
-import { fetchLogout } from "@/lib/action";
+import { fetchLogout } from "@/lib/actions/auth-actions";
 import { State } from "@/lib/definitions";
 import { signOut } from "next-auth/react";
 import { useState } from "react";

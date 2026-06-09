@@ -1,26 +1,13 @@
-'use client'
-import style from './profile.module.css'
-import LogoutButton from'@/ui/logoutButton'
+'use client';
 
-function Profile () {
+import EditForm from '@/components/user-profile/edit-form';
+import style from './profile.module.css';
+import LogoutButton from'@/ui/logoutButton';
+
+export default function Profile() {
     return (
-         <div className={style.pfBody}>
-      <div className={style.pfTop}>
-        <div className={style.pfAvatar}>IV<span className="edit" aria-label="Change avatar"><i className={`${style.ti} ${style.tiPencil}`} aria-hidden="true"></i></span></div>
-        <div className={style.pfId}>
-          <div className={style.name}>Igoryan</div>
-          <div className={style.handle}>@igorv · joined Apr 2024 · Vienna, AT</div>
-          <div className={style.badges}>
-            <span className={`${style.badge} ${style.lvl}`}>level 12</span>
-            <span className={`${style.badge} ${style.streak}`}><i className={`${style.ti} ${style.tiFlame}`} aria-hidden="true"></i> 5-day streak</span>
-          </div>
-        </div>
-        <div className={style.pfActions}>
-          <button className={style.pfBtn}>share</button>
-          <button className={`${style.pfBtn} ${style.primary}`}>edit profile</button>
-        </div>
-      </div>
-
+    <div className={style.pfBody}>
+      <EditForm/>
       <div className={style.pfStats}>
         <div className={style.statCard}><div className={style.l}>rating</div><div className={style.v}>1 482</div><div className={style.d}>+14 today</div></div>
         <div className={style.statCard}><div className={style.l}>global rank</div><div className={style.v}>#3 920</div><div className={style.d}>top 8 %</div></div>
@@ -137,4 +124,4 @@ function Profile () {
     )
 }
 
-export default Profile
+

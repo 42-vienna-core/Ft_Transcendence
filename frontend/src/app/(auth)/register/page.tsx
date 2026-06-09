@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import styles from "../auth.module.css";
 import { FormField, State } from "@/lib/definitions";
-import { fetchRegister } from "@/lib/action";
+import { fetchRegister } from "@/lib/actions/auth-actions";
 import { signIn } from "next-auth/react";
 import SubmitButton from "@/ui/submitButton";
 

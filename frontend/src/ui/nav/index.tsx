@@ -3,19 +3,25 @@ import style from './nav.module.css';
 import Link from 'next/link';
 import { authOptions } from '@/lib/auth';
 import clsx from 'clsx';
-import LogoutButton from '../logoutButton'; 
-import { headers } from 'next/headers';
 import CustomLink from '../link';
+
+interface userProps{
+  userName: string;
+  ava: string;
+}
+
+export function Ava({userName, ava}: userProps) {
+  return (
+    <>
+      <span>{userName}</span>
+      <span className={style.ava}>{ava}</span>
+    </>
+  )
+}
 
 async function Nav() {
   const session = await getServerSession(authOptions);
-  const headersList = await headers();
-  const referer = headersList.get('referer');
-  const currentUrl = headersList.get("x-url") || referer || "unknown";
-  
-  const isLoginActive = currentUrl.includes('/login');
-  const isRegisterActive = currentUrl.includes('/register');
-
+  console.log(session);
   return (
     <nav className={style.nav}>
       <div className={style.logo}>
@@ -26,14 +32,15 @@ async function Nav() {
         {session ? (
           <>
             <Link className={style.profile} href="/profile">
-              <span>Igor V.</span>
-              <span className={style.ava}>IV</span>
+              <Ava 
+                userName={session.user.username}
+                ava={"IV"}
+                />
             </Link>
           </>
         ) : (
           <>
             <CustomLink 
-              // className={clsx(style.btn, isLoginActive ? style.btnPrimary : style.navLink)} 
               url={"/login"}
               label={"Log in"}
             />

@@ -40,9 +40,15 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        async jwt({token, user}) {
+        async jwt({token, user, trigger, session}) {
+            console.log("CHECK user: ", user);
+
             if (user) return {...token, ...user}
-            console.log("CHECK accessTokenExpiry: ", Date.now() < (token.accessTokenExpiry as number))
+
+            if (trigger === "update" && session?.user.username) {
+                token.name = session.user.username;
+            }
+
             if (Date.now() < (token.accessTokenExpiry as number)) return token;
 
             return await refreshAccessToken(token);
@@ -65,6 +71,7 @@ export const authOptions: NextAuthOptions = {
 }
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
+    console.log("REFRESHING JWT_TOKEN");
     try {
         const res = await fetch(`${BACKEND_URL}/auth/refresh`, {
             method: 'POST',
@@ -77,6 +84,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         const data = await res.json();
 
         return {
+            ...token,
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
             accessTokenExpiry: createExpiredTime(),
