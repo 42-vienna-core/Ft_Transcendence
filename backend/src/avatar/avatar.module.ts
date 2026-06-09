@@ -4,5 +4,6 @@ import { FileService } from './file/file.service';
 
 @Module({
   providers: [AvatarService, FileService],
+  exports: [AvatarService, FileService],
 })
 export class AvatarModule {}

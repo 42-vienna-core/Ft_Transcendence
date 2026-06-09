@@ -15,7 +15,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @Get('me')
   public async findProfile(@Authorized('userId') userId: number) {
-    return this.userService.findById(userId);
+    return this.userService.getUser(userId);
   }
 
   @Authorization()
