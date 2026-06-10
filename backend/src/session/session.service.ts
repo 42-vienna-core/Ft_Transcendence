@@ -15,7 +15,7 @@ export class SessionService {
     public async createSession(userId: number, refreshToken: string, userAgent?: string, ip?: string) {
         const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken);
         const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-        const session = await this.prisma.session.create({
+        const session = await this.prisma.sessions.create({
             data: {
                 userId: userId,
                 refreshTokenHash: refreshTokenHash,
@@ -32,7 +32,7 @@ export class SessionService {
     }
 
     public async findSessionByHash(tokenHash: string) {
-        const session = await this.prisma.session.findFirst({
+        const session = await this.prisma.sessions.findFirst({
             where: {
                 refreshTokenHash: tokenHash,
                 expiresAt: {
@@ -47,7 +47,7 @@ export class SessionService {
         const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken);
         const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-        return this.prisma.session.update({
+        return this.prisma.sessions.update({
             where: {
                 id: sessionId,
             },
@@ -59,7 +59,7 @@ export class SessionService {
     }
 
     public async deleteSession(sessionId: string) {
-        const result = await this.prisma.session.deleteMany({
+        const result = await this.prisma.sessions.deleteMany({
             where: {
                 id: sessionId,
             },
@@ -69,7 +69,7 @@ export class SessionService {
     }
 
     public async deleteAllUserSessions(userId: number) {
-        const sessions = await this.prisma.session.findMany({
+        const sessions = await this.prisma.sessions.findMany({
             where: {
                 userId,
             },
@@ -77,7 +77,7 @@ export class SessionService {
                 id: true
             },
         });
-        const deletedCount = await this.prisma.session.deleteMany({
+        const deletedCount = await this.prisma.sessions.deleteMany({
             where: { userId },
         });
 

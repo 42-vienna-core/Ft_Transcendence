@@ -10,21 +10,21 @@ export class UserService {
 	) { }
 
 	public async findByEmail(email: string) {
-		const user = await this.prismaService.user.findUnique({
+		const user = await this.prismaService.users.findUnique({
 			where: { email }
 		})
 		return user
 	}
 
 	public async findById(id: number) {
-		const user = await this.prismaService.user.findUnique({
+		const user = await this.prismaService.users.findUnique({
 			where: { id }
 		})
 		return user
 	}
 
 	public async create(dto: RegisterRequest) {
-		const user = await this.prismaService.user.create({
+		const user = await this.prismaService.users.create({
 			data: {
 				name: dto.username,
 				email: dto.email,
