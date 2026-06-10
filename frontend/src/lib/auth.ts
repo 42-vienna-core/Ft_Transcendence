@@ -131,5 +131,5 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 }
 
 function createExpiredTime(): number {
-    return (Date.now() + 1 * 60 * 1000);
+    return (Date.now() + 14 * 60 * 1000);
 }
