@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output = "../src/generated"
+  output = "../prisma/generated"
 }
 
 datasource db {
@@ -14,7 +14,7 @@ datasource db {
   url       = env("DATABASE_URL")
 }
 
-model User {
+model Users {
   id       Int    @id @default(autoincrement())
   email    String @unique
   password String @map("password_hash")
@@ -24,14 +24,16 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  isVerified Boolean @default(false) @map("is_verified")
-  isBlocked  Boolean @default(false) @map("is_blocked")
+  //isVerified Boolean @default(false) @map("is_verified")
+  //isBlocked  Boolean @default(false) @map("is_blocked")
 
-  sessions Session[]
+  sessions Sessions[]
 
   avatar String?
 
-  @@map("users")
+  gameRoom		GameRoom []
+  roomUser		RoomUser []
+
 }
 
 enum Role {
@@ -39,11 +41,11 @@ enum Role {
   ADMIN
 }
 
-model Session {
+model Sessions {
   id String @id @default(uuid()) @db.Uuid
 
   userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   refreshTokenHash String @unique @map("refresh_token_hash")
 
@@ -56,5 +58,36 @@ model Session {
   ip        String? @map("ip")
 
   @@index([userId])
-  @@map("sessions")
+}
+
+model GameRoom {
+	id			String @id @default(uuid())
+	name		String
+	maxUsers	Int @default(4)
+	ownerId		Int?
+	createdAt	DateTime @default(now())
+	updatedAt	DateTime @updatedAt
+	
+	type		RoomType @default(PUBLIC)
+	users		RoomUser[]
+	owner		Users? @relation(fields: [ownerId], references: [id])
+}
+
+model RoomUser {
+
+  id        String  @id @default(uuid())
+  roomId    String
+  userId    Int
+  socketId  String?
+
+  room      GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+
+}
+
+enum RoomType {
+  PUBLIC
+  PRIVATE
 }
