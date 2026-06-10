@@ -1,5 +1,6 @@
 services:
   nginx:
+    container_name: ngnx
     build:
       context: ./nginx
     ports:
@@ -16,6 +17,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    container_name: frontend
     build:
       context: ./frontend
       target: dev
@@ -36,6 +38,7 @@ services:
     restart: unless-stopped
 
   backend:
+    container_name: backend
     build:
       context: ./backend
       target: dev
@@ -43,12 +46,12 @@ services:
       - ./backend/src:/app/src
       - ./backend/prisma:/app/prisma
       - avatars:/uploads/avatars
+      - /app/node_modules 
     networks:
       - app_network
     environment:
         PORT: ${PORT}
         API_PREFIX: ${API_PREFIX}
-        # FRONTEND_URL: ${FRONTEND_URL}
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
         DATABASE_URL: ${DATABASE_URL}
@@ -56,10 +59,12 @@ services:
         JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
         JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
         JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
-    command: >
-      sh -c "npx prisma db push --schema=prisma/schema.prisma && 
-             npx prisma generate --schema=prisma/schema.prisma && 
-             npm run start:dev"
+    command: |
+      sh -c "
+      npx prisma db push --schema=/app/prisma/schema.prisma && \
+      npx prisma generate --schema=/app/prisma/schema.prisma && \
+      npm run start:dev
+      "
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +73,7 @@ services:
     restart: unless-stopped
 
   postgres:
+    container_name: postgres
     image: postgres:16-alpine
     restart: always
     environment:
@@ -86,6 +92,7 @@ services:
       - app_network
 
   redis:
+    container_name: redis
     image: redis:7-alpine
     restart: always
     command: redis-server --save 60 1 --loglevel warning
