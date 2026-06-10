@@ -30,7 +30,7 @@ function SubmitFormButton({loading, isActive }: submitProps) {
 }
 
 export default function EditForm () {
-  const {data: session, update} = useSession();
+  const {data: session} = useSession();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isActive, setActive] = useState<boolean>(false);
@@ -38,6 +38,7 @@ export default function EditForm () {
   const {
     username, 
     avatar, 
+    nameOnChange,
     updateSessionUsername, 
     updateNameOnChange,
     updateAvatar
@@ -73,14 +74,14 @@ export default function EditForm () {
       }
     }
 
-    if (session?.user && session?.user.username !== username) {
+    if (session?.user && session?.user.username !== nameOnChange) {
       const res = await apiFetch('user/me', {
         method: 'PATCH',
-        body: JSON.stringify({username: username})
+        body: JSON.stringify({username: nameOnChange})
       })  
 
       if (res.success) {
-        updateSessionUsername(username);
+        updateSessionUsername();
       }
     }
 
@@ -128,7 +129,7 @@ export default function EditForm () {
               id="username"
               type="text"
               name="username"
-              value={username}
+              value={nameOnChange || ""}
               autoComplete="off"
               onChange={(e) => updateNameOnChange(e.target.value)}
               className="w-full border-none focus:outline-none  text-gray-900 text-lg"

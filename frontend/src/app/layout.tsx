@@ -22,12 +22,9 @@ export default function RootLayout({
         className={`${inter.className} bg-[#050507] text-white antialiased`}
         suppressHydrationWarning
       >
-        <Background>
-          <Nav />
-          <main>
-            <Providers>{children}</Providers>
-          </main>
-        </Background>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

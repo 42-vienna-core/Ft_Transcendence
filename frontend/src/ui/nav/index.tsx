@@ -1,27 +1,15 @@
-import { getServerSession } from 'next-auth';
+'use client'
+
 import style from './nav.module.css';
 import Link from 'next/link';
-import { authOptions } from '@/lib/auth';
 import clsx from 'clsx';
 import CustomLink from '../link';
+import { useProfile } from '@/providers/ProfileContext';
 
-interface userProps{
-  userName: string;
-  ava: string;
-}
 
-export function Ava({userName, ava}: userProps) {
-  return (
-    <>
-      <span>{userName}</span>
-      <span className={style.ava}>{ava}</span>
-    </>
-  )
-}
+function Nav({isAuthorized}: {isAuthorized: boolean}) {
+  const { username, avatar } = useProfile();
 
-async function Nav() {
-  const session = await getServerSession(authOptions);
-  console.log(session);
   return (
     <nav className={style.nav}>
       <div className={style.logo}>
@@ -29,13 +17,13 @@ async function Nav() {
         <Link href="/">Snake.io</Link>
       </div>
       <div className={style.navLinks}>
-        {session ? (
+        {isAuthorized ? (
           <>
             <Link className={style.profile} href="/profile">
-              <Ava 
-                userName={session.user.username}
-                ava={"IV"}
-                />
+              <span>{username}</span>
+                <img 
+                  className={style.ava} 
+                  src={avatar ? avatar : "/png/default_avatar.png"}/>
             </Link>
           </>
         ) : (

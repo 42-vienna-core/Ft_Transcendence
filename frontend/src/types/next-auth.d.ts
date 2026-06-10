@@ -13,6 +13,7 @@ declare module 'next-auth' {
         };
     }
     interface User {
+        avatar: string,
         accessToken: string;
         refreshToken: string;
         accessTokenExpiry: number;
