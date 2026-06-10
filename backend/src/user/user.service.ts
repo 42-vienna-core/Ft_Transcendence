@@ -19,21 +19,21 @@ export class UserService {
 	) { }
 
 	public async findByEmail(email: string) {
-		const user = await this.prismaService.user.findUnique({
+		const user = await this.prismaService.users.findUnique({
 			where: { email }
 		});
 		return user;
 	}
 
 	public async findById(id: number) {
-		const user = await this.prismaService.user.findUnique({
+		const user = await this.prismaService.users.findUnique({
 			where: { id }
 		});
 		return user;
 	}
 
 	public async create(dto: RegisterRequest, passwordHash: string) {
-		const user = await this.prismaService.user.create({
+		const user = await this.prismaService.users.create({
 			data: {
 				name: dto.username,
 				email: dto.email,
@@ -47,7 +47,7 @@ export class UserService {
 	}
 
 	public async update(userId: number, dto: UpdateUserDto) {
-		await this.prismaService.user.update({
+		await this.prismaService.users.update({
 			where: {
 				id: userId,
 			},
@@ -59,7 +59,7 @@ export class UserService {
 	}
 
 	public async updatePassword(userId: number, passwordHash: string) {
-	 	await this.prismaService.user.update({
+	 	await this.prismaService.users.update({
 			where: {
 				id: userId,
 			},
@@ -109,7 +109,7 @@ export class UserService {
 		if (!file) {
 			throw new BadRequestException('Avatar file is required');
 		}
-		const user = await this.prismaService.user.findUnique({
+		const user = await this.prismaService.users.findUnique({
 			where: { id: userId },
 		});
 		if (!user) {
@@ -212,7 +212,7 @@ export class UserService {
 		const oldAvatar = user.avatar;
 
 		try {
-			await this.prismaService.user.update({
+			await this.prismaService.users.update({
 				where: { id: userId },
 				data: { avatar: avatarFilename },
 			});
