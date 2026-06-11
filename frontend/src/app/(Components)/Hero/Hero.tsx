@@ -6,21 +6,22 @@ import {useState, useEffect , useRef} from 'react';
 import Api from "../../api"
 import {io, Socket } from "socket.io-client"
 
-export default  function  Hero({userId}: {userId: {id: number, email: string} }) {
+export default  function  Hero({user}: {user: {id: number, name: string} }) {
 
     // const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    interface Rooms {
+    interface GameRooms {
         name: string,
         id: string,
         type: string,
-        users: [],
+        roomUsers: [],
         maxUsers: number,
         ownerId?: number,
-        _count: {users: number}
+        _count: {roomUsers: number}
     }
-    const resRef = useRef<Rooms[]>  ([]);
-    const [rooms, setRooms] = useState<Rooms[]>([]);
+   
+    const resRef = useRef<GameRooms[]>  ([]);
+    const [gameRooms, setGameRooms] = useState<GameRooms[]>([]);
     const socketRef = useRef<Socket | null>(null);
 
     useEffect( ()  => {
@@ -40,17 +41,17 @@ export default  function  Hero({userId}: {userId: {id: number, email: string} })
         });
 
         (async () => {
-            resRef.current = await Api.getRequest("http://localhost:4000/api/room");
+            resRef.current = await Api.getRequest("http://localhost:4000/api/gameRoom");
             if (resRef.current.length < 1)
             {
-                const room = await Api.postRequest("http://localhost:4000/api/room", {
+                const room = await Api.postRequest("http://localhost:4000/api/gameRoom", {
                     name: "Room",
                     maxUsers: 4,
                     type: "PUBLIC",
-                });
+                }).then((strim) => strim.json());
                 resRef.current.push(room);
             }
-            setRooms(resRef.current);
+            setGameRooms(resRef.current);
         })();
         
         return () => {
@@ -128,28 +129,32 @@ export default  function  Hero({userId}: {userId: {id: number, email: string} })
                    
                 </canvas> */}
                 {
-                    rooms.map((room : Rooms, index: number) => {
+                    gameRooms.map((room : GameRooms, index: number) => {
+                        console.log(room);
                         return (
                             <div key={index} className={style.features.featureCard}>
                                 <h1> Name {room.name}</h1>
                                 <h2> Max users:  {room.maxUsers}</h2>
                                 <h2> Room type: {room.type} </h2>
-                                <h2> Players : {room._count.users}</h2>
+                                <h2> Players : {room._count.roomUsers}</h2>
 
                                 <button name={room.id} 
-                                onClick={(e) => {
+                                onClick={ async (e) => {
                                     const id = e.currentTarget.name;
-                                    setRooms((priv) => (priv.filter((item : Rooms) => item.id !== id)));
-                                    Api.deleteRequest("http://localhost:4000/api/room/" + id);
+                                    const oldData = gameRooms;
+                                    setGameRooms((priv) => (priv.filter((item : GameRooms) => item.id !== id)));
+                                    const res = await Api.deleteRequest("http://localhost:4000/api/gameRoom/" + id);
+                                    if (!res.ok)
+                                        setGameRooms(oldData);
                                 }}
                                     type="button" className={style.btnPrimary}>Delete Room</button>
                                 <button name={String(index)}
                                 onClick={ () => {
                                     socketRef.current?.emit("join-room", {
                                         roomId: room.id,
-                                        userId: userId.id,
+                                        userId: user.id,
                                     });
-                                    setRooms([...rooms]);
+                                    setGameRooms([...gameRooms]);
 
                                 }}
                                     type='button' 
@@ -159,7 +164,7 @@ export default  function  Hero({userId}: {userId: {id: number, email: string} })
                                 <button onClick={() => {
                                     socketRef.current?.emit("leave-room", {
                                         roomId: room.id,
-                                        userId: userId.id,
+                                        userId: user.id,
                                     })
                                 }}
                                     type="button" className={`${style.btnPrimary} w-1/4`}> 
@@ -173,16 +178,16 @@ export default  function  Hero({userId}: {userId: {id: number, email: string} })
             <div className='m-5'>
                 <button 
                     onClick={ async () => {
-                     const obj = await Api.postRequest("http://localhost:4000/api/room/private", {
+                     const obj = await Api.postRequest("http://localhost:4000/api/gameRoom/private", {
                             name: "Room",
                             maxUsers: 4,
                             type: "PRIVATE",
-                            ownerId: userId.id,
-                        });
+                            ownerId: user.id,
+                        }).then((strim) => strim.json());
                         if (obj.statusCode) {
                             return console.log("request fould ");
                         }
-                        setRooms ([...rooms, obj]);
+                        setGameRooms ([...gameRooms, obj]);
                     }}
                     type='button' className={style.btnPrimary}> Create private room </button>
             </div>

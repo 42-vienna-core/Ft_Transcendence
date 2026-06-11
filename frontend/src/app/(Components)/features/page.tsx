@@ -1,4 +1,3 @@
-"use client"
 import Features from "./Features"
 // import {io } from "socket.io-client"
 // import { useEffect } from "react";

@@ -2,7 +2,7 @@
 import Styles from "../../styles"
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import Api from "../../api";
+// import Api from "../../api";
 
 export default function Navbar() {
 
@@ -11,13 +11,13 @@ export default function Navbar() {
   const [value, setValue] = useState(true);
   const [inputValue, setInputValue] = useState("");
 
-  useEffect( () => {
-    (async () => {
-        const res = await Api.getRequest("http://localhost:4000/api/user");
-        usersRef.current = res.map((item: {name: string, id: number}) => {
-            return { name: item.name, id: item.id } })
-    })();
-  },[])
+  // useEffect( () => {
+  //   (async () => {
+  //       const res = await Api.getRequest("http://localhost:4000/api/users");
+  //       usersRef.current = res.map((item: {name: string, id: number}) => {
+  //           return { name: item.name, id: item.id } })
+  //   })();
+  // },[])
 
   useEffect(() => {
     if (inputValue.length === 0) 

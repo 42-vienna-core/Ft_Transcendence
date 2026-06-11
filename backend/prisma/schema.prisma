@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,82 +6,83 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+model RoomUser {
+  id       String   @id @default(uuid())
+  roomId   String
+  socketId String?
+  userId   Int
+  room     GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  id                Int           @id @default(autoincrement())
-  email             String        @unique
-  password          String   
-  name              String   
-  role              Role          @default(PLAYER)
-  resetCode         String?
-  codeExpire        DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  friendsSent       Friend    []  @relation("UserFriends")
-  friendsReceived   Friend    []  @relation("FriendUsers")
-  ownerRoom         Room      []
-  rooms             RoomUser  []
-  messages          Message   []
-
+  @@unique([roomId, userId])
 }
 
-model Friend {
-
-  id        String @id @default(uuid())
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  roomId    String
+  createdAt DateTime @default(now())
   userId    Int
-  friendId  Int
-  status    FriendStatus @default(PENDING)
+  room      GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  user      User @relation("UserFriends", fields: [userId], references: [id])
-  friend    User @relation("FriendUsers", fields: [friendId], references: [id])
+model Friends {
+  id                            String      @id @default(uuid())
+  userId                        Int
+  friendId                      Int
+  status                        FriendStatus @default(PENDING)
+  createdAt                     DateTime     @default(now())
+  updatedAt                     DateTime
+  usersFriendsFriendIdToUsers Users        @relation("Friends_friendIdToUsers", fields: [friendId], references: [id])
+  usersFriendsUserIdToUsers   Users        @relation("Friends_userIdToUsers", fields: [userId], references: [id])
 
   @@unique([userId, friendId])
 }
 
-model Room {
+model GameRoom {
+  id            String     @id @default(uuid())
+  name          String
+  maxUsers      Int        @default(4)
+  ownerId       Int?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  type          RoomType   @default(PUBLIC)
+  users         Users?     @relation(fields: [ownerId], references: [id])
+  messages      Message[]
+  roomUsers     RoomUser[]
+}
+
+model Sessions {
+  id                  String    @id @default(uuid()) @db.Uuid
+  userId              Int
+  refreshTokenHash    String    @unique
+  expiresAt           DateTime
   
-  id        String    @id @default(uuid())
-  name      String 
-  maxUsers  Int       @default(4)
-  ownerId   Int?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  revokedAt           DateTime?
+  users               Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type      RoomType @default(PUBLIC)
-
-  users     RoomUser[]
-  messages  Message []
-  owner     User? @relation(fields: [ownerId], references: [id])
+  @@index([userId])
 }
 
-model RoomUser {
-
-  id        String  @id @default(uuid())
-  roomId    String
-  userId    Int
-  socketId  String?
-
-  room      Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([roomId, userId])
-
-}
-
-model Message {
-
-  id        String @id @default(uuid())
-  content   String
-  roomId    String
-  userId    Int
-  createdAt DateTime @default(now())
-
-  room      Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Users {
+  id                              Int        @id @default(autoincrement())
+  Email                           String     @unique
+  Password                        String
+  Username                        String
+  role                            Role       @default(PLAYER)
+  resetCode                       String?
+  codeExpire                      DateTime?
+  createdAt                       DateTime   @default(now())
+  updatedAt                       DateTime   @updatedAt
+  Friends_Friends_friendIdToUsers Friends[]  @relation("Friends_friendIdToUsers")
+  Friends_Friends_userIdToUsers   Friends[]  @relation("Friends_userIdToUsers")
+  gameRooms                       GameRoom[]
+  messages                        Message[]
+  roomsUsers                      RoomUser[]
+  sessions                        Sessions[]
 }
 
 enum Role {
@@ -95,9 +95,9 @@ enum RoomType {
   PRIVATE
 }
 
-enum  FriendStatus {
+enum FriendStatus {
   PENDING
-  REJECTED
   ACCEPTED
   BLOCKED
+  REJECTED
 }

@@ -52,5 +52,23 @@ export class RedisService implements OnModuleInit {
       return await this.client.exists(key);
     }
 
+    /// Sessions 
+
+
+  async addSessionToBlackList(sessionId: string): Promise<void> {
+    await this.client.set(`session:blacklist:${sessionId}`, 'true'); //todo ttl
+  }
+
+  async isSessionBlacklisted(sessionId: string): Promise<boolean> {
+    const isInBlackList = await this.client.exists(
+      `session:blacklist:${sessionId}`,
+    );
+    return isInBlackList === 1;
+  }
+
+  async deleteSessionFromBlackList(sessionId: string): Promise<void> {
+    await this.client.del(`session:blacklist:${sessionId}`);
+  }
+
 
 }

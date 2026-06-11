@@ -1,13 +1,14 @@
 
 const Api = {
     postRequest: async (url: string, obj: object) => {
+        console.log(url, obj);
         const res = await fetch(url,  {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify (obj)
-        }).then((res) => res.json());
+        })
         return res;
     },
     getRequest: async (url: string) =>
@@ -24,9 +25,8 @@ const Api = {
     {
         const res = await fetch(url, {
             method: "DELETE",
-        }).then((strim) => strim.json());
+        })
         return res;
     }
-
 }
 export default Api;
