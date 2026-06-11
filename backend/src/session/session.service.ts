@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { RedisService } from 'src/redis/redis.service';
-import { TokenService } from 'src/token/token.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { TokenService } from '../token/token.service';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class SessionService {

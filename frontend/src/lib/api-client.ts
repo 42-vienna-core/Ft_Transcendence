@@ -3,31 +3,39 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from './auth';
 
-// When you want to fetch actual data (like a list of users or game statistics), 
-// your code uses your custom apiFetch() wrapper. That wrapper grabs the 
-// accessToken out of the NextAuth session and attaches it to the request 
-// header so NestJS can validate it.
+interface CustomApiOptions extends RequestInit {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+}
 
-export async function apiFetch(path: string, init?: RequestInit) {
+export async function apiFetch(endpoint: string, options: CustomApiOptions = {}) {
+  const baseUrl = process.env.INTERNAL_API_URL
+  const url = `${baseUrl}/${endpoint}`;
+
   const session = await getServerSession(authOptions);
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(init?.headers as Record<string, string>),
-  };
+  console.log(url);
 
-  if (session?.accessToken) {
-    headers['Authorization'] = `Bearer ${session.accessToken}`;
+  const headers = new Headers(options.headers);
+  
+  headers.set('Authorization',`Bearer ${session?.accessToken}`);
+
+  if (options.body && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${process.env.INTERNAL_API_URL}${path}`, {
-    ...init,
+  const res = await fetch(url, {
+    ...options,
     headers,
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(err.message);
+    let errorMessage = `Request failed with status ${res.status}`;
+    try {
+      const errorData = await res.json();
+      errorMessage = errorData.message || errorData.error || errorMessage;
+    } catch {}
+    throw new Error(errorMessage);
   }
+
   return res.json();
 }

@@ -1,20 +1,14 @@
-import { getServerSession } from 'next-auth';
+'use client'
+
 import style from './nav.module.css';
 import Link from 'next/link';
-import { authOptions } from '@/lib/auth';
 import clsx from 'clsx';
-import LogoutButton from '../logoutButton'; 
-import { headers } from 'next/headers';
 import CustomLink from '../link';
+import { useProfile } from '@/providers/ProfileContext';
 
-async function Nav() {
-  const session = await getServerSession(authOptions);
-  const headersList = await headers();
-  const referer = headersList.get('referer');
-  const currentUrl = headersList.get("x-url") || referer || "unknown";
-  
-  const isLoginActive = currentUrl.includes('/login');
-  const isRegisterActive = currentUrl.includes('/register');
+
+function Nav({isAuthorized}: {isAuthorized: boolean}) {
+  const { username, avatar } = useProfile();
 
   return (
     <nav className={style.nav}>
@@ -23,17 +17,18 @@ async function Nav() {
         <Link href="/">Snake.io</Link>
       </div>
       <div className={style.navLinks}>
-        {session ? (
+        {isAuthorized ? (
           <>
-            <Link className={clsx(style.btn, style.btnPrimary)} href="#">
-              Profile
+            <Link className={style.profile} href="/profile">
+              <span>{username}</span>
+                <img 
+                  className={style.ava} 
+                  src={avatar ? avatar : "/png/default_avatar.png"}/>
             </Link>
-            <LogoutButton />
           </>
         ) : (
           <>
             <CustomLink 
-              // className={clsx(style.btn, isLoginActive ? style.btnPrimary : style.navLink)} 
               url={"/login"}
               label={"Log in"}
             />

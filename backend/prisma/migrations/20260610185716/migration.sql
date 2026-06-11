@@ -1,14 +1,8 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('PLAYER', 'ADMIN');
 
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "RoomType" AS ENUM ('PUBLIC', 'PRIVATE');
-
--- DropTable
-DROP TABLE "User";
 
 -- CreateTable
 CREATE TABLE "Users" (
@@ -19,6 +13,7 @@ CREATE TABLE "Users" (
     "role" "Role" NOT NULL DEFAULT 'PLAYER',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "avatar" TEXT,
 
     CONSTRAINT "Users_pkey" PRIMARY KEY ("id")
 );

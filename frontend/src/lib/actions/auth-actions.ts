@@ -1,7 +1,7 @@
 'use server'
 import { loginSchema, registerSchema } from '@/lib/schema'
 import { getServerSession } from 'next-auth';
-import { authOptions } from './auth';
+import { authOptions } from '../auth';
 
 const url = process.env.INTERNAL_API_URL;
 
@@ -36,7 +36,7 @@ export async function fetchRegister(formData: FormData) {
         console.log(err);
         return {message: err?.message ?? 'Registration failed', success: false}
     }
-
+    
     return {success: true};
 }
 
@@ -67,7 +67,7 @@ export async function fetchLogout() {
         if (!session?.error) return {success: true}
 
         await fetch(`${url}/auth/logout`, {
-            method: 'Post',
+            method: 'POST',
             headers: {
                 'Authorization': `Bearer ${session.accessToken}`,
                 'Content-Type': 'application/json' 

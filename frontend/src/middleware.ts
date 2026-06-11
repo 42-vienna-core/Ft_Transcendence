@@ -10,9 +10,9 @@ export default withAuth(
             return NextResponse.redirect(new URL('/dashboard', req.url));
         }
 
-        if (token?.error === 'RefreshAccessTokenError') {
-            return NextResponse.redirect(new URL('/login?error=session_expired', req.url));
-        }
+        // if (token?.error === 'RefreshAccessTokenError') {
+        //     return NextResponse.redirect(new URL('/login?error=session_expired', req.url));
+        // }
 
         return NextResponse.next();
     },

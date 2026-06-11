@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "../auth.module.css";
 import { FormField, State } from "@/lib/definitions";
-import { fatchLogin } from "@/lib/action";
+import { fetchRegister } from "@/lib/actions/auth-actions";
 import { signIn } from "next-auth/react";
 import SubmitButton from "@/ui/submitButton";
 
@@ -13,7 +13,13 @@ const initialState: State = {
   success: false,
 }
 
-function Login() {
+function getPlaceholder(field: FormField): string {
+  if (!field.showPlaceholder) return "";
+  if (field.name === "confirmPassword") return "confirm Password";
+  return field.name;
+}
+
+function Signup() {
   const router = useRouter();
   const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
   const [state,  setState] = useState<State>(initialState);
@@ -24,16 +30,13 @@ function Login() {
 
   function togglePasswordVisibility(field: FormField) {
     if (field.name !== "password" && field.name !== "confirmPassword") return;
-    if (field.type === "text") {
-      updateField(field.id, { type: "password", src: "/png/secret.png" });
-    } else {
-      updateField(field.id, { type: "text", src: "/png/eye.png" });
-    }
+    if (field.type === "text") updateField(field.id, { type: "password", src: "/png/secret.png" });
+    else updateField(field.id, { type: "text", src: "/png/eye.png" });
   }
 
-  const handleLogin = async (formData: FormData) => {
+  const handleRegistration = async (formData: FormData) => {
 
-    const res = await fatchLogin(formData);
+    const res = await fetchRegister(formData);
     setState(prev => ({...prev, ...res}));
 
     if (res.success) {
@@ -47,7 +50,7 @@ function Login() {
         setState(prev =>({
           ...prev,
           success: false, 
-          message: 'login failed', 
+          message: 'Registration failed', 
         }));
         return;
       } 
@@ -55,17 +58,17 @@ function Login() {
 
     router.push('/dashboard');
     router.refresh();
-    
   }
 
   return (
     <div className={styles.page}>
+
       <div className={`glass ${styles.card}`}>
         <div className={styles.cardTitle}>
-          <h2>Login</h2>
+          <h2>Sign Up</h2>
         </div>
 
-        <form action={handleLogin}>
+        <form action={handleRegistration}>
           {fields.map((field) => (
             <div className={styles.inputRow} key={field.id}>
               <label htmlFor={field.id} className={styles.inputLabel}>
@@ -75,7 +78,7 @@ function Login() {
                   type={field.type}
                   name={field.name}
                   value={field.value}
-                  placeholder={field.showPlaceholder ? field.name : ""}
+                  placeholder={getPlaceholder(field)}
                   className={styles.input}
                   onFocus={() => updateField(field.id, { showPlaceholder: false })}
                   onChange={(e) => updateField(field.id, { value: e.target.value })}
@@ -96,31 +99,21 @@ function Login() {
             <p className={styles.errorMessage}>{state?.message}</p>
           </div>
           <div className={styles.actions}>
-            <SubmitButton label="Login" loadingLabel="Logging..."/>
+            <SubmitButton label="Register" loadingLabel="Registering..."/>
             <div className={styles.switchRow}>
               <p>
-                Don&apos;t have an account? /
+                New to Snake /
                 <button
                   className={styles.switchBtn}
                   type="button"
-                  onClick={() => router.push("/register")}
+                  onClick={() => router.push("/login")}
                 >
-                  Sign Up
+                  Login
                 </button>
               </p>
             </div>
           </div>
         </form>
-
-        <div className={styles.footerCenter}>
-          <button
-            className={styles.linkBtn}
-            type="button"
-            onClick={() => router.push("/reset-password")}
-          >
-            Forgot your password
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -128,18 +121,37 @@ function Login() {
 
 const INITIAL_FIELDS: FormField[] = [
   { 
+    id: "username", 
+    type: "text", 
+    name: "username", 
+    src: "/png/users.png", 
+    value: "", 
+    showPlaceholder: true 
+  },
+  { 
     id: "email",
-    type: "email",
+    type: "email", 
     name: "email", 
     src: "/png/email.png", 
-    value: "", showPlaceholder: true 
+    value: "", 
+    showPlaceholder: true 
   },
-  { id: "password", 
+  { 
+    id: "password", 
     type: "password", 
     name: "password", 
     src: "/png/secret.png", 
-    value: "", showPlaceholder: true 
+    value: "", 
+    showPlaceholder: true 
   },
+  { 
+    id: "confirm-password", 
+    type: "password", 
+    name: "confirmPassword", 
+    src: "/png/secret.png", 
+    value: "", 
+    showPlaceholder: true 
+  }
 ];
 
-export default Login;
+export default Signup;
