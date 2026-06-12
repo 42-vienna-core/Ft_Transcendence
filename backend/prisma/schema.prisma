@@ -34,6 +34,8 @@ model Users {
   gameRoom		GameRoom []
   roomUser		RoomUser []
 
+  sentRequests  FriendsRequest [] @relation("SentRequests")
+  receivedRequests  FriendsRequest [] @relation("ReceivedRequests")
 }
 
 enum Role {
@@ -90,4 +92,27 @@ model RoomUser {
 enum RoomType {
   PUBLIC
   PRIVATE
+}
+
+model FriendsRequest {
+  id     String @id @default(uuid())
+
+  senderId      Int
+  sender        Users @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId    Int
+  receiver      Users @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  status  RequestStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([senderId, receiverId])
+}
+
+enum RequestStatus {
+  ACCEPTED
+  PENDING
+  REJECTED
 }
