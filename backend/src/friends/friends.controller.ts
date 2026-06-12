@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, HttpCode, HttpStatus, Body, Patch, Param } from '@nestjs/common';
 import { FriendsService } from './friends.service';
-import { CreateFriendDto } from './dto/create-friend.dto';
-import { UpdateFriendDto } from './dto/update-friend.dto';
+import { Authorization } from '../common/decorators/authorization.decorator';
+import { Authorized } from '../common/decorators/authorized.decorator';
+
 
 @Controller('friends')
 export class FriendsController {
-  constructor(private readonly friendsService: FriendsService) {}
+	constructor(private readonly friendsService: FriendsService) {}
 
-  @Post()
-  create(@Body() createFriendDto: CreateFriendDto) {
-    return this.friendsService.create(createFriendDto);
-  }
+	@Authorization()
+	@HttpCode(HttpStatus.OK)
+	@Post('request')
+	async sendRequest(
+		@Authorized('userId') senderId: number, 
+		@Body('receiverId') receiverId: number,) {
+				return this.friendsService.sendRequest(senderId, receiverId);
+		}
 
-  @Get()
-  findAll() {
-    return this.friendsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.friendsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFriendDto: UpdateFriendDto) {
-    return this.friendsService.update(+id, updateFriendDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.friendsService.remove(+id);
-  }
+	@Authorization()
+	@HttpCode(HttpStatus.OK)
+	@Patch('request/:id/accept')
+	async acceptRequest(
+		@Authorized('userId') userId: number,
+		@Param("id") requestId: string,
+	){
+		return this.friendsService.acceptRequest(userId, requestId);
+	}
+	//patch - reject
+	//delete  -cancel request
+	//get - get friends
+	//delete - friend
+	//get - request incoming
 }
