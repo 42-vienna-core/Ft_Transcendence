@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUsersDto } from 'src/dto/create-users.dto';
 import { LoginUsersDto } from 'src/dto/login-users.dto';
@@ -9,12 +9,11 @@ import { Authorized } from './common/decorators/authorized.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
   
-  @Get('me')
-  @Authorization()
-  async findMe( @Authorized('userId') userId: number ) {
-      return this.authService.findMe(userId);
+  @Post("verifyAccess")
+  async verifyAccess(@Body('accessToken') accessToken: string) {
+    return this.authService.verifyToken(accessToken);
   }
-
+  
   @Post('register')
   async signUp(@Body() dto: CreateUsersDto) {
     return await this.authService.signUp(dto);

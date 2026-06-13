@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 interface Token {
 	"accessToken": string,
@@ -16,10 +17,7 @@ export async function POST ( req : Request) {
 	}).then((res) => res.json());
 
     if (res.accessToken === undefined || res.refreshToken === undefined)
-    {
-        console.log("Registration failed");
-		return ;
-    }
+		return  NextResponse.json({success: false});
 	cookieStore.set("accessToken", res.accessToken, {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
@@ -36,6 +34,7 @@ export async function POST ( req : Request) {
 		maxAge: 60 * 60 * 24 * 7,
 		path: "/",
 	})
+	
 
-	return Response.json( { success: true });
+	return  NextResponse.json({success: true});
 }

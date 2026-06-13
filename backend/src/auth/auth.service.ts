@@ -18,9 +18,9 @@ export class AuthService {
         private readonly sessionService: SessionService,
     ) { }
 
-    async findMe(userId: number) {
-        const user =  await this.usersService.findOne(userId);
-        return user;
+    async verifyToken(accessToken: string) {
+        const payload = await this.tokenService.verifyAccessToken(accessToken);
+        return payload;
     }
 
     async signUp(body: CreateUsersDto) {
@@ -47,7 +47,6 @@ export class AuthService {
         }
         const isMatch = await bcrypt.compare(body.Password, user.Password);
         if (!isMatch) {
-            console.log(isMatch)
             throw new UnauthorizedException('Invalid credentials');
         }
         const accessToken = await this.createTokenSession(user.id);

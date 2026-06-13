@@ -69,10 +69,7 @@ export class UsersService {
 	}
 
 	async findOne(id: number) {
-		return this.databaseService.users.findUnique(
-		{ 
-			where: {id}
-		});
+		return this.databaseService.users.findUnique( {  where: { id } } );
 	}
 
 	async update(id: number, updateUserDto: UpdateUserDto) {

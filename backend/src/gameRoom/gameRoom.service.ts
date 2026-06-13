@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateGameRoomDto } from '../dto/create-gameRoom.dto';
 import { CreatePrivateGameRoom } from '../dto/crate-private-gameRoom.dto';
-
 @Injectable()
 export class GameRoomService {
   constructor(private db: DatabaseService) {}

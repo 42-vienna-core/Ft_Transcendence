@@ -20,13 +20,15 @@ return (
 			</div>
 			
 			<form onSubmit={ async (e) => { 
-				debugger
 				e.preventDefault();
-               	await fetch("/api/Login", {
+               	const login = await fetch("/api/login", {
                     method: "POST",
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(Object.fromEntries(new FormData(e.currentTarget))) 
-                }).then((res) => res.ok ? router.push("/") : console.log(res)) }}
+                });
+				if (login.ok)
+					router.push("/");
+			}}
             >
 				{loginData.map((item, i) => {
 					return (

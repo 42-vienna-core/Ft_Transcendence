@@ -1,6 +1,7 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
+import { AddUserGameRoomDto } from 'src/dto/addUser-gameRoom.dto';
 
 @WebSocketGateway(2000, { cors: { origin: '*' } })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -12,10 +13,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join-room')
-  async handleJoinRoom(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; userId: number },
-  ) {
+  async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto ) {
     await client.join(data.roomId);
     //client.data = { userId: data.userId, roomId: data.roomId };
 
@@ -29,10 +27,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leave-room')
-  async handleLeaveRoom(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; userId: number },
-  ) {
+  async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto ) {
     await client.leave(data.roomId);
     await this.roomService.removeUserFromRoom(data.roomId, data.userId);
     const players = await this.roomService.getPlayerCount(data.roomId);

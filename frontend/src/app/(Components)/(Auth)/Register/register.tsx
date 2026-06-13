@@ -23,10 +23,9 @@ return (
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
 				const form = Object.fromEntries(new FormData(e.currentTarget));
-				console.log(form)
 				if (form.Password != form.ConfirmPassword)
 					return alert("Passwords do not match");
-				await fetch("/api/Register", {
+				await fetch("/api/register", {
                     method: "POST",
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({Email: form.Email, Password: form.Password, Username: form.Username}) 

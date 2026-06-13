@@ -1,7 +1,6 @@
 
 const Api = {
     postRequest: async (url: string, obj: object) => {
-        console.log(url, obj);
         const res = await fetch(url,  {
             method: "POST",
             headers: {
