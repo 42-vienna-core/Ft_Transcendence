@@ -1,6 +1,7 @@
 .pfTop { 
   display: flex; 
   align-items: center; 
+  height: 96px;
   gap: 16px; 
   padding-bottom: 18px; 
   border-bottom: 0.5px solid var(--color-border-tertiary); 
