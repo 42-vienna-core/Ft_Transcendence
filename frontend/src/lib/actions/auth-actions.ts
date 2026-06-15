@@ -1,5 +1,5 @@
 'use server'
-import { loginSchema, registerSchema } from '@/lib/schema'
+import { changePasswordSchema, loginSchema, registerSchema } from '@/lib/schema'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth';
 
@@ -79,4 +79,23 @@ export async function fetchLogout() {
         console.log("Log out error: ", error);
     }
 
+}
+
+export async function fetchChangePassword (formData: FormData) {
+    const oldPassword = formData.get('oldPassword');
+    const newPassword = formData.get('newPassword');
+    const confirmPassword = formData.get('confirmPassword');
+    console.log(oldPassword,newPassword,confirmPassword);
+
+    const validateFilds = changePasswordSchema.safeParse({oldPassword, newPassword, confirmPassword});
+
+    if (!validateFilds.success) {
+        let message = "";
+        validateFilds.error.issues.forEach(issue => {
+            message = issue.message;
+        })
+        return {message: message, success: false};
+    }
+
+    return {success: true};
 }
