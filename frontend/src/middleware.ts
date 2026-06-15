@@ -5,16 +5,24 @@ export default withAuth(
     function middleware(req) {
         const token = req.nextauth.token;
         const path = req.nextUrl.pathname;
-        
-        if (token && (path === "/login" || path === "/register") ) {
+        const response = NextResponse.next();
+        const isAuthPage = path === "/login" || path === "/register";
+
+        if (path === '/api/auth/session') {
+            response.headers.set('x-nextauth-origin', 'client-use-session');
+        } else {
+            response.headers.set('x-nextauth-origin', 'server-get-session');
+        }
+
+        if (token?.error === 'RefreshAccessTokenError') {
+            return isAuthPage ? response : NextResponse.redirect(new URL('/login', req.url));
+        }
+
+        if (token && isAuthPage) {
             return NextResponse.redirect(new URL('/dashboard', req.url));
         }
 
-        // if (token?.error === 'RefreshAccessTokenError') {
-        //     return NextResponse.redirect(new URL('/login?error=session_expired', req.url));
-        // }
-
-        return NextResponse.next();
+        return response;
     },
     {
         callbacks: {
