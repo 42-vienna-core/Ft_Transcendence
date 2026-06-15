@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { headers } from 'next/headers';
 
 const URL = `${process.env.INTERNAL_API_URL}/auth`;
 
@@ -26,13 +27,13 @@ export const authOptions: NextAuthOptions = {
                     cache: 'no-store'
                 })
 
-                if (!res.ok) return null;
+                if (!res.ok) throw new Error('Error: while logining');
                 const data = await res.json();
-                console.log(data);
 
                 return {
                     id: data.user.id,
                     name: data.user.name,
+                    email: payload.email,
                     avatar: data.user.avatar,
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
@@ -42,16 +43,16 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        async jwt({token, user, trigger, session}) {
+        async jwt({token, user, account, trigger, session}) {
             console.log("=================JWT CALLBACK=======================")
-            console.log("CHECK user: ", user);
-            console.log("CHECK jwt accessToken: ", token.accessToken);
+            console.log("user", user);
+            console.log("refreshToken: ", token.refreshToken);
 
-            console.log("CHECK jwt refreshToken: ", token.refreshToken);
 
             if (user) {
                 token.sub = user.id;
                 token.name = user.name;
+                token.email = user.email,
                 token.picture = user.avatar;
                 token.accessToken = user.accessToken;
                 token.refreshToken = user.refreshToken;
@@ -59,6 +60,7 @@ export const authOptions: NextAuthOptions = {
             }
 
             if (trigger === "update" && session) {
+                console.log("triger update");
                 const newUsername = session.username ?? session.user?.username;
                 const newAvatar = session.avatar ?? session.user?.avatar;
 
@@ -66,9 +68,22 @@ export const authOptions: NextAuthOptions = {
                 if (newAvatar) token.picture = newAvatar;
             }
 
+
+            if (token.error === "RefreshAccessTokenError") {
+                return token;
+            }
+
             const expiryTime = (token.accessTokenExpiry as number) ?? 0;
             if (Date.now() < expiryTime) {
                 return token;
+            }
+
+            const reqHeaders = await headers();
+            const originSource = reqHeaders.get('x-nextauth-origin');
+
+            if (originSource === 'server-get-session') {
+                console.log("Server Component detected. Skipping token rotation to prevent cookie loss.");
+                return token; 
             }
 
             return await refreshAccessToken(token);
@@ -94,13 +109,9 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET
 }
 
-async function refreshAccessToken(token: JWT): Promise<JWT> {
+export async function refreshAccessToken(token: JWT): Promise<JWT> {
     console.log("================= REFRESH JWT=======================")
-    console.log("CHECK jwt accessToken: ", token.accessToken);
 
-    console.log("CHECK jwt refreshToken: ", token.refreshToken);
-    console.log("act refresh token");
-    console.log(`${URL}/refresh`);
     try {
         const res = await fetch(`${URL}/refresh`, {
             method: 'POST',
@@ -109,24 +120,21 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             cache: 'no-store' 
         });
 
-        if (!res.ok) 
-            throw new Error('refresh faild');
+        if (!res.ok) {
+            return {...token, error: "RefreshAccessTokenError" }
+        }
 
         const data = await res.json();
-        console.log("data",data);
 
-        const payload = {
-            // ...token,
-            ...data,
+        return {
+            ...token,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
             accessTokenExpiry: createExpiredTime(),
             error: undefined
         }
-        console.log("payload",payload);
-
-        return payload;
     } catch (error){
-        console.error("❌ Token rotation failure:", error);
-        return {...token, error: 'RefreshAccessTokenError'};
+        return {...token, error: "RefreshAccessTokenError" }
     }
 }
 
