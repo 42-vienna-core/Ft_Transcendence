@@ -1,35 +1,50 @@
 'use client'
 
-import { useSession } from "next-auth/react";
-import { preloadVideo } from "pixi.js";
+import {signOut, useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
 interface ProfileContextType {
     username: string;
+    email: string;
     nameOnChange: string;
     avatar: string | null;
+    status: 'loading' | 'authenticated' | 'unauthenticated';
     updateNameOnChange: Dispatch<SetStateAction<string>>;
     updateSessionUsername: () => void;
     updateAvatar: (newUrl: string) => void;
+    updateSession: (checkSession: boolean) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-export function ProfileProvider({children} : {children: React.ReactNode}) {
-    const {data: session, update} = useSession();
+export function ProfileProvider({children} : {children: React.ReactNode;}) {
+    const {data: session, update, status,} = useSession();
+
     const [username, setUsername] = useState<string>("");
     const [nameOnChange, setnameOnChange] = useState<string>("");
     const [avatar, setAvatar] = useState<string | null>(null);
+    const [email, setEmail] = useState<string>("");
+    
+    console.log("PROFILEPROVIDER useSession");
+
 
     useEffect(() => {
+        if (session?.error === "RefreshAccessTokenError" && status === "authenticated") {
+            signOut({callbackUrl: "/login"});
+            console.log("session?.error: ", session?.error);
+        } 
+
         if (session?.user) {
             const ava = session.user.avatar;
             setUsername(session.user.username);
+            setEmail(session.user.email);
             setnameOnChange(session.user.username);
             setAvatar(ava ? ava : "/png/default_avatar.png");
         }
     },[session])
 
+    
     const updateSessionUsername = async () => {
         console.log("update session name");
         setUsername(nameOnChange);
@@ -45,11 +60,18 @@ export function ProfileProvider({children} : {children: React.ReactNode}) {
 
     const updateNameOnChange = setnameOnChange;
 
+    const updateSession =  async (checkSession: boolean) => {
+        await update({checkSession: true});
+    }
+
     return (
         <ProfileContext.Provider value={{
             username,
+            email,
             avatar,
             nameOnChange,
+            status,
+            updateSession,
             updateSessionUsername, 
             updateAvatar,
             updateNameOnChange

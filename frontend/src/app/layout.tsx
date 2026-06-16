@@ -2,9 +2,6 @@ import type { Metadata } from 'next';
 import { Providers } from '../providers/providers';
 import './globals.css'
 import {bungee, inter} from '../ui/font'
-import Nav from '../ui/nav/index'
-import Background from '@/ui/bg/index'
-import { ProfileProvider } from '@/providers/ProfileContext';
 
 export const metadata: Metadata = {
   title: 'Snake Multiplayer',

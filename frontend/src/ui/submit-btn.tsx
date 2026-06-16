@@ -1,4 +1,5 @@
 'use client'
+
 import { useFormStatus } from "react-dom";
 
 interface Props{
@@ -7,7 +8,7 @@ interface Props{
 }
 
 function SubmitButton({label, loadingLabel}: Props) {
-    const {pending} = useFormStatus();
+    const { pending } = useFormStatus();
 
     return (
     <button 
