@@ -1,13 +1,49 @@
 'use client';
 
-import EditForm from '@/components/user-profile/edit-form';
+import EditProfileForm from '@/components/user-profile/edit-form';
 import style from './profile.module.css';
 import LogoutButton from'@/ui/logoutButton';
+import { SettingBatton } from '@/ui/setting-btn';
+import { useState } from 'react';
+import ChangePasswordModal from '@/components/modal/secure-modal';
+import { fetchLogout } from '@/lib/actions/auth-actions';
+import { signOut } from 'next-auth/react';
+
+function SettingBtnContainer({children}: {children: React.ReactNode}) {
+  return (
+    <div className="border-b border-[var(--color-border-tertiary)]">
+      {children}
+    </div>
+  )
+}
 
 export default function Profile() {
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [pending, setPending] = useState<boolean>(false);
+
+    const handleLogout = async () => {
+        setPending(true);
+
+        const res = await fetchLogout();
+        if (res?.success) {
+            try {
+                await signOut({
+                    callbackUrl: '/login',
+                    redirect: true
+                });
+            } catch (error) {
+                setPending(false);
+                console.log("An error occurred while logOut: ", error);
+            }
+        } else {
+            setPending(false);
+            console.log("The server has rejected the logout request : ");
+        }
+    }
+
     return (
     <div className={style.pfBody}>
-      <EditForm/>
+      <EditProfileForm/>
       <div className={style.pfStats}>
         <div className={style.statCard}><div className={style.l}>rating</div><div className={style.v}>1 482</div><div className={style.d}>+14 today</div></div>
         <div className={style.statCard}><div className={style.l}>global rank</div><div className={style.v}>#3 920</div><div className={style.d}>top 8 %</div></div>
@@ -65,17 +101,25 @@ export default function Profile() {
             <div className={style.lbl}><i className={`${style.ti} ${style.tiAccessible}`} aria-hidden="true"></i> accessibility</div>
             <div className={style.val}>color-blind mode <span className={`${style.toggle} ${style.off}`}></span></div>
           </div>
-          <div className={style.row}>
-            <div className={style.lbl}><i className={`${style.ti} ${style.tiShieldLock}`} aria-hidden="true"></i> security</div>
-            <div className={style.val}>change password, 2FA <i className={`${style.ti} ${style.tiChevronRight}`} aria-hidden="true"></i></div>
-          </div>
+          <SettingBtnContainer>
+            <SettingBatton
+              labelF="security"
+              labelS="change password, 2FA"
+              onClick={() => setIsModalOpen(true)}
+            />
+          </SettingBtnContainer>
           <div className={style.row}>
             <div className={`${style.lbl} color: var(--color-text-danger);`}><i className={`${style.ti} ${style.tiTrash}`} aria-hidden="true"></i> delete account</div>
             <div className={style.val}><i className={`${style.ti} ${style.tiChevronRight}`} aria-hidden="true"></i></div>
 
           </div>
-            <LogoutButton/>
-
+          <SettingBtnContainer>
+            <SettingBatton
+              labelF="logout"
+              onClick={handleLogout}
+              disabled={pending}
+            />
+          </SettingBtnContainer>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -120,6 +164,10 @@ export default function Profile() {
           </div>
         </div>
       </div>
+      <ChangePasswordModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
     )
 }

@@ -8,7 +8,7 @@ export type FormField = {
 };
 
 export type State = {
-  message: string;
+  message?: string;
   success: boolean;
 }
 

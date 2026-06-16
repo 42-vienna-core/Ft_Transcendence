@@ -11,7 +11,7 @@
   --color-game-grid:      rgba(255, 255, 255, 0.04);
 
   /* Typography / Text colors */
-  --color-text-primary:   #1C1917;   /* main headings, bold texts */
+  /*--color-text-primary:   #1C1917;    main headings, bold texts */
   --color-text-secondary: #57534E;   /* handles, subtext, labels */
   --color-text-tertiary:  #78716C;   /* captions, offline states */
 

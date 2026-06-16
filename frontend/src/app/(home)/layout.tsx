@@ -7,7 +7,8 @@ import { authOptions } from "@/lib/auth";
 
 async function HomeLayout({ children }: { children: ReactNode }) {
     const session = await getServerSession(authOptions);
-    const isAuthorized = session ? true : false;
+    const isAuthorized = session?.user ? true : false;
+
     return (
         <Background>
             <header>
