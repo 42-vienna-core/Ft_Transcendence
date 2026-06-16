@@ -20,7 +20,7 @@ interface AuthLinkProps {
     isAuthorized: boolean;
 }
 
-export function ProfileNavLink ({status, username, avatar}: LinkProps) {
+function ProfileNavLink ({status, username, avatar}: LinkProps) {
     if (status === "authenticated") {
         return (
             <Link className={`${style.profile} justify-between`} href="/profile">
@@ -34,7 +34,7 @@ export function ProfileNavLink ({status, username, avatar}: LinkProps) {
     }
 }
 
-export function NavAuthLinks ({status}: {status: string}) {
+function NavAuthLinks ({status}: {status: string}) {
     if (status === "unauthenticated") {
         return (
             <div className={style.navLinks}>
@@ -51,14 +51,20 @@ export function NavAuthLinks ({status}: {status: string}) {
     }
 }
 
+function FriendsLink() {
+    return (
+        <Link href="/friends">Friends</Link>
+    )
+}
 
-export function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
+
+function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
     if (isAuthorized && status === "loading") {
         return <HeaderProfileSkeleton/>
     }
 }
 
-export function AuthLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
+function AuthLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
     const currentPage = usePathname();
     const publickPages = (currentPage === "/login" || currentPage === "/register" || currentPage === "/");
     
@@ -75,6 +81,7 @@ function Nav({isAuthorized}: {isAuthorized:boolean}) {
                 <div className={style.logoMark} />
                 <Link href="/">Snake.io</Link>
             </div>
+            <FriendsLink/>
             <ProfileNavLink 
                 status={status}
                 username={username}
@@ -83,7 +90,7 @@ function Nav({isAuthorized}: {isAuthorized:boolean}) {
             <ProfileLoadingSkeleton 
                 status={status}
                 isAuthorized={isAuthorized}
-                />
+            />
             <NavAuthLinks status={status}/>
             <AuthLoadingSkeleton 
                 status={status}

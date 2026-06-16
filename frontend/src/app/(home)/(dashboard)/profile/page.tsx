@@ -2,7 +2,6 @@
 
 import EditProfileForm from '@/components/user-profile/edit-form';
 import style from './profile.module.css';
-import LogoutButton from'@/ui/logoutButton';
 import { SettingBatton } from '@/ui/setting-btn';
 import { useState } from 'react';
 import ChangePasswordModal from '@/components/modal/secure-modal';
