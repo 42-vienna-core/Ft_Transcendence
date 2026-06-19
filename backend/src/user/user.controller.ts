@@ -59,6 +59,10 @@ export class UserController {
     void userId;
     return { success: false };
   }
+  @Get() 
+  async find() {
+    return " hello this is user";
+  }
 }
 
 

@@ -3,10 +3,10 @@ import { SocketGateway } from './socket.gateway';
 import { SocketService } from './socket.service';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { GameRoomModule } from 'src/gameRoom/gameRoom.module';
-// import { DatabaseModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [GameRoomModule, ],
+  imports: [GameRoomModule, PrismaModule ],
   providers: [SocketGateway, SocketService, GameRoomService],
   exports: [SocketService],
 })

@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
-
 import { unlink } from 'fs/promises';
 import { basename, join, resolve } from 'path';
 import { fileTypeFromFile } from 'file-type';
@@ -15,8 +14,7 @@ export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
 export class UserService {
 
 	public constructor(
-		private readonly prismaService: PrismaService,
-	) { }
+		private readonly prismaService: PrismaService ) { }
 
 	public async findByEmail(email: string) {
 		const user = await this.prismaService.users.findUnique({

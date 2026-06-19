@@ -13,9 +13,11 @@ import { AvatarModule } from './avatar/avatar.module';
 import { SocketService } from './socket/socket.service';
 import { SocketModule } from './socket/socket.module';
 import { GameRoomModule } from './gameRoom/gameRoom.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     UserModule,
     ConfigModule.forRoot({ isGlobal: true, }),
     ThrottlerModule.forRoot([{
