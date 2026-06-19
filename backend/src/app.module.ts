@@ -10,6 +10,9 @@ import { TokenModule } from './token/token.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
 import { AvatarModule } from './avatar/avatar.module';
+import { SocketService } from './socket/socket.service';
+import { SocketModule } from './socket/socket.module';
+import { GameRoomModule } from './gameRoom/gameRoom.module';
 
 @Module({
   imports: [
@@ -29,14 +32,16 @@ import { AvatarModule } from './avatar/avatar.module';
     LoggerModule,
     TokenModule,
     AuthModule,
+    SocketModule,
     SessionModule,
     AvatarModule,
+    GameRoomModule
   ],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_GUARD,
     useClass: ThrottlerGuard
-  }],
+  }, SocketService],
 })
 
 export class AppModule { }
