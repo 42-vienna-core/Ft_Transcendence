@@ -1,10 +1,10 @@
 "use client"
 
-import { useRouter }			from "next/navigation";
 import { useEffect, useState }	from "react"
-import Styles					from "../../../styles";
-import Data						from "../../../data";
-import Appi						from "../../../api"
+import { useRouter }			from "next/navigation";
+import	Styles					from "@/src/styles/styles";
+import	Data					from "@/src/lib/data";
+import { Api }					from "@/src/lib/api"
 
 function Registration() {
 
@@ -15,13 +15,13 @@ function Registration() {
 	useEffect(() => {
 		if (object.email === undefined) 
 			return;
-		Appi.postRequest("http://localhost:4000i/auth/find", {email: object.email})
+		Api.postRequest("http://localhost:4000i/auth/find", {email: object.email})
 		.then((res) => {
 			if (!res.ok)
 				throw new Error("User not found");
 		});
 		let resetCode = prompt("Enter the code sent to your email");
-		Appi.postRequest("auth/code", {
+		Api.postRequest("auth/code", {
 			...object, resetCode: resetCode})
 		.then( (res) => res.ok ?  rout.push("/Login") : alert("Wrong code or time is over") );
 	}, [object]);

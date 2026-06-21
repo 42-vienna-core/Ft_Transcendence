@@ -1,7 +1,9 @@
-import Hero from "./(Components)/Hero/page"
-import Features from "../app/(Components)/features/page"
+import Hero from "@/src/components/hero/Hero"
+import Features from "@/src/components/features/Features"
 
-const Home = () => {
+
+export default async function Page() {
+
   return (
     <main className="bg-black text-white">
           <Hero />
@@ -9,5 +11,6 @@ const Home = () => {
     </main>
   )
 }
+  
 
-export default Home;
+

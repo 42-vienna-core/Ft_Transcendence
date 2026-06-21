@@ -18,7 +18,10 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     UsersModule,
     DatabaseModule,
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot( { 
+      isGlobal: true,
+    }
+    ),
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -39,9 +42,7 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  providers: [ AppService, { provide: APP_GUARD, useClass: ThrottlerGuard },
     SocketService,
   ],
 })

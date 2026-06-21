@@ -1,8 +1,9 @@
 "use client"
 import { useRouter } from "next/navigation";
 import { useState} from "react"
-import Styles from "../../../styles";
-import Data from "../../../data"
+import Styles from "@/src/styles/styles";
+import Data from "@/src/lib/data"
+import { Api } from "@/src/lib/api"
 
 export default function Login() {
 
@@ -21,13 +22,8 @@ return (
 			
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
-               	const login = await fetch("/api/login", {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(Object.fromEntries(new FormData(e.currentTarget))) 
-                });
-				if (login.ok)
-					router.push("/");
+			 	await Api.postRequest("/api/login", Object.fromEntries(new FormData(e.currentTarget)))
+				.then(res => res.ok ? router.push("/") : console.log(res)) 
 			}}
             >
 				{loginData.map((item, i) => {

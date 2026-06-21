@@ -9,9 +9,9 @@ import { Authorized } from './common/decorators/authorized.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
   
-  @Post("verifyAccess")
+  @Post("me")
   async verifyAccess(@Body('accessToken') accessToken: string) {
-    return this.authService.verifyToken(accessToken);
+    return this.authService.me(accessToken);
   }
   
   @Post('register')

@@ -38,13 +38,14 @@ export class TokenService {
     async verifyRefreshToken(token: string) {
         try {
             const payload = await this.jwt.verifyAsync(token, {
-                secret: this.config.getOrThrow<string>('JWT_REFRESH_SECRET'),
+                secret: this.config.getOrThrow('JWT_REFRESH_SECRET'),
             });
             return payload;
         } catch (error) {
             throw new Error('Invalid refresh token');
         }
     }
+
 
     async generateRefreshToken(): Promise<string> {
         return randomBytes(64).toString('base64url')

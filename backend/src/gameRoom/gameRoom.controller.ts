@@ -17,6 +17,7 @@ export class GameRoomController {
     return this.roomService.findOne(id);
   }
 
+  
   @Post()
   async createRoom(@Body() obj: CreateGameRoomDto) {
     return this.roomService.createRoom(obj);

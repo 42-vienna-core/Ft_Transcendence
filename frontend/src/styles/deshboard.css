@@ -1,0 +1,183 @@
+
+@reference "tailwindcss";
+
+
+.mockBody {
+    @apply 
+    grid min-h-87.5;
+    grid-template-columns: 80% 20%;
+}
+
+.mockBoard {
+    @apply flex flex-col gap-3 p-4;
+    background: var(--color-background-secondary);
+    border-right: 0.5px solid var(--color-border-tertiary);
+}
+
+.boardTop {
+    @apply flex items-center justify-between;
+}
+
+.boardTag {
+    @apply inline-flex items-center gap-1.5 px-[10px] py-[3px] rounded-full text-xs;
+    background: var(--color-accent-text);
+    color: var(--color-text-success);
+}
+
+.boardStats {
+    @apply flex gap-[18px] text-xs;
+    color: var(--color-text-secondary);
+}
+
+.boardStats b {
+    @apply block text-base font-medium;
+    color: var(--color-text-primary);
+}
+
+.playArea {
+    @apply flex flex-1 items-center justify-center relative overflow-hidden rounded-md min-h-[280px];
+    background: #0F1F18;
+}
+
+.gridOverlay {
+    @apply absolute inset-0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+.snakeSeg {
+    @apply absolute w-[22px] h-[22px] rounded-[4px];
+    background: #97C459;
+}
+
+.foodDot {
+    @apply absolute w-[18px] h-[18px] rounded-full;
+    background: #F09595;
+}
+
+.youTag {
+    @apply absolute top-3 left-3 px-2 py-[3px] text-[11px] font-medium rounded;
+    background: rgba(255,255,255,0.10);
+    color: #E1F5EE;
+}
+
+.boardBottom {
+    @apply flex items-center justify-between text-xs;
+    color: var(--color-text-secondary);
+}
+
+.kbd {
+    @apply inline-block px-[6px] py-[2px] rounded text-[11px];
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-secondary);
+    font-family: var(--font-mono);
+}
+
+.mockSide {
+    @apply flex flex-col gap-3 p-[14px] min-w-0;
+    background: var(--color-background-primary);
+}
+
+.sideHead {
+    @apply flex items-center justify-between;
+}
+
+.sideTitle {
+    @apply text-xs font-medium lowercase tracking-[0.02em];
+    color: var(--color-text-secondary);
+}
+
+.sideCount {
+    @apply text-[11px];
+    color: var(--color-text-tertiary);
+}
+
+.youCard {
+    @apply rounded-[10px] p-[10px] px-[12px];
+    background: var(--color-info);
+}
+
+.youCard .row1 {
+    @apply flex items-center gap-2 text-xs;
+    color: var(--color-info-text);
+}
+
+.youCard .row2 {
+    @apply flex items-baseline gap-[6px] mt-1;
+}
+
+.youCard .row2 .score {
+    @apply text-xl font-medium;
+    color: var(--color-info-text);
+}
+
+.youCard .row2 .rank {
+    @apply text-xs;
+    color: var(--color-info-text);
+}
+
+.playerRow {
+    @apply flex items-center gap-2 px-1 py-[6px] text-xs min-w-0;
+}
+
+.playerRow .pos {
+    @apply w-[18px] text-right text-[11px];
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-tertiary);
+}
+
+.playerRow .swatch {
+    @apply w-2 h-2 rounded-[2px] flex-shrink-0;
+}
+
+.playerRow .name {
+    @apply flex-1 truncate;
+}
+
+.playerRow .pts {
+    @apply text-[11px];
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary);
+}
+
+.playerRow.me {
+    background: var(--color-info);
+    border-radius: 6px;
+}
+
+.playerRow.me .name,
+.playerRow.me .pts,
+.playerRow.me .pos {
+    color: var(--color-info-text);
+    font-weight: 500;
+}
+
+.ratingCard {
+    @apply rounded-md p-[10px] px-[12px];
+    background: var(--color-secondary);
+}
+
+.ratingCard .label {
+    @apply text-[11px];
+    color: white;
+}
+
+.ratingCard .value {
+    @apply flex items-baseline gap-[6px] mt-[2px];
+}
+
+.ratingCard .value .v {
+    @apply text-lg font-medium;
+}
+
+.ratingCard .value .delta {
+    @apply text-[11px];
+    color: var(--color-text-success);
+}
+
+.divider {
+    @apply h-[0.5px] my-[2px];
+    background: var(--color-border-tertiary);
+}

@@ -2,13 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react"
-import Data from "../../../data";
-import Styles from "../../../styles";
+import Data from "@/src/lib/data";
+import Styles from "@/src/styles/styles";
+import { Api } from "@/src/lib/api";
 
 export default function Register() {
 
 	const router = useRouter();
 	const [labelFocus, setLabelFocus] = useState(Data.data);
+    const [password, setPassword] = useState("");
 	
 return (
 	
@@ -21,15 +23,20 @@ return (
 				</h2>
 			</div>
 			<form onSubmit={ async (e) => { 
-				e.preventDefault();
-				const form = Object.fromEntries(new FormData(e.currentTarget));
-				if (form.Password != form.ConfirmPassword)
-					return alert("Passwords do not match");
-				await fetch("/api/register", {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({Email: form.Email, Password: form.Password, Username: form.Username}) 
-                }).then((res) => res.ok ? router.push("/Login") : console.log(res)) }}
+				
+					e.preventDefault();
+					const form = Object.fromEntries(new FormData(e.currentTarget));
+					console.log(form)
+					if (form.Password != form.ConfirmPassword)
+                    {
+						console.log(form.Password ,form.ConfirmPassword)
+                        setPassword("Wrong password try again");
+                        return ;
+                    }
+					const res = await Api.postRequest("/api/register", {Email: form.Email, Password: form.Password, Username: form.Username} );
+					if (res.ok)
+						router.push("/login");
+				 }}
 			>
 				{labelFocus.map((item, i) => {
 					return (
@@ -41,7 +48,6 @@ return (
 									onChange={(e) => { setLabelFocus((prev) => prev.map((item) => item.id === e.target.id ? {...item, value: e.target.value} : item)); }}
 									onBlur={(e) => { setLabelFocus((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: true} : item)); }}
 								/>
-								
 							</label>
 							<div className={Styles.formStyle.imgDiv}>
 								<img src={`${item.src}`} alt="icon" id={item.id} className="w-15  min-w-8 cursor-pointer"
@@ -69,6 +75,12 @@ return (
 				})}
 				
 				<div className="m-5 text-center">
+                    { password.length > 1 && (
+                            <div className="text-red-700 m-2">
+                                {password}
+                            </div>
+                        )
+                    }
 					<div>
 						<button className={Styles.formStyle.btn_submit} type="submit" >
 							Sign Up
@@ -79,7 +91,7 @@ return (
 							Already have an account ? /
 							<button  className={Styles.formStyle.btn_sin_log}
 								type="button" onClick={() => {
-									router.push("/Login");
+									router.push("/auth/login");
 								}} >
 								 Login
 							</button>

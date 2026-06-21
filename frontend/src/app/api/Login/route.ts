@@ -1,39 +1,35 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { Api } from "@/src/lib/api"
 
 interface Token {
-	"accessToken": string,
-	"refreshToken": string,
-    user: {id: number, name: string}
+    "accessToken": string,
+    "refreshToken": string,
 }
 
 export async function POST ( req : Request) {
 
-	const cookieStore = await cookies();
-	const body =  await req.json();
-	const res: Token = await fetch("http://localhost:4000/api/auth/login", {
-		method: "POST",
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(body)
-	}).then((res) => res.json());
+    const body =  await req.json();
+    const res: Token = await Api.postRequest("http://localhost:4000/api/auth/login", body).then(res => res.json());
 
-	if (res.accessToken === undefined || res.refreshToken === undefined)
-		return NextResponse.json({success: false});
+    if (res.accessToken === undefined || res.refreshToken === undefined)
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-	cookieStore.set("accessToken", res.accessToken, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "strict",
-		maxAge: 60 * 15,
-		path: "/",
-	});
+    const response = NextResponse.json({success: true});
+    response.cookies.set("accessToken", res.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 15,
+        path: "/",
+    });
 
-	cookieStore.set("refreshToken", res.refreshToken, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "strict",
-		maxAge: 60 * 60 * 24 * 7,
-		path: "/",
-	})
-	return NextResponse.json({ success: true });
+    response.cookies.set("refreshToken", res.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/",
+    });
+   
+    return response;
 }

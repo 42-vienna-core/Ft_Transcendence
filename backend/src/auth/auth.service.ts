@@ -12,14 +12,22 @@ import  * as bcrypt from "bcrypt"
 export class AuthService {
 
     constructor(
-        private readonly dbService:    DatabaseService,
-        private readonly usersService: UsersService,
-        private readonly tokenService: TokenService,
-        private readonly sessionService: SessionService,
+        private readonly dbService:         DatabaseService,
+        private readonly usersService:      UsersService,
+        private readonly tokenService:      TokenService,
+        private readonly sessionService:    SessionService,
     ) { }
 
-    async verifyToken(accessToken: string) {
+    async me(accessToken: string) {
         const payload = await this.tokenService.verifyAccessToken(accessToken);
+        if (payload)
+        {
+            try {
+                const userData = await this.usersService.findOne(payload.userId);
+                return {id: userData?.id, Username: userData?.Username, role: userData?.role}
+            }
+            catch {console.log("wrong id")}
+        }
         return payload;
     }
 
@@ -35,7 +43,8 @@ export class AuthService {
             throw new ConflictException('User already exists');
         }
         const accessToken = await this.createTokenSession(newUser.id);
-        return {...accessToken};
+         return {...accessToken};
+        // return {...accessToken, user: {id: newUser.id, Username: newUser.Username}};
     }
 
     async signIn(body: LoginUsersDto) {
@@ -50,7 +59,9 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
         const accessToken = await this.createTokenSession(user.id);
-        return {...accessToken, user: { id: user.id, name: user.Username } };
+        return {...accessToken};
+
+        // return {...accessToken, user: { id: user.id, Username: user.Username } };
     }
 
     async refresh(refreshToken: string) {

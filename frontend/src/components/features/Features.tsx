@@ -1,4 +1,4 @@
-import style from "../../styles"
+import style from "@/src/styles/styles"
 
 export default function Features () {
     return (

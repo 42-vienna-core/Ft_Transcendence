@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
-
+// const backendUrl = process.env.BACKEND_URL;
+// console.log(backendUrl)
 const nextConfig: NextConfig = {
   /* config options here */
   // --------------------  //
@@ -9,8 +10,15 @@ const nextConfig: NextConfig = {
       turbopackFileSystemCacheForDev: true,
       // transpilePackages: ['three'],
 
-    }
-  // ---------------------------------------
-}
+    },
+    rewrites () {
+      return [
+        {
+          source: "/backend/:path*",
+          destination: `http://loclahost:4000/api/:path*`,
+        },
+      ];
+    },
+};
 
 export default nextConfig;

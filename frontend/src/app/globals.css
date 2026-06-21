@@ -17,6 +17,61 @@
   --bg-elevated: rgba(255, 255, 255, 0.08);
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
+ 
+  /* game canvas */
+  --color-game-field:     #0F1F18;   /* dark green play area */
+  --color-game-grid:      rgba(255, 255, 255, 0.04);
+
+
+  /* borders */
+  --color-border-subtle:  rgba(31, 41, 55, 0.10);  /* default 0.5 px */
+  --color-border-default: rgba(31, 41, 55, 0.18);  /* hover */
+  --color-border-strong:  rgba(31, 41, 55, 0.30);  /* focus, active */
+
+  /* brand / accent (the "you" color — green snake) */
+  --color-accent:         #639922;
+  --color-accent-hover:   #3B6D11;
+  --color-accent-soft:    #EAF3DE;   /* tinted background */
+  --color-accent-text:    #27500A;   /* text on -soft */
+
+  /* info (links, profile pill highlight, "you" sidebar card) */
+  --color-info:           #185FA5;
+  --color-info-hover:     #0C447C;
+  --color-info-soft:      #E6F1FB;
+  --color-info-text:      #042C53;
+
+  /* semantic states */
+  --color-success:        #1D9E75;
+  --color-success-soft:   #E1F5EE;
+  --color-success-text:   #085041;
+
+  --color-warning:        #BA7517;
+  --color-warning-soft:   #FAEEDA;
+  --color-warning-text:   #633806;
+
+  --color-danger:         #A32D2D;
+  --color-danger-hover:   #791F1F;
+  --color-danger-soft:    #FCEBEB;
+  --color-danger-text:    #501313;
+  --color-snake-you:      #97C459;
+  --color-snake-1:        #85B7EB;
+  --color-snake-2:        #EF9F27;
+  --color-snake-3:        #D4537E;
+  --color-snake-4:        #7F77DD;
+  --color-snake-5:        #5DCAA5;
+  --color-food:           #F09595;
+  --color-focus-ring:     #378ADD;
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* layout */
+  --header-height: 56px;
+  --sidebar-width: 20%;
+
 }
 
 @theme inline {

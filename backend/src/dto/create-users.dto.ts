@@ -12,7 +12,6 @@ export class CreateUsersDto {
     // @MinLength(8) @MaxLength(128)
     "Password": string;
 
-
     "resetCode": string;
     
     "codeExpire": Date;

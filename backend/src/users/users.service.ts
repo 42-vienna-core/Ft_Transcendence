@@ -42,6 +42,16 @@ export class UsersService {
 		return {message: "Code sent to email"};
 	}
 
+	async search () {
+		const users = await this.databaseService.users.findMany();
+		const res =  users.map((item) => {
+			return {
+				Username: item.Username,
+				id: item.id
+			}
+		})
+		return res;
+	}
 	// async resetCode(body: UpdateUserDto) {
 	// 	const user = await this.databaseService.users.findUnique({ 
 	// 		where: { email: body.email}
@@ -60,9 +70,7 @@ export class UsersService {
 		if (Role)
 		{
 			return this.databaseService.users.findMany( {
-				where: {
-					role: Role
-				}
+				where: { role: Role }
 			});
 		}
 		return this.databaseService.users.findMany();
