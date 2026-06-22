@@ -7,6 +7,7 @@ import CustomLink from '../link';
 import { useProfile } from '@/providers/ProfileContext';
 import { usePathname } from 'next/navigation';
 import { HeaderProfileSkeleton, HeaderAuthLinkSkeleton } from '../skeletons'
+import Profile from '@/app/(home)/(dashboard)/profile/page';
 
 
 interface LinkProps{
@@ -20,16 +21,26 @@ interface AuthLinkProps {
     isAuthorized: boolean;
 }
 
-function ProfileNavLink ({status, username, avatar}: LinkProps) {
+function NavLinks ({status, username, avatar}: LinkProps) {
     if (status === "authenticated") {
         return (
-            <Link className={`${style.profile} justify-between`} href="/profile">
-                <p>{username}</p>
-                <img 
-                    className={style.ava} 
-                    src={avatar ? avatar : "/png/default_avatar.png"}
+            <>
+                <CustomLink 
+                    url={"/dashboard"}
+                    label={"Dashboard"}
                 />
-            </Link>
+                <CustomLink 
+                    url={"/friends"}
+                    label={"Friends"}
+                />
+                <Link className={`${style.profile} justify-between`} href="/profile">
+                    <p>{username}</p>
+                    <img 
+                        className={style.ava} 
+                        src={avatar ? avatar : "/png/default_avatar.png"}
+                    />
+                </Link>
+            </>
         )
     }
 }
@@ -37,26 +48,19 @@ function ProfileNavLink ({status, username, avatar}: LinkProps) {
 function NavAuthLinks ({status}: {status: string}) {
     if (status === "unauthenticated") {
         return (
-            <div className={style.navLinks}>
-                <CustomLink 
-                    url={"/login"}
-                    label={"Log in"}
-                />
-                <CustomLink 
-                    url={"/register"}
-                    label={"Sign in"}
-                />
-            </div>
+                <>
+                    <CustomLink 
+                        url={"/login"}
+                        label={"Log in"}
+                    />
+                    <CustomLink 
+                        url={"/register"}
+                        label={"Sign in"}
+                    />
+                </>
         )
     }
 }
-
-function FriendsLink() {
-    return (
-        <Link href="/friends">Friends</Link>
-    )
-}
-
 
 function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
     if (isAuthorized && status === "loading") {
@@ -81,21 +85,22 @@ function Nav({isAuthorized}: {isAuthorized:boolean}) {
                 <div className={style.logoMark} />
                 <Link href="/">Snake.io</Link>
             </div>
-            <FriendsLink/>
-            <ProfileNavLink 
-                status={status}
-                username={username}
-                avatar={avatar}
-            />
-            <ProfileLoadingSkeleton 
-                status={status}
-                isAuthorized={isAuthorized}
-            />
-            <NavAuthLinks status={status}/>
-            <AuthLoadingSkeleton 
-                status={status}
-                isAuthorized={isAuthorized}
-            />
+            <div className={style.navLinks}>
+                <NavLinks 
+                    status={status}
+                    username={username}
+                    avatar={avatar}
+                />
+                <ProfileLoadingSkeleton 
+                    status={status}
+                    isAuthorized={isAuthorized}
+                />
+                <NavAuthLinks status={status}/>
+                <AuthLoadingSkeleton 
+                    status={status}
+                    isAuthorized={isAuthorized}
+                />
+            </div>
         </nav>
     );
 }

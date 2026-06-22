@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import style from './edit.module.css'
 import { apiFetch } from '@/lib/api-client';
-import { useSession } from 'next-auth/react';
 import { useFormStatus } from 'react-dom';
 import { useProfile } from '@/providers/ProfileContext';
 import { UserProfileSkeleton } from '../../../ui/skeletons';
@@ -122,7 +121,7 @@ export default function EditProfileForm () {
                   value={nameOnChange || ""}
                   autoComplete="off"
                   onChange={(e) => updateNameOnChange(e.target.value)}
-                  className="w-full border-none focus:outline-none  text-gray-900 text-lg"
+                  className="w-full border-none focus:outline-none  text-[var(--color-text-primary)]] text-lg"
                 />
               </label>
               <div className={`${style.name} ${isActive ? 'hidden': 'bock'}`}>{username}</div>

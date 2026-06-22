@@ -8,22 +8,13 @@ export default function Friends() {
           <div>
             <h1>Friends</h1>
             <div className={style.pageMeta}>
-              42 total ·{" "}
-              <span
-                className="text-green-500"
-              >
-                3 online
-              </span>{" "}
-              ·{" "}
-              <span
-                className="text-red-500"
-              >
-                1 playing
-              </span>
+              42 total · <span className="text-green-500">3 online</span> ·{" "}
+              <span className="text-red-500">1 playing</span>
             </div>
           </div>
           <button className={style.addBtn}>
-            <i className={`${style.ti} ${style.tiUserPlus}`} aria-hidden="true"></i> Add friend
+            <i className={`${style.ti} ${style.tiUserPlus}`} aria-hidden="true"></i>{" "}
+            Add friend
           </button>
         </div>
 
@@ -44,11 +35,7 @@ export default function Friends() {
           </div>
           <div className={style.sort}>
             Sort: status{" "}
-            <i
-              className={`${style.ti} ${style.tiChevronDown} font-[12px]`}
-              aria-hidden="true"
-              //   style="font-size: 12px;"
-            ></i>
+            <i className={`${style.ti} ${style.tiChevronDown}`} aria-hidden="true"></i>
           </div>
         </div>
 
@@ -58,12 +45,7 @@ export default function Friends() {
               <span className={`${style.star} ${style.on}`} aria-label="Favorite">
                 <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
               </span>
-              <div
-                className={style.av}
-                // style="background:#B5D4F4; color:#0C447C;"
-              >
-                MR
-              </div>
+              <div className={style.av}>MR</div>
               <div className={style.main}>
                 <div className={style.who}>
                   <span className={style.nm}>Mira</span>
@@ -79,11 +61,7 @@ export default function Friends() {
               </div>
               <div className={style.actions}>
                 <button className={`${style.btn} ${style.primary}`}>
-                  <i
-                    className={`${style.ti} ${style.tiEye} font-[11px]`}
-                    aria-hidden="true"
-                    // style="font-size:11px;"
-                  ></i>{" "}
+                  <i className={`${style.ti} ${style.tiEye}`} aria-hidden="true"></i>{" "}
                   Watch
                 </button>
                 <button className={style.btn}>Join</button>
@@ -95,8 +73,8 @@ export default function Friends() {
                 <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
               </span>
               <div
-                className={`${style.av} bg-[#C0DD97] text-[#27500A]`}
-                // style="background:#C0DD97; color:#27500A;"
+                className={style.av}
+                style={{ background: "var(--color-accent-soft)", color: "var(--color-accent-text)" }}
               >
                 PE
               </div>
@@ -123,15 +101,7 @@ export default function Friends() {
               <span className={style.star} aria-label="Add to favorites">
                 <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
               </span>
-              <div
-                className={style.av}
-                // style="background:#CECBF6; color:#3C3489;"
-              >
-                MA
-
-
-   
-              </div>
+              <div className={style.av}>MA</div>
               <div className={style.main}>
                 <div className={style.who}>
                   <span className={style.nm}>Marek</span>
@@ -155,26 +125,26 @@ export default function Friends() {
                 <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
               </span>
               <div
-                className={`${style.av} bg-[#FAC775] text-[#633806]`}
-                // style="background:#FAC775; color:#633806;"
+                className={style.av}
+                style={{ background: "var(--color-warning-soft)", color: "var(--color-warning-text)" }}
               >
                 KO
               </div>
-              <div className="main">
-                <div className="who">
-                  <span className="nm">Kostia</span>
-                  <span className="hd">@kostia_v</span>
+              <div className={style.main}>
+                <div className={style.who}>
+                  <span className={style.nm}>Kostia</span>
+                  <span className={style.hd}>@kostia_v</span>
                 </div>
-                <div className="status-line">
-                  <span className="dot off"></span>
+                <div className={style.statusLine}>
+                  <span className={`${style.dot} ${style.off}`}></span>
                   <span>Offline · last seen 2 h ago</span>
-                  <span className="sep">·</span>
-                  <span className="rating">1760</span>
-                  <span className="delta up">▲28 wk</span>
+                  <span className={style.sep}>·</span>
+                  <span className={style.rating}>1760</span>
+                  <span className={`${style.delta} ${style.up}`}>▲28 wk</span>
                 </div>
               </div>
-              <div className="actions">
-                <button className="btn subtle">Message</button>
+              <div className={style.actions}>
+                <button className={`${style.btn} ${style.subtle}`}>Message</button>
               </div>
             </div>
           </div>
@@ -218,7 +188,7 @@ export default function Friends() {
                 <span className={`${style.dot} ${style.off}`}></span>
                 <span className={style.nm}>Lila</span>
                 <span className={style.rt}>1480</span>
-                <span className={`${style.delta} ${style.up}`}>▼6</span>
+                <span className={`${style.delta} ${style.dn}`}>▼6</span>
               </div>
             </div>
 
@@ -229,8 +199,8 @@ export default function Friends() {
               </h3>
               <div className={style.reqRow}>
                 <div
-                  className={`${style.av} bg-[#F0997B]`}
-                  // style="background:#F0997B; color:#4A1B0C;"
+                  className={style.av}
+                  style={{ background: "#F0997B", color: "#4A1B0C" }}
                 >
                   TO
                 </div>
@@ -249,8 +219,8 @@ export default function Friends() {
               </div>
               <div className={style.reqRow}>
                 <div
-                  className={`${style.av} bg-[#888780]`}
-                  // style="background:#888780; color:#FFFFFF;"
+                  className={style.av}
+                  style={{ background: "var(--color-text-tertiary)", color: "var(--color-text-inverse)" }}
                 >
                   NO
                 </div>
@@ -275,31 +245,29 @@ export default function Friends() {
                 <i className={`${style.ti} ${style.tiSearch}`} aria-hidden="true"></i>
                 <input placeholder="username or invite code" />
               </div>
-              <div className="font-[11px] text-[var(--color-text-tertiary)] mu-[8px] mx-0 mb-[4px]">
-                suggested
-              </div>
+              <div className={style.sugLabel}>suggested</div>
               <div className={style.sugRow}>
                 <div
-                  className={`${style.av} bg-[#85B7EB]`}
-                  // style="background:#85B7EB; color:#042C53;"
+                  className={style.av}
+                  style={{ background: "var(--color-snake-1)", color: "var(--color-info-text)" }}
                 >
                   TF
                 </div>
                 <div>
-                  <div className="font-[13px]">Tofu</div>
+                  <div className={style.name}>Tofu</div>
                   <div className={style.metaR}>5 mutual friends</div>
                 </div>
                 <span className={style.addMini}>+ Add</span>
               </div>
               <div className={style.sugRow}>
                 <div
-                  className={`${style.av} bg-[#5DCAA5]`}
-                  // style="background:#5DCAA5; color:#04342C;"
+                  className={style.av}
+                  style={{ background: "var(--color-snake-5)", color: "var(--color-success-text)" }}
                 >
                   PI
                 </div>
                 <div>
-                  <div className="font-[13px]">Pickle</div>
+                  <div className={style.name}>Pickle</div>
                   <div className={style.metaR}>played 3× together</div>
                 </div>
                 <span className={style.addMini}>+ Add</span>

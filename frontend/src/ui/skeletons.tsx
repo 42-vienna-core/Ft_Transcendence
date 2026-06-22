@@ -31,25 +31,9 @@ export function UserProfileSkeleton() {
 
 export function HeaderAuthLinkSkeleton() {
     return (
-        <div className="flex items-center justify-between gap-[8px]">
-            <SkeletonBlock className="w-[100px] h-[50px] px-[16px] py-[8px] rounded-[8px] bg-[#12121a]" />
-            <SkeletonBlock className="w-[100px] h-[50px] px-[16px] py-[8px] rounded-[8px] bg-[#12121a]" />
+        <div className="flex items-center justify-between gap-[25px]">
+            <SkeletonBlock className="px-0 py-[8px] bg-[#12121a]" />
+            <SkeletonBlock className="px-0 py-[8px] bg-[#12121a]" />
         </div>
   );
 }
-
-//   display: inline-flex;
-//   align-items: center;
-//   justify-content: center;
-//   gap: 8px;
-//   padding: 12px 24px;
-//   border-radius: 8px;
-//   font-family: inherit;
-//   font-size: 0.9375rem;
-//   font-weight: 600;
-//   letter-spacing: 0.01em;
-//   cursor: pointer;
-//   border: 1px solid transparent;
-//   transition: all 0.15s ease;
-//   text-decoration: none;
-//   white-space: nowrap;

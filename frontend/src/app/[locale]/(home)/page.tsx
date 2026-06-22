@@ -6,7 +6,7 @@ import Container from '@/components/container';
   return (
     <Container>
       <Hero/>
-      <Features/>
+      {/* <Features/> */}
     </Container>
   );
 }

@@ -4,15 +4,13 @@
   height: 96px;
   gap: 16px; 
   padding-bottom: 18px; 
-  border-bottom: 0.5px solid var(--color-border-tertiary); 
+  border-bottom: 0.5px solid var(--color-border-default); 
 }
 
 .pfAvatar { 
   width: 64px; 
   height: 64px; 
   border-radius: var(--radius-full); 
-  background: var(--color-bg-info); 
-  color: var(--color-text-info); 
   display: flex; 
   align-items: center; 
   justify-content: center; 
@@ -79,26 +77,27 @@
 }
 
 .pfBtn { 
+  width: 100px;
   font-size: 13px; 
   padding: 6px 12px; 
   border-radius: var(--radius-sm); 
   border: 0.5px solid var(--color-border-default); 
-  background: var(--color-bg-surface); 
+  background: var(--color-bg-muted); 
   color: var(--color-text-primary);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .pfBtn:hover {
-  background: var(--color-bg-base);
+  background: var(--color-bg-subtle);
 }
 
 .pfBtn.primary { 
-  background: var(--color-bg-info); 
-  color: var(--color-text-info); 
+  /* background: var(--color-bg-info); 
+  color: var(--color-text-info);  */
   border: 0.5px solid transparent; 
 }
 
 .pfBtn.primary:hover {
-  background: var(--color-hover-info);
+  /* background: var(--color-hover-info); */
 }

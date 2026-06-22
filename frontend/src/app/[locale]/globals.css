@@ -1,0 +1,249 @@
+@import "tailwindcss";
+
+:root {
+
+
+  /* ─── SURFACES ─── */
+  --color-bg-base:        #FAFAF9;   /* page background */
+  --color-bg-surface:     #FFFFFF;   /* cards, header, modals */
+  --color-bg-subtle:      #F1EFE8;   /* metric cards, chip tracks, hover */
+  --color-bg-muted:       #E8E6DF;   /* hover on subtle surfaces */
+  --color-bg-overlay:     rgba(15, 23, 42, 0.45);  /* modal scrim */
+  
+  /* ─── GAME CANVAS (stable in both themes) ─── */
+  --color-game-field:     #0F1F18;
+  --color-game-grid:      rgba(255, 255, 255, 0.04);
+
+  /* ─── TEXT ─── */
+  --color-text-primary:   #1F2937;   /* near-black body */
+  --color-text-secondary: #5F5E5A;   /* muted labels */
+  --color-text-tertiary:  #888780;   /* hints, timestamps */
+  --color-text-disabled:  #B4B2A9;
+  --color-text-inverse:   #FFFFFF;   /* on dark / accent backgrounds */
+
+  /* ─── BORDERS (translucent so they sit naturally on any surface) ─── */
+  --color-border-subtle:  rgba(31, 41, 55, 0.10);
+  --color-border-default: rgba(31, 41, 55, 0.18);
+  --color-border-strong:  rgba(31, 41, 55, 0.30);
+
+  /* ─── BRAND ACCENT — green (the snake) ─── */
+  --color-accent:         #639922;
+  --color-accent-hover:   #3B6D11;
+  --color-accent-active:  #27500A;
+  --color-accent-soft:    #EAF3DE;
+  --color-accent-text:    #27500A;
+
+  /* ─── INFO — blue (links, "you" highlight, profile pill) ─── */
+  --color-info:           #185FA5;
+  --color-info-hover:     #0C447C;
+  --color-info-soft:      #E6F1FB;
+  --color-info-text:      #042C53;
+
+  /* ─── SUCCESS ─── */
+  --color-success:        #1D9E75;
+  --color-success-soft:   #E1F5EE;
+  --color-success-text:   #085041;
+
+  /* ─── WARNING (in-match status, streak badge) ─── */
+  --color-warning:        #BA7517;
+  --color-warning-soft:   #FAEEDA;
+  --color-warning-text:   #633806;
+
+  /* ─── DANGER (delete account, errors) ─── */
+  --color-danger:         #A32D2D;
+  --color-danger-hover:   #791F1F;
+  --color-danger-soft:    #FCEBEB;
+  --color-danger-text:    #501313;
+
+  /* ─── PLAYER / SNAKE COLORS (deliberately stable across themes) ─── */
+  --color-snake-you:      #97C459;
+  --color-snake-1:        #85B7EB;
+  --color-snake-2:        #EF9F27;
+  --color-snake-3:        #D4537E;
+  --color-snake-4:        #7F77DD;
+  --color-snake-5:        #5DCAA5;
+  --color-food:           #F09595;
+
+  /* ─── FOCUS RING (stays blue in both modes) ─── */
+  --color-focus-ring:     #378ADD;
+
+  --color-box-shadow: rgba(0, 0, 0, 0.1);
+
+  /* ─── TYPOGRAPHY ─── */
+  --font-sans:  "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:  ui-monospace, "JetBrains Mono", "Cascadia Code", monospace;
+
+  /* font sizes (the 8 you actually need) */
+  --text-xs:    11px;   /* metadata, timestamps, captions */
+  --text-sm:    12px;   /* labels, secondary text, status lines */
+  --text-base:  13px;   /* default body, button text */
+  --text-md:    14px;   /* primary body, list rows */
+  --text-lg:    16px;   /* card headers, emphasized body */
+  --text-xl:    18px;   /* small headings (h3), stat values */
+  --text-2xl:   22px;   /* section heads (h2), page titles */
+  --text-3xl:   28px;   /* page heroes (h1) */
+
+  /* font weights (only two needed) */
+  --weight-regular: 400;
+  --weight-medium:  500;
+
+  /* line heights */
+  --leading-tight:   1.25;   /* headings */
+  --leading-normal:  1.5;    /* body, default */
+  --leading-relaxed: 1.7;    /* long-form prose */
+
+  /* ─── RADII ─── */
+  --radius-xs:    2px;
+  --radius-sm:    4px;
+  --radius-md:    6px;
+  --radius-lg:    8px;
+  --radius-xl:    12px;
+  --radius-2xl:   16px;
+  --radius-full:  9999px;
+
+  /* ─── SPACING (matches Tailwind's 4px scale) ─── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── LAYOUT TOKENS (specific to the snake.io app) ─── */
+  --header-height:    56px;
+  --sidebar-width:    20%;
+  --content-max:      1280px;
+  --modal-max:        640px;
+}
+
+/* @media (prefers-color-scheme: dark) { */
+  .dark {
+    --color-bg-base:        #0F1112;
+    --color-bg-surface:     #1A1D1F;
+    --color-bg-subtle:      #24272A;
+    --color-bg-muted:       #2E3134;
+    --color-bg-overlay:     rgba(0, 0, 0, 0.65);
+
+    --color-game-field:     #0A1610;
+    --color-game-grid:      rgba(255, 255, 255, 0.05);
+
+    --color-text-primary:   #F1EFE8;
+    --color-text-secondary: #B4B2A9;
+    --color-text-tertiary:  #888780;
+    --color-text-disabled:  #5F5E5A;
+    --color-text-inverse:   #1F2937;
+
+    --color-border-subtle:  rgba(241, 239, 232, 0.10);
+    --color-border-default: rgba(241, 239, 232, 0.18);
+    --color-border-strong:  rgba(241, 239, 232, 0.32);
+
+    /* Brand & semantic colors shift one stop brighter on dark surfaces */
+    --color-accent:         #97C459;
+    --color-accent-hover:   #C0DD97;
+    --color-accent-active:  #EAF3DE;
+    --color-accent-soft:    #173404;
+    --color-accent-text:    #C0DD97;
+
+    --color-info:           #85B7EB;
+    --color-info-hover:     #B5D4F4;
+    --color-info-soft:      #042C53;
+    --color-info-text:      #B5D4F4;
+
+    --color-success:        #5DCAA5;
+    --color-success-soft:   #04342C;
+    --color-success-text:   #9FE1CB;
+
+    --color-warning:        #FAC775;
+    --color-warning-soft:   #412402;
+    --color-warning-text:   #FAC775;
+
+    --color-danger:         #F09595;
+    --color-danger-hover:   #F7C1C1;
+    --color-danger-soft:    #501313;
+    --color-danger-text:    #F7C1C1;
+
+    --color-boc-shadow:rgba(255, 255, 255, 0.08);
+
+    /* Player colors UNCHANGED — players must look the same in both themes */
+    --color-focus-ring:     #85B7EB;
+  }
+/* } */
+
+.fdfdf{
+  --bg-void: #050507;
+  --bg-deep: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-elevated: #1a1a24;
+  --bg-bright: #f0f0f5; 
+  --border-subtle: #1f1f2e;
+  --border-strong: #2a2a3e;
+
+  --neon-green: #00ff9c;
+  --neon-green-glow: rgba(0, 255, 156, 0.4);
+  --neon-pink: #ff2a6d;
+  --neon-blue: #00f0ff;
+  --neon-yellow: #ffd60a;
+  --neon-orange: #ff6b35;
+
+  --color-text-primary: #000000;
+  --text-bright: #f0f0f5;
+  --text-base: #c4c4d0;
+  --text-muted: #6b6b80;
+  --text-faint: #3f3f55; }
+
+@layer base {
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+  }
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: #c4c4d0;
+}
+
+.display { font-family: 'Bungee', cursive; letter-spacing: 0.02em; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+h1, h2, h3, h4 { color: var(--text-bright); font-weight: 700; }
+h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); line-height: 1.1; letter-spacing: -0.01em; }
+h3 { font-size: 1.5rem; line-height: 1.2; }
+h4 { font-size: 1.125rem; line-height: 1.3; } 
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 1;
+} 
+ 
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 0%, var(--bg-void) 70%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+
+
+
+
+
+
+
+
+

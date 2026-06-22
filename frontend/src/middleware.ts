@@ -1,44 +1,71 @@
+import createIntlMiddleware from 'next-intl/middleware';
 import { withAuth } from 'next-auth/middleware';
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
-export default withAuth(
-    function middleware(req) {
-        const token = req.nextauth.token;
-        const path = req.nextUrl.pathname;
-        const response = NextResponse.next();
-        const isAuthPage = path === "/login" || path === "/register";
+const intlMiddleware = createIntlMiddleware({
+  locales: ['en', 'ru'],
+  defaultLocale: 'en',
+});
 
-        if (path === '/api/auth/session') {
-            response.headers.set('x-nextauth-origin', 'client-use-session');
-        } else {
-            response.headers.set('x-nextauth-origin', 'server-get-session');
-        }
+const authMiddleware = withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token;
+    const path = req.nextUrl.pathname;
+    
+    const response = intlMiddleware(req);
 
-        if (token?.error === 'RefreshAccessTokenError') {
-            return isAuthPage ? response : NextResponse.redirect(new URL('/login', req.url));
-        }
-
-        if (token && isAuthPage) {
-            return NextResponse.redirect(new URL('/dashboard', req.url));
-        }
-
-        return response;
-    },
-    {
-        callbacks: {
-            authorized: ({token, req }) => {
-                const path = req.nextUrl.pathname;
-                const publicPath = ['/', '/login', '/register'];
-                if (publicPath.includes(path)) return true;
-                return !!token;
-            }
-        }
+    if (path.includes('/api/auth/session')) {
+      response.headers.set('x-nextauth-origin', 'client-use-session');
+    } else {
+      response.headers.set('x-nextauth-origin', 'server-get-session');
     }
+
+    const isAuthPage = /^\/(ru|en)?\/?(login|register)$/.test(path);
+
+    if (token?.error === 'RefreshAccessTokenError') {
+      if (!isAuthPage) {
+        const currentLocale = path.split('/')[1] || 'en';
+        const localePrefix = ['ru', 'en'].includes(currentLocale) ? `/${currentLocale}` : '';
+        return NextResponse.redirect(new URL(`${localePrefix}/login`, req.url));
+      }
+      return response;
+    }
+
+    if (token && isAuthPage) {
+      const currentLocale = path.split('/')[1] || 'en';
+      const localePrefix = ['ru', 'en'].includes(currentLocale) ? `/${currentLocale}` : '';
+      return NextResponse.redirect(new URL(`${localePrefix}/dashboard`, req.url));
+    }
+
+    return response;
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const path = req.nextUrl.pathname;
+        if (path.startsWith('/api/auth')) return true;
+        const isPublicPath = /^\/(ru|en)?\/?(login|register)?$/.test(path);
+        if (isPublicPath) return true;
+        return !!token;
+      }
+    }
+  }
 );
 
+export default function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+
+  if (path.startsWith('/api/auth')) {
+    return NextResponse.next();
+  }
+
+  return (authMiddleware as any)(req);
+}
+
 export const config = {
-    matcher: [
+  matcher: [
     '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css)$).*)',
-    "/dashboard/:path*",
+    '/dashboard/:path*', 
+    '/(ru|en)/:path*',
   ],
 };
