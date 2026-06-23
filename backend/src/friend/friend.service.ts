@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
 // import { CreateFriendDto } from './dto/create-friend.dto';
 // import { UpdateFriendDto } from './dto/update-friend.dto';
 
 @Injectable()
 export class FriendService {
-  create(name: string) {
-    console.log(name);
-    return 'This action adds a new friend';
+  
+  constructor (private readonly db: DatabaseService) {}
+
+  async findAll() {
+    return await this.db.friends.findMany();
   }
 
-  findAll() {
-    return `This action returns all friend`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} friend`;
+  async findOne(id: number) {
+    return id
   }
 
   update(id: number) {

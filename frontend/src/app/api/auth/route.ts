@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import { Api } from "@/src/lib/api"
-
-interface Token {
-    "accessToken": string,
-    "refreshToken": string,
-}
+import { AuthType } from "@/src/types/Types";
 
 export async function POST ( req : Request) {
 
     const body =  await req.json();
-    const res: Token = await Api.postRequest("http://localhost:4000/api/auth/login", body).then(res => res.json());
+    const {url, ...data} = body;
+    const res: AuthType = await Api.postRequest("http://localhost:4000/api/auth/" + body.url , data)
+    .then(res => res.json());
 
     if (res.accessToken === undefined || res.refreshToken === undefined)
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

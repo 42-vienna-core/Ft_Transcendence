@@ -1,31 +1,17 @@
 "use client"
 
-import { useEffect, useState }	from "react"
+import { useState }				from "react"
 import { useRouter }			from "next/navigation";
 import	Styles					from "@/src/styles/styles";
 import	Data					from "@/src/lib/data";
 import { Api }					from "@/src/lib/api"
 
-function Registration() {
+export default function Reset() {
 
-	const	rout = useRouter();
-	const	[loginData, setLoginData] = useState(Data.data.slice(1, 4));
-	const	[object, setObject] = useState({email: undefined, password: undefined, resetCode:undefined});
+	const	router = useRouter();
+	const	[resetData, setResetData] = useState(Data.data.slice(1, 4));
+	const	[text, setText] = useState("");
 	
-	useEffect(() => {
-		if (object.email === undefined) 
-			return;
-		Api.postRequest("http://localhost:4000i/auth/find", {email: object.email})
-		.then((res) => {
-			if (!res.ok)
-				throw new Error("User not found");
-		});
-		let resetCode = prompt("Enter the code sent to your email");
-		Api.postRequest("auth/code", {
-			...object, resetCode: resetCode})
-		.then( (res) => res.ok ?  rout.push("/Login") : alert("Wrong code or time is over") );
-	}, [object]);
-
 return (
 	<div  className="bg w-full h-screen flex min-w-md items-center justify-center" >
 
@@ -36,26 +22,23 @@ return (
 
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
-				const form = e.currentTarget;
-
-				if (form.Password.value != form.ConfirmPassword.value)
+				const form = Object.fromEntries(new FormData(e.currentTarget));
+				if (form.Password != form.ConfirmPassword)
 					return alert("Passwords do not match");
-				setObject({
-					...object,
-					email: form.Email.value,
-					password: form.Password.value,
-				});
+				const {ConfirmPassword, ...data} = form;
+				Api.postRequest("/api/auth", {...data, url: "reset"})
+				.then(res => res.ok ? (router.push("/login"), router.refresh()) : setText("something was wrong"));
 			}}>
-				{loginData.map((item, i) => {
+				{resetData.map((item, i) => { 
 					return (
 						<div className={Styles.formStyle.inputDiv} key={i}>
 
 							<label htmlFor={item.name} className="cursor-pointer">
 								<input required placeholder={item.bol ? (item.name === "Password" ? "New " + item.name : item.name === "ConfirmPassword" ? "Confirm Password" : item.name) : ""}
 									type={item.type} name={item.name} id={item.id} value={item.value} className={Styles.formStyle.inputs}
-									onFocus={(e) => { setLoginData((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: false} : item)); }}
-									onChange={(e) => { setLoginData((prev) => prev.map((item) => item.id === e.target.id ? {...item, value: e.target.value} : item)); }}
-									onBlur={(e) => { setLoginData((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: true} : item)); }}
+									onFocus={(e) => { setResetData((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: false} : item)); }}
+									onChange={(e) => { setResetData((prev) => prev.map((item) => item.id === e.target.id ? {...item, value: e.target.value} : item)); }}
+									onBlur={(e) => { setResetData((prev) => prev.map((item) => item.id === e.target.id ? {...item, bol: true} : item)); }}
 								/>
 							</label>
 
@@ -63,7 +46,7 @@ return (
 								<img src={`${item.src}`} alt="icon" id={item.id} className="w-15  min-w-8 cursor-pointer"
 									onClick={(e) => {
 										const target = e.currentTarget;
-										setLoginData((prev) => (
+										setResetData((prev) => (
 											prev.map((item) => {
 												if (item.id === target.id && (item.name === "Password" || item.name === "ConfirmPassword"))
 												{
@@ -84,6 +67,11 @@ return (
 				})}
 				<div className="m-5 text-center">
 					<div>
+						{text.length > 1 && (
+							<div className="text-red-900 mt-2 mb-2">
+								{text}
+							</div>
+						)}
 						<button className={Styles.formStyle.btn_submit} type="submit"> 
 							Reset password
 						</button>
@@ -93,5 +81,3 @@ return (
 		</div>
 	</div>
 )}
-
-export default Registration

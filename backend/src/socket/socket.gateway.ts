@@ -14,15 +14,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join-room')
   async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto ) {
+    client.data.userId = data.userId;
+    client.data.roomId = data.roomId;
     await client.join(data.roomId);
     
     await this.roomService.addUserToRoom(data.roomId, data.userId, client.id);
-    const Players = await this.roomService.getPlayerCount(data.roomId);
+    const players = await this.roomService.getPlayerCount(data.roomId);
     this.server.to(data.roomId).emit('room-update', {
       roomId: data.roomId,
-      Players,
+      players,
     });
-    return { success: true, Players };
+    return { success: true, players };
   }
 
   @SubscribeMessage('leave-room')

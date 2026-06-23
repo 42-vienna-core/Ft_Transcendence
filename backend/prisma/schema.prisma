@@ -34,8 +34,8 @@ model Friends {
   status                        FriendStatus @default(PENDING)
   createdAt                     DateTime     @default(now())
   updatedAt                     DateTime
-  usersFriendsFriendIdToUsers Users        @relation("Friends_friendIdToUsers", fields: [friendId], references: [id])
-  usersFriendsUserIdToUsers   Users        @relation("Friends_userIdToUsers", fields: [userId], references: [id])
+  usersFriendsFriendIdToUsers   Users        @relation("Friends_friendIdToUsers", fields: [friendId], references: [id])
+  usersFriendsUserIdToUsers     Users        @relation("Friends_userIdToUsers", fields: [userId], references: [id])
 
   @@unique([userId, friendId])
 }

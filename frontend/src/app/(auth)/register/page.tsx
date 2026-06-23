@@ -23,19 +23,13 @@ return (
 				</h2>
 			</div>
 			<form onSubmit={ async (e) => { 
-				
 					e.preventDefault();
 					const form = Object.fromEntries(new FormData(e.currentTarget));
-					console.log(form)
 					if (form.Password != form.ConfirmPassword)
-                    {
-						console.log(form.Password ,form.ConfirmPassword)
-                        setPassword("Wrong password try again");
-                        return ;
-                    }
-					const res = await Api.postRequest("/api/register", {Email: form.Email, Password: form.Password, Username: form.Username} );
-					if (res.ok)
-						router.push("/login");
+                        return setPassword("Wrong password try again");
+					const {ConfirmPassword, ...data} = form;
+					await Api.postRequest("/api/auth", {...data, url: "register"} )
+					.then(res => res.ok ? (router.push("/"), router.refresh()): console.log(res));
 				 }}
 			>
 				{labelFocus.map((item, i) => {
@@ -89,11 +83,8 @@ return (
 					<div className="p-4 text-lg font-bold flex justify-between">
 						<p> 
 							Already have an account ? /
-							<button  className={Styles.formStyle.btn_sin_log}
-								type="button" onClick={() => {
-									router.push("/auth/login");
-								}} >
-								 Login
+							<button  className={Styles.formStyle.btn_sin_log} type="button" onClick={() => router.push("/login")} >
+								Login
 							</button>
 						</p>
 					</div>

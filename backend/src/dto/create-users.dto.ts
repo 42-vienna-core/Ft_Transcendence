@@ -5,13 +5,13 @@ export class CreateUsersDto {
     @MinLength(3) @MaxLength(40)
     "Username": string;
 
-    @IsEmail()  @IsNotEmpty() @IsString()
+    @IsEmail()  @IsNotEmpty() @IsString() @MinLength(3) @MaxLength(40)
     "Email": string;
 
     @IsNotEmpty() @IsString() 
     // @MinLength(8) @MaxLength(128)
     "Password": string;
-
+    
     "resetCode": string;
     
     "codeExpire": Date;

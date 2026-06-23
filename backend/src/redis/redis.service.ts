@@ -33,28 +33,26 @@ export class RedisService implements OnModuleInit {
   }
 
   async saveToken(userId: number, token: string) {
-        await this.client.set(`token:${userId}`, token);
-      }
+      await this.client.set(`token:${userId}`, token);
+  }
+
+  async getToken(userId: number) {
+    return await this.client.get(`token:${userId}`);
+  }
+
+  async deleteToken(userId: number) {
+    await this.client.del(`token:${userId}`);
+  }
+
+  async setEx(key: string, secound: number, value: string) {
+    await this.client.setEx(key, secound, value);
+  }
   
-    async getToken(userId: number) {
-      return await this.client.get(`token:${userId}`);
-    }
+  async exists(key: string) {
+    return await this.client.exists(key);
+  }
 
-    async deleteToken(userId: number) {
-      await this.client.del(`token:${userId}`);
-    }
-
-    async setEx(key: string, secound: number, value: string) {
-      await this.client.setEx(key, secound, value);
-    }
-   
-    async exists(key: string) {
-      return await this.client.exists(key);
-    }
-
-    /// Sessions 
-
-
+  /// Sessions 
   async addSessionToBlackList(sessionId: string): Promise<void> {
     await this.client.set(`session:blacklist:${sessionId}`, 'true'); //todo ttl
   }

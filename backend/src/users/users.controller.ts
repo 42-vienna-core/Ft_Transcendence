@@ -10,10 +10,11 @@ export class UsersController {
   private readonly logger = new LoggerService(UsersController.name);
 
 
-  @Get("search")
-  search() {
-    return this.userService.search();
+  @Get("search/:id")
+  search(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.search(id);
   }
+  
   @Throttle({ long: { ttl: 60000, limit: 5 } })
   // @Post('find')
   // findUser(@Body(ValidationPipe) newPassword: UpdateUserDto) {

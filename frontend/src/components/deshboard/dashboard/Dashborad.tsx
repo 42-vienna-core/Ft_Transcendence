@@ -3,12 +3,10 @@
   import {io, Socket } from "socket.io-client"
   import "@/src/styles/deshboard.css";
 
-  // function reducer (state, action) { }
 
  function Dashboard () {
 
     
-    // const [livePlayers, dispatch] = useReducer( reducer, []);
     const socketRef = useRef<Socket | null>(null);
     useEffect( ()  => {
 
@@ -30,19 +28,6 @@
         }
     }, []);
 
-    // (async () => {
-        //     resRef.current = await Api.getRequest("http://localhost:4000/api/gameRoom");
-        //     if (resRef.current.length < 1)
-        //     {
-        //         const room = await Api.postRequest("http://localhost:4000/api/gameRoom", {
-        //             name: "Room",
-        //             maxUsers: 4,
-        //             type: "PUBLIC",
-        //         }).then((strim) => strim.json());
-        //         resRef.current.push(room);
-        //     }
-        //     setGameRooms(resRef.current);
-        // })();
     return (
       
     <div className="mockBody">
@@ -59,6 +44,8 @@
             <div className="text-white"><p>340</p>your score</div>
           </div>
         </div>
+
+        
 
         <div className="playArea" aria-hidden="true">
           <div className="gridOverlay"></div>

@@ -1,8 +1,6 @@
 'use client';
-
-// import EditForm from '@/components/user-profile/edit-form';
+import Link from 'next/link';
 import style from './profile.module.css';
-// import LogoutButton from'@/ui/logoutButton';
 
 export default function Profile() {
     return (
@@ -10,10 +8,26 @@ export default function Profile() {
       {/* <EditForm/> */}
 
       <div className={style.pfStats}>
-        <div className={style.statCard}><div className={style.l}>rating</div><div className={style.v}>1 482</div><div className={style.d}>+14 today</div></div>
-        <div className={style.statCard}><div className={style.l}>global rank</div><div className={style.v}>#3 920</div><div className={style.d}>top 8 %</div></div>
-        <div className={style.statCard}><div className={style.l}>best score</div><div className={style.v}>1 207</div><div className={`${style.d} color: var(--color-text-tertiary);`}>last week</div></div>
-        <div className={style.statCard}><div className={style.l}>matches</div><div className={style.v}>182</div><div className={`${style.d} color: var(--color-text-tertiary);`} >win rate 41 %</div></div>
+        <div className={style.statCard}>
+          <div className={style.l}>rating</div>
+          <div className={style.v}>1 482</div>
+          <div className={style.d}>+14 today</div>
+        </div>
+        <div className={style.statCard}>
+          <div className={style.l}>global rank</div>
+          <div className={style.v}>#3 920</div>
+          <div className={style.d}>top 8 %</div>
+        </div>
+        <div className={style.statCard}>
+          <div className={style.l}>best score</div>
+          <div className={style.v}>1 207</div>
+          <div className={`${style.d} color: var(--color-text-tertiary);`}>last week</div>
+        </div>
+        <div className={style.statCard}>
+          <div className={style.l}>matches</div>
+          <div className={style.v}>182</div>
+          <div className={`${style.d} color: var(--color-text-tertiary);`} >win rate 41 %</div>
+        </div>
       </div>
 
       <div className={style.tabStrip}>
@@ -63,17 +77,28 @@ export default function Profile() {
             <div className={style.val}>friends-only stats <i className={`${style.ti} ${style.tiChevronRight}`} aria-hidden="true"></i></div>
           </div>
           <div className={style.row}>
-            <div className={style.lbl}><i className={`${style.ti} ${style.tiAccessible}`} aria-hidden="true"></i> accessibility</div>
-            <div className={style.val}>color-blind mode <span className={`${style.toggle} ${style.off}`}></span></div>
+            <div className={style.lbl}>
+                <i className={`${style.ti} ${style.tiAccessible}`} aria-hidden="true"></i> 
+                accessibility
+              </div>
+            <div className={style.val}>color-blind mode 
+              <span className={`${style.toggle} ${style.off}`}></span>
+            </div>
           </div>
           <div className={style.row}>
             <div className={style.lbl}><i className={`${style.ti} ${style.tiShieldLock}`} aria-hidden="true"></i> security</div>
-            <div className={style.val}>change password, 2FA <i className={`${style.ti} ${style.tiChevronRight}`} aria-hidden="true"></i></div>
+            <div className={style.val}>
+               <Link href="/reset" className='cursor-pointer'> change password </Link>
+              </div>
           </div>
           <div className={style.row}>
-            <div className={`${style.lbl} color: var(--color-text-danger);`}><i className={`${style.ti} ${style.tiTrash}`} aria-hidden="true"></i> delete account</div>
-            <div className={style.val}><i className={`${style.ti} ${style.tiChevronRight}`} aria-hidden="true"></i></div>
-
+            <div className={`${style.lbl} color: var(--color-text-danger);`}>
+              <i className={`${style.ti} ${style.tiTrash}`} aria-hidden="true"></i>
+              delete account
+            </div>
+            <div className={style.val}>
+              <i className={`${style.ti} ${style.tiChevronRight}`} aria-hidden="true"></i>
+            </div>
           </div>
             {/* <LogoutButton/> */}
 

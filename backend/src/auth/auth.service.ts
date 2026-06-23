@@ -7,6 +7,7 @@ import { SessionService } from './session/session.service';
 import { LoginUsersDto } from 'src/dto/login-users.dto';
 import { DatabaseService } from 'src/database/database.service';
 import  * as bcrypt from "bcrypt"
+import { ResetPasswordDto } from 'src/dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +45,6 @@ export class AuthService {
         }
         const accessToken = await this.createTokenSession(newUser.id);
          return {...accessToken};
-        // return {...accessToken, user: {id: newUser.id, Username: newUser.Username}};
     }
 
     async signIn(body: LoginUsersDto) {
@@ -60,8 +60,18 @@ export class AuthService {
         }
         const accessToken = await this.createTokenSession(user.id);
         return {...accessToken};
+    }
 
-        // return {...accessToken, user: { id: user.id, Username: user.Username } };
+    async reset(body: ResetPasswordDto) {
+        const user = await this.dbService.users.findUnique({where: {Email: body.Email}});
+        if (!user)
+            throw new UnauthorizedException();
+        const newPassword = await bcrypt.hash(body.Password, 10);
+        const updatedUser = await this.usersService.update(user.id, { Password: newPassword });
+        if (!updatedUser)
+            throw new UnauthorizedException('Invalid credentials');
+        const tokens = await this.createTokenSession(user.id);
+        return tokens;
     }
 
     async refresh(refreshToken: string) {

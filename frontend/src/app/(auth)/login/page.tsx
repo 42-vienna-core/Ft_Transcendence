@@ -9,6 +9,7 @@ export default function Login() {
 
 	const	router = useRouter();
 	const	[loginData, setLoginData] = useState(Data.data.slice(1, 3));
+	const	[login, setLogin] = useState("");
 
 return (
 
@@ -22,8 +23,10 @@ return (
 			
 			<form onSubmit={ async (e) => { 
 				e.preventDefault();
-			 	await Api.postRequest("/api/login", Object.fromEntries(new FormData(e.currentTarget)))
-				.then(res => res.ok ? router.push("/") : console.log(res)) 
+				const form = Object.fromEntries(new FormData(e.currentTarget));
+			 	await Api.postRequest("/api/auth", {...form, url: "login"} )
+				.then(res => res.ok ? (router.push("/"), router.refresh()): (console.log(res), setLogin("Wrong Email or Password")))
+
 			}}
             >
 				{loginData.map((item, i) => {
@@ -62,7 +65,14 @@ return (
 				})}
 				
 				<div className="m-5 text-center">
-					<div>
+					<div >
+						{login.length > 0 && (
+							<div className="text-red-800 mt-2 mb-2">
+								{login}
+							</div>
+						)
+
+						}
 						<button className={Styles.formStyle.btn_submit} type="submit" > 
                             Login
 						</button>
@@ -70,7 +80,7 @@ return (
 					<div className="p-4 text-lg font-bold flex justify-between">
 						<p>
 							Don't have an account ? / 
-							<button  className={Styles.formStyle.btn_sin_log} type="button"  onClick={() => router.push("/Register") } >
+							<button  className={Styles.formStyle.btn_sin_log} type="button"  onClick={() => router.push("/register") } >
 								Sign Up
 							</button>
 						</p>
@@ -79,7 +89,7 @@ return (
 
 			</form>
 			<div className="text-center  ">
-				<button onClick={() =>  router.push('/Reset') } type="button" className="hover:border-b hover:border-blue-400 transform-y cursor-pointer">
+				<button onClick={() =>  router.push('/reset') } type="button" className="hover:border-b hover:border-blue-400 transform-y cursor-pointer">
 					Forgot your password 
 				</button>
 			</div>

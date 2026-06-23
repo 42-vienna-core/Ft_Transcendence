@@ -42,29 +42,21 @@ export class UsersService {
 		return {message: "Code sent to email"};
 	}
 
-	async search () {
-		const users = await this.databaseService.users.findMany();
-		const res =  users.map((item) => {
-			return {
-				Username: item.Username,
-				id: item.id
-			}
-		})
-		return res;
+	async search(id: number) {
+		const userFriends = await this.databaseService.friends.findMany({
+			where: { userId: id },
+			select: { friendId: true },
+		});
+
+		const friendIds = userFriends.map(f => f.friendId);
+		return  await this.databaseService.users.findMany({
+			where: {
+				id: { notIn: [id, ...friendIds] },
+			},
+			select: { id: true, Username: true },
+		});
 	}
-	// async resetCode(body: UpdateUserDto) {
-	// 	const user = await this.databaseService.users.findUnique({ 
-	// 		where: { email: body.email}
-	// 	}) 
-		
-	// 	if (!user) throw ({message: 'User not found'});
-
-	// 	if (!user.codeExpire || new Date(Date.now()) > user.codeExpire)
-	// 		throw ({ message: 'Time is over' });
-
-	// 	if (user.resetCode !== body.resetCode)
-	// 		throw ({ message: 'Wrong code' });
-	// }
+	
 
 	async findAll(Role?: 'ADMIN' | 'PLAYER') {
 		if (Role)
