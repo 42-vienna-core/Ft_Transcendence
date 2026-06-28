@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "types": ["node", "jest"],
@@ -14,7 +15,6 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": ".",
     "incremental": true,
     "skipLibCheck": true,
     "strict": true,
@@ -29,5 +29,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "src/*": ["./src/*"]
+    }
   }
 }
