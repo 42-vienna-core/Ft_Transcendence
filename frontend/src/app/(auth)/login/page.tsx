@@ -4,9 +4,11 @@ import { useState} from "react"
 import Styles from "@/src/styles/styles";
 import Data from "@/src/lib/data"
 import { Api } from "@/src/lib/api"
+import { useAuth } from "@/src/components/provider/UserProvider";
 
 export default function Login() {
 
+	const	{refreshUser} = useAuth();
 	const	router = useRouter();
 	const	[loginData, setLoginData] = useState(Data.data.slice(1, 3));
 	const	[login, setLogin] = useState("");
@@ -25,8 +27,7 @@ return (
 				e.preventDefault();
 				const form = Object.fromEntries(new FormData(e.currentTarget));
 			 	await Api.postRequest("/api/auth", {...form, url: "login"} )
-				.then(res => res.ok ? (router.push("/"), router.refresh()): (console.log(res), setLogin("Wrong Email or Password")))
-
+				.then( async (res) => res.ok ? (router.push("/"), refreshUser()): (console.log(res), setLogin("Wrong Email or Password")))
 			}}
             >
 				{loginData.map((item, i) => {

@@ -1,68 +1,76 @@
   "use client"
-  import {useEffect , useRef} from 'react';
+  import {useEffect , useRef, useState} from 'react';
   import {io, Socket } from "socket.io-client"
   import "@/src/styles/deshboard.css";
+  import { Api } from "@/src/lib/api"
+  import { useAuth } from "@/src/components/provider/UserProvider"
 
 
  function Dashboard () {
 
-    
+    const {cntUser} = useAuth();
     const socketRef = useRef<Socket | null>(null);
+    const [players, setPlayers] = useState(0);
+
     useEffect( ()  => {
 
-        socketRef.current = io("http://localhost:2000/");
+        socketRef.current = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}`,{
+            withCredentials: true,
+        });
 
         socketRef.current.on("connect", () => {
             console.log("✅ Socket connected!", socketRef.current?.id);
         });
 
         socketRef.current.on("room-update", (data) => {
+            setPlayers(data.players);
             console.log("players:", data.players);
         })
 
         socketRef.current.on("gmae-start", () => {
             console.log("Start Game");
         });
-        return () => {
-            socketRef.current?.disconnect();
-        }
+        return () => { socketRef.current?.disconnect() }
+        
     }, []);
 
+    useEffect(() => {
+       (async () => {
+          if (cntUser === null)  return;
+            const {roomId} = await Api.getRequest("/backend/gameRoom/create/" + cntUser.id)
+            .then(r => r.json());
+            socketRef.current?.emit("join-room", { userId: cntUser?.id, roomId, })
+        })();
+    },[cntUser])
+  
     return (
       
-    <div className="mockBody">
+    <div className=" bg text-white border rounded-2xl">
 
-      <section className="mockBoard" aria-label="Snake game field">
+      <section className="mockBoard" aria-label="Snake game field ">
 
-        <div className="boardTop">
-          <span className="boardTag">
-            <i className="ti tiCircleFilled  text-xl" aria-hidden="true"> </i> live match · room 47
-          </span>
-          <div className="boardStats">
-            <div className="text-white"><p >00:42</p>time</div>
-            <div className="text-white"><p>12</p>players</div>
-            <div className="text-white"><p>340</p>your score</div>
+        <div className="flex flex-row md:flex-row md:items-center justify-between gap-2 md:gap-0 h-auto md:h-14 px-4 py-2">
+
+          <div className="flex items-center gap-2 text-sm md:text-base font-medium ">
+            live match · Room 
           </div>
-        </div>
 
-        
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-1 md:gap-0 text-sm md:text-base">
 
-        <div className="playArea" aria-hidden="true">
-          <div className="gridOverlay"></div>
-          <div className="youTag">you</div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="snakeSeg"> </div>
-          <div className="foodDot"></div>
-          <div className="foodDot"></div>
-          <div className="foodDot"></div>
-        </div>
+            <div className="text-white md:w-1/3 text-center md:text-left">
+              00:42 time
+            </div>
+
+            <div className="md:w-1/3 text-center font-medium">
+              Players {players} / 4
+            </div>
+
+            <div className="text-white md:w-1/3 text-center md:text-right"> 340 your score </div>
+
+          </div>
+      </div>
+
+        <canvas className='playArea '> </canvas>
 
         <div className="boardBottom">
           <div>move 
@@ -79,7 +87,7 @@
         </div>
       </section>
 
-      <aside className="mockSide" aria-label="Match sidebar">
+      <aside className="mockSide" aria-label="Match sidebar ">
         <div className="youCard">
           <div className="row1">
             <i className="ri tiUser aria-hidden:true"></i> 

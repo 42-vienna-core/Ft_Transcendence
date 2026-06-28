@@ -1,38 +1,35 @@
 "use client"
 
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Avatar from "@/src/components/avatar/Avatar"
 import { useAuth } from "@/src/components/provider/UserProvider"
 import { Api } from "@/src/lib/api";
 import { NavStyles } from "@/src/styles/Nav.styles"
 import { UserSearch } from "@/src/types/Types";
 
+
 export default function Navbar() {
 
-  const user = useAuth();
-  const usersRef = useRef([]);
-  const [filtered, setFiltered] = useState([]);
+  const { cntUser } = useAuth();
+  const [user, setUser] = useState<UserSearch[]>([]);
+  const [filtered, setFiltered] = useState<UserSearch[]>([]);
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    if (usersRef.current.length > 0) 
-      return;
-    async function search() {
-      if (!user)
-          return;
-      const res = await Api.getRequest("http://localhost:4000/api/users/search/" + user.id);
-      const data = await res.json();
-      usersRef.current = data;
-    };
-    search();
-  }, [user])
+    if (!cntUser) return;
+  
+    (async  () =>  {
+        const res = await Api.getRequest("http://localhost:4000/api/users/search/" + cntUser.id).then(r => r.json())
+        setUser(res);
+      })();
+  }, [cntUser])
 
   useEffect(() => {
-    if (inputValue.length === 0)
+    if (inputValue === "")
       return setFiltered([]);
     const timer = setTimeout(() => {
-      const res = usersRef.current.filter((item: UserSearch) => item.Username.toLowerCase().includes(inputValue.toLowerCase()));
+      const res = user.filter((item: UserSearch) => item.Username.toLowerCase().includes(inputValue.toLowerCase()));
       setFiltered(res);
     }, 500)
     return () => clearTimeout(timer);
@@ -91,7 +88,7 @@ export default function Navbar() {
       </div>
       {/* Desktop Nav Links */}
       <div className={NavStyles.navLink}>
-        {user?.id ? <Avatar /> :
+        {cntUser?.id ? <Avatar /> :
           <div>
             <Link className={NavStyles.btnPrimary} href="/login"> Sign in </Link>
             <Link className={NavStyles.btnSecondary} href="/register"> Sign up </Link>

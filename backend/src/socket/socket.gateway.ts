@@ -2,13 +2,17 @@ import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDiscon
 import { Server, Socket } from 'socket.io';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { AddUserGameRoomDto } from 'src/dto/addUser-gameRoom.dto';
+import  * as  cookie  from "cookie"
+// import * as jwt from 'jsonwebtoken'
 
-@WebSocketGateway(2000, { cors: { origin: '*' } })
+@WebSocketGateway(2000, { cors: { origin: 'http://localhost:3000', credentials: true, } })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server!: Server;
   constructor(private readonly roomService: GameRoomService) {}
 
   handleConnection(client: Socket) {
+    const cookies = cookie.parseCookie(client.handshake.headers.cookie || '');
+    console.log(cookies)
     console.log('Client connected:', client.id);
   }
 
@@ -17,7 +21,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.userId = data.userId;
     client.data.roomId = data.roomId;
     await client.join(data.roomId);
-    
+
     await this.roomService.addUserToRoom(data.roomId, data.userId, client.id);
     const players = await this.roomService.getPlayerCount(data.roomId);
     this.server.to(data.roomId).emit('room-update', {

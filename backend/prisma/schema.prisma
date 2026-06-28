@@ -40,17 +40,23 @@ model Friends {
   @@unique([userId, friendId])
 }
 
+enum RoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}
 model GameRoom {
   id            String     @id @default(uuid())
-  name          String
+  name          String     @default("Room")
   maxUsers      Int        @default(4)
   ownerId       Int?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   type          RoomType   @default(PUBLIC)
+  status        RoomStatus @default(WAITING)
   users         Users?     @relation(fields: [ownerId], references: [id])
-  messages      Message[]
-  roomUsers     RoomUser[]
+  messages      Message   []
+  roomUsers     RoomUser  []
 }
 
 model Sessions {
@@ -101,3 +107,5 @@ enum FriendStatus {
   BLOCKED
   REJECTED
 }
+
+

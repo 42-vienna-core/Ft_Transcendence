@@ -49,12 +49,14 @@ export class UsersService {
 		});
 
 		const friendIds = userFriends.map(f => f.friendId);
-		return  await this.databaseService.users.findMany({
+		const users = await this.databaseService.users.findMany({
 			where: {
 				id: { notIn: [id, ...friendIds] },
 			},
 			select: { id: true, Username: true },
 		});
+		console.log(users)
+		return users;
 	}
 	
 

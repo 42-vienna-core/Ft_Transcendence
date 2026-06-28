@@ -1,37 +1,51 @@
 
 export const Api = {
     postRequest: async (url: string, obj: object) => {
-        const res = await fetch(url,  {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify (obj)
-        })
-        return res;
+       try {
+            const res = await fetch(url,  {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify (obj)
+            })
+            return res;
+       }
+       catch {
+            throw new Error();
+       }
     },
     getRequest: async (url: string) =>
     {
-        const res = fetch(url);
-        return res;
+        try {
+           return fetch(url);
+        }
+        catch { throw new Error() }
     },
     deleteRequest: async (url: string) =>
     {
-        const res = await fetch(url, {
-            method: "DELETE",
-        })
-        return res;
+        try{
+            return  await fetch(url, { method: "DELETE" })
+        }
+        catch  {
+            throw new Error()
+        }
     },
     getUser: async (accessToken: string) => {
-        const user = await fetch("http://localhost:4000/api/auth/me", {
-            method: "POST",
-            cache: "no-store",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({accessToken: accessToken})
-        });
-        return user;
+        try {
+            const user = await fetch("http://localhost:4000/api/auth/me", {
+                method: "POST",
+                cache: "no-store",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({accessToken: accessToken})
+            });
+            return user;
+    }
+    catch {
+        throw new Error()
+    }
     },
 }

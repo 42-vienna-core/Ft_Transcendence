@@ -1,9 +1,9 @@
-
 import Link from 'next/link';
 import style from "@/src/styles/styles"
 
 export default  function  Hero() {
 
+  
     return (
         <div className={`${style.hero.hero} bg`}>
 

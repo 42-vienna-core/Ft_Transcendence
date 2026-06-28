@@ -1,5 +1,4 @@
-import { Controller, Body, Post, Get, Delete, Param } from '@nestjs/common';
-import { CreateGameRoomDto } from '../dto/create-gameRoom.dto';
+import { Controller, Body, Post, Get, Delete, Param, Query, ParseIntPipe} from '@nestjs/common';
 import { CreatePrivateGameRoom } from '../dto/crate-private-gameRoom.dto';
 import { GameRoomService } from './gameRoom.service';
 
@@ -8,19 +7,18 @@ export class GameRoomController {
   constructor(private readonly roomService: GameRoomService) {}
 
   @Get()
-  findAll() {
-    return this.roomService.findAll();
+  findAll(@Query('status') Status?: 'WAITING' | 'PLAYING' | 'FINISHED') {
+    return this.roomService.findAll(Status);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.roomService.findOne(id);
   }
-
   
-  @Post()
-  async createRoom(@Body() obj: CreateGameRoomDto) {
-    return this.roomService.createRoom(obj);
+  @Get("create/:id")
+  async createRoom(@Param('id', ParseIntPipe) id:  number) {
+    return this.roomService.createRoom(id);
   }
 
   @Post('private')

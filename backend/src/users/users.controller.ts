@@ -1,7 +1,7 @@
 import { Controller, Query, Get, Body, Patch, Param, Delete, ParseIntPipe, ValidationPipe, Ip } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from '../dto/updata-users.dto';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
+// import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { LoggerService } from 'src/logger/logger.service';
 
 @Controller('users')
@@ -15,7 +15,7 @@ export class UsersController {
     return this.userService.search(id);
   }
   
-  @Throttle({ long: { ttl: 60000, limit: 5 } })
+  // @Throttle({ long: { ttl: 60000, limit: 5 } })
   // @Post('find')
   // findUser(@Body(ValidationPipe) newPassword: UpdateUserDto) {
   //   return this.userService.findUser(newPassword);
@@ -33,7 +33,7 @@ export class UsersController {
     return this.userService.findAll(role);
   }
 
-  @SkipThrottle()
+  // @SkipThrottle()
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
