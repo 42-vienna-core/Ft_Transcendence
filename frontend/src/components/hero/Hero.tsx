@@ -1,9 +1,13 @@
+"use client"
 import Link from 'next/link';
 import style from "@/src/styles/styles"
+// import { useAuth } from '../provider/UserProvider';
+// import { useEffect } from 'react';
 
 export default  function  Hero() {
 
-  
+    // const {refreshUser} = useAuth();
+    // useEffect(() => { refreshUser() }, []);
     return (
         <div className={`${style.hero.hero} bg`}>
 

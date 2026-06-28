@@ -24,7 +24,7 @@ export const Api = {
     },
     deleteRequest: async (url: string) =>
     {
-        try{
+        try {
             return  await fetch(url, { method: "DELETE" })
         }
         catch  {

@@ -27,7 +27,7 @@ return (
 				e.preventDefault();
 				const form = Object.fromEntries(new FormData(e.currentTarget));
 			 	await Api.postRequest("/api/auth", {...form, url: "login"} )
-				.then( async (res) => res.ok ? (router.push("/"), refreshUser()): (console.log(res), setLogin("Wrong Email or Password")))
+				.then( async (res) => res.ok ? (refreshUser(), router.push("/")): (console.log(res), setLogin("Wrong Email or Password")))
 			}}
             >
 				{loginData.map((item, i) => {

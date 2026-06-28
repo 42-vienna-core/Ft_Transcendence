@@ -8,12 +8,12 @@
 
  function Dashboard () {
 
-    const {cntUser} = useAuth();
+    const {cntUser, refreshUser} = useAuth();
     const socketRef = useRef<Socket | null>(null);
     const [players, setPlayers] = useState(0);
 
     useEffect( ()  => {
-
+        refreshUser();
         socketRef.current = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}`,{
             withCredentials: true,
         });

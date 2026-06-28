@@ -1,8 +1,12 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/components/provider/UserProvider"
+import { useEffect } from "react";
 export default function Ava() {
-    const {cntUser} = useAuth();
+    
+    const {cntUser, refreshUser} = useAuth();
     const route = useRouter();
+
+    useEffect(() => {refreshUser()},[])
   return   ( 
      <div   onClick={() => route.push("/profile")}
             className="flex justify-between border rounded-3xl bg-blue-900 w-25 h-9.5 m-2 p-2 overflow-hidden cursor-pointer">

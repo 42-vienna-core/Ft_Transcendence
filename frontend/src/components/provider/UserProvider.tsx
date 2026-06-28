@@ -2,18 +2,7 @@
 
 import { createContext, useCallback, useContext, useState} from "react"
 import { Api } from "@/src/lib/api"
-
-type User = {
-    id: number;
-    Username: string,
-    role: string,
-} | null;
-
-type UserContextType = {
-    cntUser: User,
-    //setCntUser: React.Dispatch<React.SetStateAction<User>>;
-    refreshUser: () => Promise<void>;
-}
+import { UserType,  UserContextType} from "@/src/types/Types"
 
 const UserContext = createContext<UserContextType | null>(null);
 
@@ -23,13 +12,20 @@ export default function UserProvider (
         initialUser, 
     } : {
             children: React.ReactNode,
-            initialUser: User 
+            initialUser: UserType 
     } ) {
 
-    const [ cntUser, setCntUser ] = useState<User>(initialUser);
+    const [ cntUser, setCntUser ] = useState<UserType>(initialUser);
     const refreshUser = useCallback( async () => {
+        console.log("user provider was caled")
+        
+        if (cntUser !== null)
+        {
+            setCntUser({...cntUser});
+            return;
+        }
         try {
-            const res = await Api.getRequest("/api/me").then(r => r.json());
+            const res = await Api.getRequest("/api/auth").then(r => r.json());
             setCntUser(res);
         }
         catch {
@@ -38,7 +34,7 @@ export default function UserProvider (
     },[])
     
     return (
-        <UserContext.Provider value={{cntUser, refreshUser}}>
+        <UserContext.Provider value={{cntUser, setCntUser, refreshUser}}>
             {children}
         </UserContext.Provider>
     )

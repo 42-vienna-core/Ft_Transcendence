@@ -5,12 +5,14 @@ import { useState } from "react"
 import Data from "@/src/lib/data";
 import Styles from "@/src/styles/styles";
 import { Api } from "@/src/lib/api";
+import { useAuth } from "@/src/components/provider/UserProvider";
 
 export default function Register() {
 
 	const router = useRouter();
 	const [labelFocus, setLabelFocus] = useState(Data.data);
     const [password, setPassword] = useState("");
+	const {refreshUser} = useAuth();
 	
 return (
 	
@@ -29,7 +31,7 @@ return (
                         return setPassword("Wrong password try again");
 					const {ConfirmPassword, ...data} = form;
 					await Api.postRequest("/api/auth", {...data, url: "register"} )
-					.then(res => res.ok ? (router.push("/"), router.refresh()): console.log(res));
+					.then(res => res.ok ? (refreshUser() , router.push("/")) : console.log(res));
 				 }}
 			>
 				{labelFocus.map((item, i) => {

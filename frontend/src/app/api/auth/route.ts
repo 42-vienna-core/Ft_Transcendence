@@ -6,18 +6,18 @@ import { cookies } from "next/headers";
 export async function POST ( req : Request) {
 
     if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
   }
     const body =  await req.json();
     const {url, ...data} = body;
-    const res: AuthType = await Api.postRequest("http://localhost:4000/api/auth/" + body.url , data)
+    const res: AuthType = await Api.postRequest(process.env.INTERNAL_API_URL + "/auth/" + body.url , data)
     .then(res => res.json());
 
     if (res.accessToken === undefined || res.refreshToken === undefined)
@@ -43,13 +43,11 @@ export async function POST ( req : Request) {
     return response;
 }
 
-
-export async function GET(req: Request) {
-  console.log(req);
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken")?.value;
-  const res = Api.getUser(accessToken || "");
-  
-
-  return NextResponse.json({ message: "hello I am Rafayel" });
+export async function GET () {
+    const accessToken = (await cookies()).get("accessToken")?.value;
+    if (!accessToken)
+        return Response.json(null, {status: 401});
+    const user = await Api.getUser(accessToken).then((r) => r.json());
+    console.log("get request me user ",user)
+    return Response.json(user);
 }

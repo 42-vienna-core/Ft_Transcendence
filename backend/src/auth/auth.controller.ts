@@ -11,7 +11,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
   
   @Post("me")
-  verifyAccess(@Body('accessToken') accessToken: string) {
+  me(@Body('accessToken') accessToken: string) {
     return this.authService.me(accessToken);
   }
   

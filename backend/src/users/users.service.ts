@@ -55,7 +55,6 @@ export class UsersService {
 			},
 			select: { id: true, Username: true },
 		});
-		console.log(users)
 		return users;
 	}
 	

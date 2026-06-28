@@ -3,6 +3,8 @@ import UserProvider  from "@/src/components/provider/UserProvider";
 import type { Metadata } from "next";
 import Nav from "@/src/components/nav/Nav"
 import "./globals.css";
+import { Api } from "@/src/lib/api"
+import { cookies } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans", 
@@ -25,10 +27,14 @@ export default async function RootLayout( {
   children: React.ReactNode;
 }>) {
 
+  let user = null;
+  const accessToken = (await cookies()).get("accessToken")?.value;
+  if (accessToken)
+    user = await Api.getUser(accessToken || "").then(r => r.json());
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} >
       <body className="min-h-full flex flex-col min-w-md">
-        <UserProvider initialUser={null}>
+        <UserProvider initialUser={user}>
            <Nav />
           {children}
         </UserProvider>
