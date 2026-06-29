@@ -57,7 +57,10 @@ export default function Profile() {
     setPending(true);
 
     try {
-      await apiFetch('/user/me');
+      const res = await apiFetch('user/me', {
+        method: "DELETE"
+      });
+      if (!res.success) return
 
       await signOut({
           callbackUrl: "/login",
