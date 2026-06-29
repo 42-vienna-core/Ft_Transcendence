@@ -2,8 +2,10 @@ import createIntlMiddleware from 'next-intl/middleware';
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse, NextRequest } from 'next/server';
 
+const locales = ['en', 'ru', 'de', 'it'];
+
 const intlMiddleware = createIntlMiddleware({
-  locales: ['en', 'ru'],
+  locales,
   defaultLocale: 'en',
 });
 
@@ -20,12 +22,12 @@ const authMiddleware = withAuth(
       response.headers.set('x-nextauth-origin', 'server-get-session');
     }
 
-    const isAuthPage = /^\/(ru|en)?\/?(login|register)$/.test(path);
+    const isAuthPage = /^\/(ru|en|de|it)?\/?(login|register)$/.test(path);
 
     if (token?.error === 'RefreshAccessTokenError') {
       if (!isAuthPage) {
         const currentLocale = path.split('/')[1] || 'en';
-        const localePrefix = ['ru', 'en'].includes(currentLocale) ? `/${currentLocale}` : '';
+        const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
         return NextResponse.redirect(new URL(`${localePrefix}/login`, req.url));
       }
       return response;
@@ -33,7 +35,7 @@ const authMiddleware = withAuth(
 
     if (token && isAuthPage) {
       const currentLocale = path.split('/')[1] || 'en';
-      const localePrefix = ['ru', 'en'].includes(currentLocale) ? `/${currentLocale}` : '';
+      const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
       return NextResponse.redirect(new URL(`${localePrefix}/dashboard`, req.url));
     }
 
@@ -44,7 +46,7 @@ const authMiddleware = withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
         if (path.startsWith('/api/auth')) return true;
-        const isPublicPath = /^\/(ru|en)?\/?(login|register)?$/.test(path);
+        const isPublicPath = /^\/(ru|en|de|it)?\/?(login|register)?$/.test(path);
         if (isPublicPath) return true;
         return !!token;
       }
@@ -66,6 +68,6 @@ export const config = {
   matcher: [
     '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css)$).*)',
     '/dashboard/:path*', 
-    '/(ru|en)/:path*',
+    '/(ru|en|de|it)/:path*',
   ],
 };
