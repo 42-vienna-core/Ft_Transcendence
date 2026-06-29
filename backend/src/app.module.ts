@@ -10,6 +10,7 @@ import { TokenModule } from './token/token.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
 import { AvatarModule } from './avatar/avatar.module';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AvatarModule } from './avatar/avatar.module';
     AuthModule,
     SessionModule,
     AvatarModule,
+    FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService, {
