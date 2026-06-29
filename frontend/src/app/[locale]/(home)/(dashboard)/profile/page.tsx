@@ -9,6 +9,8 @@ import { fetchLogout } from "@/lib/actions/auth-actions";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { apiFetch } from "@/lib/api-client";
 
 function SettingBtnContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -27,6 +29,7 @@ export default function Profile() {
   const [lang, setLang] = useState("");
   const router = useRouter();
   const pathName = usePathname();
+  const t = useTranslations("Profile.settings");
 
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -42,11 +45,29 @@ export default function Profile() {
     setMounted(true);
     if (pathName.includes("en")) setLang("en");
     if (pathName.includes("ru")) setLang("ru");
+    if (pathName.includes("de")) setLang("de");
+    if (pathName.includes("it")) setLang("it");
   }, []);
 
   const togleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
+  const handleAccountRemoving = async () => {
+    setPending(true);
+
+    try {
+      await apiFetch('/user/me');
+
+      await signOut({
+          callbackUrl: "/login",
+          redirect: true,
+      });
+    } catch (error) {
+      setPending(false);
+      console.log("The server has rejected the deleting account request : ");
+    }
+  }
 
   const handleLogout = async () => {
     setPending(true);
@@ -106,7 +127,7 @@ export default function Profile() {
           <h3>preferences</h3>
             <SettingBtnContainer>
               <SettingBatton
-                labelF="language"
+                labelF={t("lang")}
                 labelS={lang}
                 onClick={() => toggleMenu()}
               >
@@ -129,6 +150,20 @@ export default function Profile() {
                       <span className="text-[var(--color-text-primary)]">Русский</span>
                       <span className="text-[var(--color-text-primary)]">RU</span>
                     </button>
+                                        <button
+                      onClick={() => selectLanguage('de')}
+                      className="flex aline-center justify-between w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-bg-muted)]"
+                    >
+                      <span className="text-[var(--color-text-primary)]">Deutschland</span>
+                      <span className="text-[var(--color-text-primary)]">DE</span>
+                    </button>
+                                        <button
+                      onClick={() => selectLanguage('it')}
+                      className="flex aline-center justify-between w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-bg-muted)]"
+                    >
+                      <span className="text-[var(--color-text-primary)]">Italian</span>
+                      <span className="text-[var(--color-text-primary)]">IT</span>
+                    </button>
                   </div>
                 </div>
               )}
@@ -136,7 +171,7 @@ export default function Profile() {
           </SettingBtnContainer>
           <SettingBtnContainer>
             <SettingBatton
-              labelF="color theme"
+              labelF={t("ct")}
               labelS={(theme === "dark" && mounted) ? "☀️" : "🌙"}
               onClick={() => togleTheme()}
             ></SettingBatton>
@@ -216,29 +251,21 @@ export default function Profile() {
           </div>
           <SettingBtnContainer>
             <SettingBatton
-              labelF="security"
-              labelS="change password, 2FA"
+              labelF={t("secure.label1")}
+              labelS={t("secure.label2")}
               onClick={() => setIsModalOpen(true)}
             />
           </SettingBtnContainer>
-          <div className={style.row}>
-            <div className={`${style.lbl} ${style.lblDanger}`}>
-              <i
-                className={`${style.ti} ${style.tiTrash}`}
-                aria-hidden="true"
-              ></i>{" "}
-              delete account
-            </div>
-            <div className={style.val}>
-              <i
-                className={`${style.ti} ${style.tiChevronRight}`}
-                aria-hidden="true"
-              ></i>
-            </div>
-          </div>
           <SettingBtnContainer>
             <SettingBatton
-              labelF="logout"
+              labelF={t("da")}
+              onClick={handleAccountRemoving}
+              disabled={pending}
+            />
+          </SettingBtnContainer>
+          <SettingBtnContainer>
+            <SettingBatton
+              labelF={t("lo")}
               onClick={handleLogout}
               disabled={pending}
             />

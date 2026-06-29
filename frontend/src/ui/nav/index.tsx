@@ -7,7 +7,7 @@ import CustomLink from '../link';
 import { useProfile } from '@/providers/ProfileContext';
 import { usePathname } from 'next/navigation';
 import { HeaderProfileSkeleton, HeaderAuthLinkSkeleton } from '../skeletons'
-import Profile from '@/app/(home)/(dashboard)/profile/page';
+import { useTranslations } from 'next-intl';
 
 
 interface LinkProps{
@@ -22,16 +22,18 @@ interface AuthLinkProps {
 }
 
 function NavLinks ({status, username, avatar}: LinkProps) {
+    const t = useTranslations("Header");
+
     if (status === "authenticated") {
         return (
             <>
                 <CustomLink 
                     url={"/dashboard"}
-                    label={"Dashboard"}
+                    label={t("a")}
                 />
                 <CustomLink 
                     url={"/friends"}
-                    label={"Friends"}
+                    label={t("f")}
                 />
                 <Link className={`${style.profile} justify-between`} href="/profile">
                     <p>{username}</p>
@@ -46,18 +48,20 @@ function NavLinks ({status, username, avatar}: LinkProps) {
 }
 
 function NavAuthLinks ({status}: {status: string}) {
+    const t = useTranslations("Header");
+
     if (status === "unauthenticated") {
         return (
-                <>
-                    <CustomLink 
-                        url={"/login"}
-                        label={"Log in"}
-                    />
-                    <CustomLink 
-                        url={"/register"}
-                        label={"Sign in"}
-                    />
-                </>
+            <>
+                <CustomLink 
+                    url={"/login"}
+                    label={t("si")}
+                />
+                <CustomLink 
+                    url={"/register"}
+                    label={t("su")}
+                />
+            </>
         )
     }
 }
