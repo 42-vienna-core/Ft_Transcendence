@@ -1,6 +1,29 @@
 {
+    "Header": {
+        "a":"Arena",
+        "f":"Friends",
+        "si":"Sign In",
+        "su":"Sign Up"
+    },
     "HomePage": {
-        "motoFirst": "SLITHER.STRIKE.",
-        "motoSecond": "SURVIVE."
+        "title":"BUILT FOR REAL-TIME COMBAT",
+        "motoFirst":"SLITHER.STRIKE.",
+        "motoSecond":"SURVIVE.",
+        "description":"A multiplayer snake battleground where four serpents enter, one slithers out. Real-time. Cross-platform. No mercy.",
+        "sBtn": "Start Playing"
+    },
+    "Profile": {
+        "epBtn": "edit profile",
+        "sub": "submit",
+        "settings": {
+            "lang": "language",
+            "ct": "color theme",
+            "da": "delete account",
+            "lo": "logout",
+            "secure": {
+                "label1": "secure",
+                "label2": "change password, 2FA" 
+            }
+        }
     }
 }

@@ -1,0 +1,29 @@
+{
+    "Header": {
+        "a": "Arena",
+        "f": "Amici",
+        "si": "Accedi",
+        "su": "Registrati"
+    },
+    "HomePage": {
+        "title": "CREATO PER IL COMBATTIMENTO IN TEMPO REALE",
+        "motoFirst": "STRISCIA. COLPISCI.",
+        "motoSecond": "SOPRAVVIVI.",
+        "description": "Un campo di battaglia multiplayer per serpenti: quattro entrano, uno solo striscia fuori. Tempo reale. Cross-platform. Nessuna pietà.",
+        "sBtn": "Inizia a Giocare"
+    },
+    "Profile": {
+        "epBtn": "Modifica profilo",
+        "sub": "Invia",
+        "settings": {
+            "lang": "Lingua",
+            "ct": "Tema colore",
+            "da": "Elimina account",
+            "lo": "Disconnetti",
+            "secure": {
+                "label1": "Sicurezza",
+                "label2": "Cambia password, 2FA" 
+            }
+        }
+    }
+}

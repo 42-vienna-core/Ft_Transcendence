@@ -1,0 +1,29 @@
+{
+    "Header": {
+        "a": "Arena",
+        "f": "Freunde",
+        "si": "Anmelden",
+        "su": "Registrieren"
+    },
+    "HomePage": {
+        "title": "FÜR ECHTZEIT-KÄMPFE ENTWICKELT",
+        "motoFirst": "SCHLÄNGELN. ZUSCHLAGEN.",
+        "motoSecond": "ÜBERLEBEN.",
+        "description": "Ein Multiplayer-Schlangen-Schlachtfeld: Vier Schlangen treten an, nur eine schlängelt sich heraus. Echtzeit. Plattformübergreifend. Keine Gnade.",
+        "sBtn": "Jetzt Spielen"
+    },
+    "Profile": {
+        "epBtn": "Profil bearbeiten",
+        "sub": "Bestätigen",
+        "settings": {
+            "lang": "Sprache",
+            "ct": "Farbthema",
+            "da": "Konto löschen",
+            "lo": "Abmelden",
+            "secure": {
+                "label1": "Sicherheit",
+                "label2": "Passwort ändern, 2FA" 
+            }
+        }
+    }
+}
