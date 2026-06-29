@@ -1,8 +1,9 @@
 import { NextAuthOptions } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { headers } from 'next/headers';
 
-const BACKEND_URL = process.env.INTERNAL_API_URL;
+const URL = `${process.env.INTERNAL_API_URL}/auth`;
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -14,25 +15,26 @@ export const authOptions: NextAuthOptions = {
             },
 
             async authorize(credentials) {
-                console.log(credentials);
                 const payload = {
                     email: credentials?.email,
                     password: credentials?.password,
                 }
 
-                const res = await fetch(`${BACKEND_URL}/auth/login`, {
+                const res = await fetch(`${URL}/login`, {
                     method: 'POST',
                     body: JSON.stringify(payload),
-                    headers: {'Content-Type': 'application/json'}
+                    headers: {'Content-Type': 'application/json'},
+                    cache: 'no-store'
                 })
 
-                if (!res.ok) return null;
+                if (!res.ok) throw new Error('Error: while logining');
                 const data = await res.json();
-                console.log(data);
 
                 return {
                     id: data.user.id,
                     name: data.user.name,
+                    email: payload.email,
+                    avatar: data.user.avatar,
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
                     accessTokenExpiry: createExpiredTime()
@@ -41,16 +43,58 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        async jwt({token, user}) {
-            if (user) return {...token, ...user}
-            
-            if (Date.now() < (token.accessTokenExpiry as number)) return token;
+        async jwt({token, user, account, trigger, session}) {
+            console.log("=================JWT CALLBACK=======================")
+            console.log("user", user);
+            console.log("refreshToken: ", token.refreshToken);
+
+
+            if (user) {
+                token.sub = user.id;
+                token.name = user.name;
+                token.email = user.email,
+                token.picture = user.avatar;
+                token.accessToken = user.accessToken;
+                token.refreshToken = user.refreshToken;
+                token.accessTokenExpiry = user.accessTokenExpiry;
+            }
+
+            if (trigger === "update" && session) {
+                console.log("triger update");
+                const newUsername = session.username ?? session.user?.username;
+                const newAvatar = session.avatar ?? session.user?.avatar;
+
+                if (newUsername) token.name = newUsername;
+                if (newAvatar) token.picture = newAvatar;
+            }
+
+
+            if (token.error === "RefreshAccessTokenError") {
+                return token;
+            }
+
+            const expiryTime = (token.accessTokenExpiry as number) ?? 0;
+            if (Date.now() < expiryTime) {
+                return token;
+            }
+
+            const reqHeaders = await headers();
+            const originSource = reqHeaders.get('x-nextauth-origin');
+
+            if (originSource === 'server-get-session') {
+                console.log("Server Component detected. Skipping token rotation to prevent cookie loss.");
+                return token; 
+            }
 
             return await refreshAccessToken(token);
         },
         async session({session, token}) {
-            session.user.id = token.id as string;
-            session.user.username = token.name as string;
+            if (session.user) {
+                session.user.id = token.sub as string;
+                session.user.username = token.name as string;
+                session.user.avatar = token.picture as string | null;
+            }
+
             session.accessToken = token.accessToken as string;
             session.error = token.error as string | undefined;
             return session;
@@ -65,28 +109,32 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET
 }
 
-async function refreshAccessToken(token: JWT): Promise<JWT> {
-    console.log("refreshAccessToken");
+export async function refreshAccessToken(token: JWT): Promise<JWT> {
+    console.log("================= REFRESH JWT=======================")
 
     try {
-        const res = await fetch(`${BACKEND_URL}/auth/refresh`, {
+        const res = await fetch(`${URL}/refresh`, {
             method: 'POST',
-            body: JSON.stringify(token.refreshToken),
-            headers: {'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: token.refreshToken }),
+            cache: 'no-store' 
         });
 
-        if (!res.ok) throw new Error('refresh faild');
+        if (!res.ok) {
+            return {...token, error: "RefreshAccessTokenError" }
+        }
 
         const data = await res.json();
 
         return {
+            ...token,
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
             accessTokenExpiry: createExpiredTime(),
             error: undefined
         }
-    } catch {
-        return {...token, error: 'RefreshAccessTokenError'};
+    } catch (error){
+        return {...token, error: "RefreshAccessTokenError" }
     }
 }
 

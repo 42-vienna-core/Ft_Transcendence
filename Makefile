@@ -82,14 +82,20 @@ log:
 
 ## Run Prisma migrations inside the backend container
 migrate:
-	docker compose exec ft_transcendence-backend-1 npx prisma migrate dev
+	docker exec -it backend npx prisma migrate dev
+
+generate:
+	docker exec -it backend npx prisma generate
+
+prisma-reset:
+	docker exec -it backend npx prisma migrate reset
 
 ## Open Prisma Studio (web-based DB GUI) — runs on port 5555
 studio:
-	docker compose exec backend npx prisma studio --port 5555
+	docker exec -it backend npx prisma studio --port 5555
 
 ## Open a shell in a service: make shell s=backend
 shell:
 	docker compose exec $(s) sh
 
-.PHONY: all up down logs certs migrate studio clean re
+.PHONY: all up down logs certs migrate prisma-reset studio clean re

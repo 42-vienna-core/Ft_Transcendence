@@ -1,51 +1,96 @@
-import { getServerSession } from 'next-auth';
+'use client'
+
 import style from './nav.module.css';
 import Link from 'next/link';
-import { authOptions } from '@/lib/auth';
 import clsx from 'clsx';
-import LogoutButton from '../logoutButton'; 
-import { headers } from 'next/headers';
 import CustomLink from '../link';
+import { useProfile } from '@/providers/ProfileContext';
+import { usePathname } from 'next/navigation';
+import { HeaderProfileSkeleton, HeaderAuthLinkSkeleton } from '../skeletons'
 
-async function Nav() {
-  const session = await getServerSession(authOptions);
-  const headersList = await headers();
-  const referer = headersList.get('referer');
-  const currentUrl = headersList.get("x-url") || referer || "unknown";
-  
-  const isLoginActive = currentUrl.includes('/login');
-  const isRegisterActive = currentUrl.includes('/register');
 
-  return (
-    <nav className={style.nav}>
-      <div className={style.logo}>
-        <div className={style.logoMark} />
-        <Link href="/">Snake.io</Link>
-      </div>
-      <div className={style.navLinks}>
-        {session ? (
-          <>
-            <Link className={clsx(style.btn, style.btnPrimary)} href="#">
-              Profile
+interface LinkProps{
+  status: string;
+  username: string; 
+  avatar: string | null;
+}
+
+interface AuthLinkProps {
+    status: string;
+    isAuthorized: boolean;
+}
+
+export function ProfileNavLink ({status, username, avatar}: LinkProps) {
+    if (status === "authenticated") {
+        return (
+            <Link className={`${style.profile} justify-between`} href="/profile">
+                <p>{username}</p>
+                <img 
+                    className={style.ava} 
+                    src={avatar ? avatar : "/png/default_avatar.png"}
+                />
             </Link>
-            <LogoutButton />
-          </>
-        ) : (
-          <>
-            <CustomLink 
-              // className={clsx(style.btn, isLoginActive ? style.btnPrimary : style.navLink)} 
-              url={"/login"}
-              label={"Log in"}
+        )
+    }
+}
+
+export function NavAuthLinks ({status}: {status: string}) {
+    if (status === "unauthenticated") {
+        return (
+            <div className={style.navLinks}>
+                <CustomLink 
+                    url={"/login"}
+                    label={"Log in"}
+                />
+                <CustomLink 
+                    url={"/register"}
+                    label={"Sign in"}
+                />
+            </div>
+        )
+    }
+}
+
+
+export function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
+    if (isAuthorized && status === "loading") {
+        return <HeaderProfileSkeleton/>
+    }
+}
+
+export function AuthLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
+    const currentPage = usePathname();
+    const publickPages = (currentPage === "/login" || currentPage === "/register" || currentPage === "/");
+    
+    if ( (!isAuthorized && publickPages && status === "loading")) {
+        return <HeaderAuthLinkSkeleton/>
+    }
+}
+
+function Nav({isAuthorized}: {isAuthorized:boolean}) {
+    const { status, username, avatar } = useProfile();
+    return (
+        <nav className={style.nav}>
+            <div className={style.logo}>
+                <div className={style.logoMark} />
+                <Link href="/">Snake.io</Link>
+            </div>
+            <ProfileNavLink 
+                status={status}
+                username={username}
+                avatar={avatar}
             />
-            <CustomLink 
-              url={"/register"}
-              label={"Sign in"}
+            <ProfileLoadingSkeleton 
+                status={status}
+                isAuthorized={isAuthorized}
+                />
+            <NavAuthLinks status={status}/>
+            <AuthLoadingSkeleton 
+                status={status}
+                isAuthorized={isAuthorized}
             />
-          </>
-        )}
-      </div>
-    </nav>
-  );
+        </nav>
+    );
 }
 
 export default Nav;

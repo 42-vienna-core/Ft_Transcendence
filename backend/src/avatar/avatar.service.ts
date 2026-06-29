@@ -18,7 +18,7 @@ export class AvatarService {
             throw new BadRequestException('Avatar file is required');
         }
 
-        const user = await this.prismaService.user.findUnique({
+        const user = await this.prismaService.users.findUnique({
             where: { id: userId },
         });
         if (!user) {
@@ -37,7 +37,7 @@ export class AvatarService {
 
         const avatarFilename = `${randomUUID()}.webp`;
         const outputPath = join(AVATAR_UPLOAD_DIR, avatarFilename);
-        
+
         try {
             await validated.image
                 .rotate()
@@ -49,46 +49,35 @@ export class AvatarService {
                     quality: 85,
                 })
                 .toFile(outputPath);
-            
-            console.log('[UPLOAD][PROCESSED]', outputPath);
-
             await this.fileService.removeFile(file.filename);
         } catch (error) {
-            console.error('[UPLOAD][PROCESS ERROR]', error);
-
             await this.fileService.removeFile(file.filename);
             await this.fileService.removeFile(avatarFilename);
             throw new BadRequestException('Failed to process image');
         }
-                
+
         const oldAvatar = user.avatar;
         try {
-            await this.prismaService.user.update({
+            await this.prismaService.users.update({
                 where: { id: userId },
                 data: { avatar: avatarFilename },
             });
         } catch (error) {
-            console.error('[DB][UPDATE AVATAR ERROR]', error);
-
             await this.fileService.removeFile(avatarFilename);
             throw error;
         }
         if (oldAvatar) {
             await this.fileService.removeFile(oldAvatar);
         }
-        
-        console.log('[UPLOAD][DONE]', {
-            avatar: avatarFilename,
-        });
-
         return {
             success: true,
+            // TODO: URL
             avatar: `https://localhost/avatars/${avatarFilename}`,
         };
     }
 
     public async deleteAvatar(userId: number) {
-        const user = await this.prismaService.user.findUnique({
+        const user = await this.prismaService.users.findUnique({
             where: { id: userId },
         });
         if (!user) {

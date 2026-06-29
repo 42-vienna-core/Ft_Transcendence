@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
-import { Providers } from './providers';
+import { Providers } from '../providers/providers';
 import './globals.css'
 import {bungee, inter} from '../ui/font'
-import Nav from '../ui/nav/index'
-import Background from '@/ui/bg/index'
 
 export const metadata: Metadata = {
   title: 'Snake Multiplayer',
@@ -21,12 +19,9 @@ export default function RootLayout({
         className={`${inter.className} bg-[#050507] text-white antialiased`}
         suppressHydrationWarning
       >
-        <Background>
-          <Nav />
-          <main>
-            <Providers>{children}</Providers>
-          </main>
-        </Background>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

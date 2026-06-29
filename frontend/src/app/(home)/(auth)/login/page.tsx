@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "../auth.module.css";
 import { FormField, State } from "@/lib/definitions";
-import { fatchLogin } from "@/lib/action";
+import { fatchLogin } from "@/lib/actions/auth-actions";
 import { signIn } from "next-auth/react";
-import SubmitButton from "@/ui/submitButton";
+import SubmitButton from "@/ui/submit-btn";
 
 const initialState: State = {
   message: "",
@@ -19,6 +19,7 @@ function Login() {
   const [state,  setState] = useState<State>(initialState);
 
   function updateField(id: string, patch: Partial<FormField>) {
+    setState(prev => ({...prev, message: ""}));
     setFields((prev) => prev.map((f) => f.id === id ? { ...f, ...patch } : f));
   }
 
@@ -36,23 +37,23 @@ function Login() {
     const res = await fatchLogin(formData);
     setState(prev => ({...prev, ...res}));
 
-    if (res.success) {
-      const registerResult = await signIn('credentials', {
-        email: formData.get('email'),
-        password: formData.get('password'),
-        redirect: false
-      });
+    if (!res.success) return ;
 
-      if (registerResult?.error) {
-        setState(prev =>({
-          ...prev,
-          success: false, 
-          message: 'login failed', 
-        }));
-        return;
-      } 
-    }
+    const registerResult = await signIn('credentials', {
+      email: formData.get('email'),
+      password: formData.get('password'),
+      redirect: false
+    });
 
+    if (registerResult?.error) {
+      setState(prev =>({
+        ...prev,
+        success: false, 
+        message: 'login failed', 
+      }));
+      return;
+    } 
+    
     router.push('/dashboard');
     router.refresh();
     
