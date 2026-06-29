@@ -92,6 +92,9 @@ export class UserService {
 	}
 
 	public async findUsers(name: string) {
+		if (!name || !name.trim()) {
+  		  return [];
+  		}
 		const users = await this.prismaService.users.findMany({
 			where: {
 				name: {

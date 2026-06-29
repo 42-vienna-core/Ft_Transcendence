@@ -5,6 +5,7 @@ import { Authorized } from '../common/decorators/authorized.decorator';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { avatarMulterOptions } from '../common/multer/avatar.multer';
+import { SearchUserDto } from './dto/search-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -59,12 +60,12 @@ export class UserController {
     return this.userService.deleteAvatar(userId);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('search')
+  @HttpCode(HttpStatus.OK)
   public async searchUsers(
-    @Query("name") name: string,
+    @Query() query: SearchUserDto,
   ) {
-    return this.userService.findUsers(name);
+    return this.userService.findUsers(query.name);
   }
 
   @Authorization()
