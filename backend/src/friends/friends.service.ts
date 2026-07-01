@@ -11,6 +11,32 @@ export class FriendsService {
 	) { }
   
   	async sendRequest(senderId: number, receiverId: number){
+		if (senderId === receiverId){
+			throw new BadRequestException ('You cannot send a request to yourself');
+		}
+		const check = await this.prismaService.friendsRequest.findUnique({
+			where: {
+				senderId_receiverId: { senderId, receiverId,}
+			},
+		})
+		if (check){
+			if (check.status === 'PENDING')
+				throw new BadRequestException ('Request already sent');
+			if (check.status === 'ACCEPTED')
+				throw new BadRequestException ('You are friends already');
+			if (check.status === 'REJECTED')
+				await this.prismaService.friendsRequest.delete({
+					where: {id: check.id},
+				});
+		}
+
+		const reverse = await this.prismaService.friendsRequest.findUnique({
+			where: { senderId_receiverId: {senderId: receiverId, receiverId: senderId}},
+		});
+		if (reverse){
+			if (reverse?.status === 'PENDING'){
+				throw new BadRequestException('The user already sent you a request');
+		}}
 		const request = await this.prismaService.friendsRequest.create({
 			data: {
 				senderId,
@@ -30,6 +56,9 @@ export class FriendsService {
 		if (request.receiverId !== userId) {
     		throw new BadRequestException('You are not the receiver of this request');
   		}
+		if (request.status !== 'PENDING'){
+			throw new BadRequestException ('Request is not pending');
+		}
 		await this.prismaService.friendsRequest.update({
 			where: {
 				id : requestId,
@@ -48,6 +77,9 @@ export class FriendsService {
 		if (request.receiverId !== userId) {
     		throw new BadRequestException('You are not the receiver of this request');
   		}
+		if (request.status !== 'PENDING'){
+			throw new BadRequestException ('Request is not pending');
+		}
 		await this.prismaService.friendsRequest.update({
 			where: {
 				id : requestId,
@@ -102,6 +134,15 @@ export class FriendsService {
 				status : 'PENDING',
 				receiverId: userId,
 			},
+			include: {
+				sender: {
+					select: {
+						id: true,
+						name: true,
+						avatar: true,
+					}
+				}
+			}
 		});
 		return requests;
 	}
