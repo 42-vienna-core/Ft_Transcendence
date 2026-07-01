@@ -1,4 +1,6 @@
+import FindFriends from "@/components/friends/search/search";
 import style from "./friends.module.css";
+import ListOfRequests from "@/components/friends/requests/requests";
 
 export default function Friends() {
   return (
@@ -192,87 +194,9 @@ export default function Friends() {
               </div>
             </div>
 
-            <div className={style.card}>
-              <h3>
-                <span>Pending requests</span>
-                <span className={style.ct}>2</span>
-              </h3>
-              <div className={style.reqRow}>
-                <div
-                  className={style.av}
-                  style={{ background: "#F0997B", color: "#4A1B0C" }}
-                >
-                  TO
-                </div>
-                <div className={style.whoR}>
-                  <div className={style.nm}>Tomato</div>
-                  <div className={style.meta}>@tomato_g · 3 mutual</div>
-                </div>
-                <div className={style.reqActions}>
-                  <button className={`${style.iconBtn} ${style.accept}`} aria-label="Accept">
-                    <i className={`${style.ti} ${style.tiCheck}`} aria-hidden="true"></i>
-                  </button>
-                  <button className={`${style.iconBtn} ${style.decline}`} aria-label="Decline">
-                    <i className={`${style.ti} ${style.tiX}`} aria-hidden="true"></i>
-                  </button>
-                </div>
-              </div>
-              <div className={style.reqRow}>
-                <div
-                  className={style.av}
-                  style={{ background: "var(--color-text-tertiary)", color: "var(--color-text-inverse)" }}
-                >
-                  NO
-                </div>
-                <div className={style.whoR}>
-                  <div className={style.nm}>Noor</div>
-                  <div className={style.meta}>played 4× together</div>
-                </div>
-                <div className={style.reqActions}>
-                  <button className={`${style.iconBtn} ${style.accept}`} aria-label="Accept">
-                    <i className={`${style.ti} ${style.tiCheck}`} aria-hidden="true"></i>
-                  </button>
-                  <button className={`${style.iconBtn} ${style.decline}`} aria-label="Decline">
-                    <i className={`${style.ti} ${style.tiX}`} aria-hidden="true"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ListOfRequests/>
 
-            <div className={style.card}>
-              <h3>Find friends</h3>
-              <div className={style.searchInput}>
-                <i className={`${style.ti} ${style.tiSearch}`} aria-hidden="true"></i>
-                <input placeholder="username or invite code" />
-              </div>
-              <div className={style.sugLabel}>suggested</div>
-              <div className={style.sugRow}>
-                <div
-                  className={style.av}
-                  style={{ background: "var(--color-snake-1)", color: "var(--color-info-text)" }}
-                >
-                  TF
-                </div>
-                <div>
-                  <div className={style.name}>Tofu</div>
-                  <div className={style.metaR}>5 mutual friends</div>
-                </div>
-                <span className={style.addMini}>+ Add</span>
-              </div>
-              <div className={style.sugRow}>
-                <div
-                  className={style.av}
-                  style={{ background: "var(--color-snake-5)", color: "var(--color-success-text)" }}
-                >
-                  PI
-                </div>
-                <div>
-                  <div className={style.name}>Pickle</div>
-                  <div className={style.metaR}>played 3× together</div>
-                </div>
-                <span className={style.addMini}>+ Add</span>
-              </div>
-            </div>
+            <FindFriends/>
           </aside>
         </div>
       </div>

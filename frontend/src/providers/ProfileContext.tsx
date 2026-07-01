@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
 interface ProfileContextType {
+    id: number;
     username: string;
     email: string;
     nameOnChange: string;
@@ -25,6 +26,8 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
     const [nameOnChange, setnameOnChange] = useState<string>("");
     const [avatar, setAvatar] = useState<string | null>(null);
     const [email, setEmail] = useState<string>("");
+    const [id, setId] = useState<number>(0);
+
     
     console.log("PROFILEPROVIDER useSession");
 
@@ -37,6 +40,7 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
 
         if (session?.user) {
             const ava = session.user.avatar;
+            setId(session.user.id);
             setUsername(session.user.username);
             setEmail(session.user.email);
             setnameOnChange(session.user.username);
@@ -66,6 +70,7 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
 
     return (
         <ProfileContext.Provider value={{
+            id,
             username,
             email,
             avatar,
