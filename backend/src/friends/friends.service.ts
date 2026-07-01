@@ -102,6 +102,15 @@ export class FriendsService {
 				status : 'PENDING',
 				receiverId: userId,
 			},
+			include: {
+				sender: {
+					select: {
+						id: true,
+						name: true,
+						avatar: true,
+					}
+				}
+			}
 		});
 		return requests;
 	}
