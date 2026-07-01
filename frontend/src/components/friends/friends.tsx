@@ -1,6 +1,38 @@
+'use client'
+
+import { useEffect, useState } from 'react';
 import style from './friends.module.css'
+import { apiFetch } from '@/lib/api-client';
+
+interface Friends {
+    id: number;
+    name: string
+    avatar?: string | null;
+}
 
 export default function FriendsList () {
+    const [result, setResult] = useState<Friends[]>([]);
+
+    useEffect(() => {
+        const getListOfFriends = async () =>
+        {
+            try {
+                const res = await apiFetch('friends');
+
+                if (Array.isArray(res) && res.length != 0) {
+                    setResult(res);
+                    console.log("FRIENDS LIST",res);
+                }
+                
+                setResult([]);
+            } catch (error) {
+                
+            }
+        }
+
+        getListOfFriends();
+    }, []);
+
     return (
         <div className={style.col}>
             <div className={`${style.fRow} ${style.starred}`}>
