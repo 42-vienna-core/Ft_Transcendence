@@ -1,6 +1,7 @@
 import FindFriends from "@/components/friends/search/search";
 import style from "./friends.module.css";
 import ListOfRequests from "@/components/friends/requests/requests";
+import FriendsList from "@/components/friends/friends";
 
 export default function Friends() {
   return (
@@ -42,115 +43,7 @@ export default function Friends() {
         </div>
 
         <div className={style.grid}>
-          <div className={style.col}>
-            <div className={`${style.fRow} ${style.starred}`}>
-              <span className={`${style.star} ${style.on}`} aria-label="Favorite">
-                <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
-              </span>
-              <div className={style.av}>MR</div>
-              <div className={style.main}>
-                <div className={style.who}>
-                  <span className={style.nm}>Mira</span>
-                  <span className={style.hd}>@mira_g</span>
-                </div>
-                <div className={style.statusLine}>
-                  <span className={`${style.dot} ${style.match}`}></span>
-                  <span>In public match · Room 47 · 3rd of 8</span>
-                  <span className={style.sep}>·</span>
-                  <span className={style.rating}>1920</span>
-                  <span className={`${style.delta} ${style.up}`}>▲42 wk</span>
-                </div>
-              </div>
-              <div className={style.actions}>
-                <button className={`${style.btn} ${style.primary}`}>
-                  <i className={`${style.ti} ${style.tiEye}`} aria-hidden="true"></i>{" "}
-                  Watch
-                </button>
-                <button className={style.btn}>Join</button>
-              </div>
-            </div>
-
-            <div className={style.fRow}>
-              <span className={style.star} aria-label="Add to favorites">
-                <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
-              </span>
-              <div
-                className={style.av}
-                style={{ background: "var(--color-accent-soft)", color: "var(--color-accent-text)" }}
-              >
-                PE
-              </div>
-              <div className={style.main}>
-                <div className={style.who}>
-                  <span className={style.nm}>Pengu</span>
-                  <span className={style.hd}>@pengu_io</span>
-                </div>
-                <div className={style.statusLine}>
-                  <span className={`${style.dot} ${style.on}`}></span>
-                  <span>Online · just finished a match</span>
-                  <span className={style.sep}>·</span>
-                  <span className={style.rating}>1850</span>
-                  <span className={`${style.delta} ${style.up}`}>▲36 wk</span>
-                </div>
-              </div>
-              <div className={style.actions}>
-                <button className={`${style.btn} ${style.success}`}>Invite</button>
-                <button className={`${style.btn} ${style.subtle}`}>Message</button>
-              </div>
-            </div>
-
-            <div className={style.fRow}>
-              <span className={style.star} aria-label="Add to favorites">
-                <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
-              </span>
-              <div className={style.av}>MA</div>
-              <div className={style.main}>
-                <div className={style.who}>
-                  <span className={style.nm}>Marek</span>
-                  <span className={style.hd}>@marek_42</span>
-                </div>
-                <div className={style.statusLine}>
-                  <span className={`${style.dot} ${style.private}`}></span>
-                  <span>In a private match</span>
-                  <span className={style.sep}>·</span>
-                  <span className={style.rating}>1620</span>
-                  <span className={`${style.delta} ${style.dn}`}>▼12 wk</span>
-                </div>
-              </div>
-              <div className={style.actions}>
-                <button className={`${style.btn} ${style.subtle}`}>Message</button>
-              </div>
-            </div>
-
-            <div className={style.fRow}>
-              <span className={`${style.star} ${style.on}`} aria-label="Favorite">
-                <i className={`${style.ti} ${style.tiStar}`} aria-hidden="true"></i>
-              </span>
-              <div
-                className={style.av}
-                style={{ background: "var(--color-warning-soft)", color: "var(--color-warning-text)" }}
-              >
-                KO
-              </div>
-              <div className={style.main}>
-                <div className={style.who}>
-                  <span className={style.nm}>Kostia</span>
-                  <span className={style.hd}>@kostia_v</span>
-                </div>
-                <div className={style.statusLine}>
-                  <span className={`${style.dot} ${style.off}`}></span>
-                  <span>Offline · last seen 2 h ago</span>
-                  <span className={style.sep}>·</span>
-                  <span className={style.rating}>1760</span>
-                  <span className={`${style.delta} ${style.up}`}>▲28 wk</span>
-                </div>
-              </div>
-              <div className={style.actions}>
-                <button className={`${style.btn} ${style.subtle}`}>Message</button>
-              </div>
-            </div>
-          </div>
-
+          <FriendsList/>
           <aside className={style.col}>
             <div className={style.card}>
               <h3>
