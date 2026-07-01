@@ -100,12 +100,28 @@ export class FriendsService {
 					{receiverId: userId},
 				],
 			},
+			include: {
+				sender: {
+					select: {
+						id:true,
+						name: true,
+						avatar:true,
+					},
+				},
+				receiver: {
+					select: {
+						id:true,
+						name: true,
+						avatar:true,
+					},
+				},
+			}
 		});
 		const list = requests.map(r => {
 			if (r.senderId == userId)
-				return r.receiverId;
+				return r.receiver;
 			else
-				return r.senderId;
+				return r.sender;
 		});
 		return list;
 	}
