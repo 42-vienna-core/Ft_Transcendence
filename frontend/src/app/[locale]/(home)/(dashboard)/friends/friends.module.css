@@ -394,14 +394,3 @@
   color: var(--color-info);
   cursor: pointer;
 }
-.caption {
-  font-size: var(--text-xs);
-  color: var(--color-text-tertiary);
-  margin: 10px 4px 0;
-  line-height: var(--leading-normal);
-  text-align: center;
-}
-.ti {
-  font-size: var(--text-xs);
-  vertical-align: -1px;
-}
