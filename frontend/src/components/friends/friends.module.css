@@ -5,9 +5,12 @@
   gap: 10px;
   min-width: 0;
 }
+
 .fRow {
-  display: grid;
-  grid-template-columns: 18px 32px 1fr auto;
+  display: flex;
+
+  /* display: grid; */
+  /* grid-template-columns: 18px 32px 1fr auto; */
   gap: 10px;
   align-items: flex-start;
   padding: 10px 12px;
@@ -32,8 +35,8 @@
   color: var(--color-warning);
 }
 .fRow .av {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
