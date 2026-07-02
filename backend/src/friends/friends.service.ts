@@ -33,10 +33,15 @@ export class FriendsService {
 		const reverse = await this.prismaService.friendsRequest.findUnique({
 			where: { senderId_receiverId: {senderId: receiverId, receiverId: senderId}},
 		});
-		if (reverse){
-			if (reverse?.status === 'PENDING'){
-				throw new BadRequestException('The user already sent you a request');
-		}}
+		if (reverse?.status === 'PENDING'){
+			throw new BadRequestException('The user already sent you a request');}
+		if (reverse?.status === 'ACCEPTED'){
+			throw new BadRequestException('You are friends already');}
+		if (reverse?.status === 'REJECTED'){
+			await this.prismaService.friendsRequest.delete({
+				where: {id: reverse.id},
+			});
+		}
 		const request = await this.prismaService.friendsRequest.create({
 			data: {
 				senderId,
@@ -118,7 +123,7 @@ export class FriendsService {
 			}
 		});
 		const list = requests.map(r => {
-			if (r.senderId == userId)
+			if (r.senderId === userId)
 				return r.receiver;
 			else
 				return r.sender;
