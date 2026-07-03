@@ -21,7 +21,6 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({children} : {children: React.ReactNode;}) {
     const {data: session, update, status,} = useSession();
-
     const [username, setUsername] = useState<string>("");
     const [nameOnChange, setnameOnChange] = useState<string>("");
     const [avatar, setAvatar] = useState<string | null>(null);
