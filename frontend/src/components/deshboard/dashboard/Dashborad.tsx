@@ -2,13 +2,11 @@
   import {useEffect , useRef, useState} from 'react';
   import {io, Socket } from "socket.io-client"
   import "@/src/styles/deshboard.css";
-  import { Api } from "@/src/lib/api"
   import { useAuth } from "@/src/components/provider/UserProvider"
-
 
  function Dashboard () {
 
-    const {cntUser, refreshUser} = useAuth();
+     const {refreshUser} = useAuth();
     const socketRef = useRef<Socket | null>(null);
     const [players, setPlayers] = useState(0);
 
@@ -34,15 +32,6 @@
         
     }, []);
 
-    useEffect(() => {
-       (async () => {
-          if (cntUser === null)  return;
-            const {roomId} = await Api.getRequest("/backend/gameRoom/create/" + cntUser.id)
-            .then(r => r.json());
-            socketRef.current?.emit("join-room", { userId: cntUser?.id, roomId, })
-        })();
-    },[cntUser])
-  
     return (
       
     <div className=" bg text-white border rounded-2xl">
@@ -70,15 +59,16 @@
           </div>
       </div>
 
-        <canvas className='playArea '> </canvas>
+        <canvas className='playArea '> 
+        
+        </canvas>
 
         <div className="boardBottom">
           <div>move 
             <span className="kbd">←</span> 
             <span className="kbd">↑</span> 
             <span className="kbd">↓</span> 
-            {/* <span className="kbd">→</span> &nbsp;boost 
-            <span className="kbd">space</span> &nbsp;pause  */}
+            {/* <span className="kbd">→</span> &nbsp;boost  <span className="kbd">space</span> &nbsp;pause  */}
             <span className="kbd">→</span>{"\u00A0"}boost
           <span className="kbd">space</span>{"\u00A0"}pause
             <span className="kbd">esc</span>
@@ -166,7 +156,7 @@
         </div>
       </aside>
     </div>
-
+  
     );
 }
 

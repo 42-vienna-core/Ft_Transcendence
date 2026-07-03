@@ -15,12 +15,14 @@ import { UsersModule } from 'src/users/users.module';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: getJwtConfig,
-    }),
-    DatabaseModule, UsersModule, SessionModule, TokenModule, RedisModule],
+    JwtModule.registerAsync({ inject: [ConfigService], useFactory: getJwtConfig }),
+    DatabaseModule, 
+    UsersModule, 
+    SessionModule, 
+    TokenModule, 
+    RedisModule],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
+  exports: [AuthService],
 })
 export class AuthModule { }

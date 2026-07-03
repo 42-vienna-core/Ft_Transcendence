@@ -7,9 +7,7 @@ export class RedisService implements OnModuleInit {
   private client!: RedisClientType;
 
   async onModuleInit() {
-    this.client = createClient({
-      url: 'redis://localhost:6379',
-    });
+    this.client = createClient({ url: 'redis://localhost:6379' });
 
     this.client.on('error', (err) => {
       console.log('Redis Error:', err);
@@ -20,6 +18,36 @@ export class RedisService implements OnModuleInit {
     console.log('Redis Connected');
   }
 
+  async addOnlineUser(userId: string, socketId: string) {
+    await this.client.set(`user:online:${userId}`, socketId);
+  }
+
+  async removeOnlineUser(userId: number) {
+    await this.client.del(`user:online:${userId}`);
+  }
+
+  async getOnlineUsers() {
+    return await this.client.keys(`user:online:*`);
+  }
+
+  async setGameState(gameId: string, state: any ) {
+    await this.client.set(`game:${gameId}:state`, JSON.stringify(state) );
+  }
+
+  async updatePlayerPosition(
+    gameId: string, 
+    userId: number, 
+    position: {x: number, y: number} ) {
+      await this.client.set(`game:${gameId}:player:${userId}:pos`, JSON.stringify(position))
+  }
+
+  async setGameWithTTL(gameId: string, state: any, ttlSeconds = 300) {
+    await this.client.setEx(
+      `game:${gameId}:state`,
+      ttlSeconds,
+      JSON.stringify(state)
+    );
+}
   async set(key: string, value: string) {
     await this.client.set(key, value);
   }
@@ -67,6 +95,5 @@ export class RedisService implements OnModuleInit {
   async deleteSessionFromBlackList(sessionId: string): Promise<void> {
     await this.client.del(`session:blacklist:${sessionId}`);
   }
-
-
+  
 }

@@ -41,7 +41,6 @@ export class GameRoomService {
     });
   }
 
-
    async findOne(id: string) {
     return this.db.gameRoom.findUnique({
       where: { id },
@@ -75,8 +74,5 @@ export class GameRoomService {
   }
 
   async findBySocketId(socketId: string) {
-    return this.db.roomUser.findFirst({
-      where: { socketId },
-    });
-  }
+    return this.db.roomUser.findFirst( { where: { socketId } }) }
 }

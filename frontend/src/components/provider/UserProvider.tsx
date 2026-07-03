@@ -17,7 +17,6 @@ export default function UserProvider (
 
     const [ cntUser, setCntUser ] = useState<UserType>(initialUser);
     const refreshUser = useCallback( async () => {
-        console.log("user provider was caled")
         
         if (cntUser !== null)
         {

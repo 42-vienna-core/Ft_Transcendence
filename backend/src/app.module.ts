@@ -13,7 +13,6 @@ import { SocketService } from './socket/socket.service';
 import { SocketModule } from './socket/socket.module';
 import { FriendModule } from './friend/friend.module';
 import { AuthModule } from './auth/auth.module';
-
 @Module({
   imports: [
     UsersModule,
