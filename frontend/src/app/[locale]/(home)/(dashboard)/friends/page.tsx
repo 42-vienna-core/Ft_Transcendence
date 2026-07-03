@@ -1,9 +1,42 @@
-import FindFriends from "@/components/friends/search/search";
 import style from "./friends.module.css";
-import ListOfRequests from "@/components/friends/requests/requests";
-import FriendsList from "@/components/friends/friends";
+import { apiFetch } from "@/lib/api-client";
+import AllFriends from "@/components/all-friends/all-friends";
+import { Suspense } from "react";
+import { FriendsContentSkeleton } from "@/ui/skeletons";
 
-export default function Friends() {
+interface Friend {
+  id: number;
+  name: string;
+  avatar?: string | null;
+}
+
+interface Requests {
+    id: string;
+    sender: {
+        id: number;
+        name: string;
+        avatar?: string | null;
+    };
+}
+
+export default async function Friends() {
+    let requests: Requests[] = [];
+    let friends: Friend[] = [];
+
+    try {
+
+        const [requestsRes, friendsRes] = await Promise.all([
+            apiFetch('friends/request/incoming'),
+            apiFetch('friends'),
+        ]);
+
+        requests = Array.isArray(requestsRes) ? requestsRes : [];
+        friends = Array.isArray(friendsRes) ? friendsRes : [];
+
+    } catch (error) {
+        console.log("ERROR Parallel data fetching: ", error)
+    }
+
   return (
     <>
       <div className={style.body}>
@@ -41,57 +74,14 @@ export default function Friends() {
             <i className={`${style.ti} ${style.tiChevronDown}`} aria-hidden="true"></i>
           </div>
         </div>
-
-        <div className={style.grid}>
-          <FriendsList/>
-          <aside className={style.col}>
-            <div className={style.card}>
-              <h3>
-                <span>Friends this week</span>
-                <span className={style.ct}>top 5</span>
-              </h3>
-              <div className={style.lbRow}>
-                <span className={style.pos}>1</span>
-                <span className={`${style.dot} ${style.on}`}></span>
-                <span className={style.nm}>Mira</span>
-                <span className={style.rt}>1920</span>
-                <span className={`${style.delta} ${style.up}`}>▲42</span>
-              </div>
-              <div className={style.lbRow}>
-                <span className={style.pos}>2</span>
-                <span className={`${style.dot} ${style.on}`}></span>
-                <span className={style.nm}>Pengu</span>
-                <span className={style.rt}>1850</span>
-                <span className={`${style.delta} ${style.up}`}>▲36</span>
-              </div>
-              <div className={style.lbRow}>
-                <span className={style.pos}>3</span>
-                <span className={`${style.dot} ${style.off}`}></span>
-                <span className={style.nm}>Kostia</span>
-                <span className={style.rt}>1760</span>
-                <span className={`${style.delta} ${style.up}`}>▲28</span>
-              </div>
-              <div className={`${style.lbRow} ${style.me}`}>
-                <span className={style.pos}>4</span>
-                <span className={`${style.dot} ${style.on}`}></span>
-                <span className={style.nm}>you</span>
-                <span className={style.rt}>1482</span>
-                <span className={`${style.delta} ${style.up}`}>▲14</span>
-              </div>
-              <div className={style.lbRow}>
-                <span className={style.pos}>5</span>
-                <span className={`${style.dot} ${style.off}`}></span>
-                <span className={style.nm}>Lila</span>
-                <span className={style.rt}>1480</span>
-                <span className={`${style.delta} ${style.dn}`}>▼6</span>
-              </div>
-            </div>
-
-            <ListOfRequests/>
-
-            <FindFriends/>
-          </aside>
-        </div>
+        <Suspense fallback={
+            <FriendsContentSkeleton friendNumber={friends.length}/>
+            }>
+          <AllFriends
+            friends={friends}
+            requests={requests}
+          />
+        </Suspense>
       </div>
     </>
   );
