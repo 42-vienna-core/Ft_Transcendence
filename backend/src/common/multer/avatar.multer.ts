@@ -24,7 +24,6 @@ export const avatarMulterOptions = {
                 return cb(new BadRequestException('Forbidden file extension'), '');
             }
             const name = `${randomUUID()}${safeExt}`;
-            console.log('[UPLOAD][MULTER] filename generated:', name);
             cb(null, name);
         },
     }),
@@ -34,7 +33,6 @@ export const avatarMulterOptions = {
         fieldSize: 1024,
     },
     fileFilter: (_req: Request, file: Express.Multer.File, cb: any) => {
-        console.log('[UPLOAD][MULTER] mime:', file.mimetype);
         const isValid = allowedMimeTypes.includes(file.mimetype);
         if (!isValid) {
             return cb(

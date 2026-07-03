@@ -34,7 +34,6 @@ export class AuthController {
   public async refresh(
     @Body('refreshToken') refreshToken: string,
   ) {
-    console.log("BACKAND cath request to refresh token")
     return await this.authService.refresh(refreshToken);
   }
 
