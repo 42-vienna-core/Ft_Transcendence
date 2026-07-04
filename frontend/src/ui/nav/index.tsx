@@ -7,6 +7,7 @@ import CustomLink from '../link';
 import { useProfile } from '@/providers/ProfileContext';
 import { usePathname } from 'next/navigation';
 import { HeaderProfileSkeleton, HeaderAuthLinkSkeleton } from '../skeletons'
+import { useTranslations } from 'next-intl';
 
 
 interface LinkProps{
@@ -20,45 +21,58 @@ interface AuthLinkProps {
     isAuthorized: boolean;
 }
 
-export function ProfileNavLink ({status, username, avatar}: LinkProps) {
+function NavLinks ({status, username, avatar}: LinkProps) {
+    const t = useTranslations("Header");
+
     if (status === "authenticated") {
         return (
-            <Link className={`${style.profile} justify-between`} href="/profile">
-                <p>{username}</p>
-                <img 
-                    className={style.ava} 
-                    src={avatar ? avatar : "/png/default_avatar.png"}
+            <>
+                <CustomLink 
+                    url={"/dashboard"}
+                    label={t("a")}
                 />
-            </Link>
+                <CustomLink 
+                    url={"/friends"}
+                    label={t("f")}
+                />
+                <Link className={`${style.profile} justify-between`} href="/profile">
+                    <p>{username}</p>
+                    <img 
+                        className={style.ava} 
+                        src={avatar ? avatar : "/png/default_avatar.png"}
+                    />
+                </Link>
+            </>
         )
     }
 }
 
-export function NavAuthLinks ({status}: {status: string}) {
+function NavAuthLinks ({status}: {status: string}) {
+    const t = useTranslations("Header");
+
     if (status === "unauthenticated") {
         return (
-            <div className={style.navLinks}>
+            <>
                 <CustomLink 
                     url={"/login"}
-                    label={"Log in"}
+                    label={t("si")}
                 />
                 <CustomLink 
                     url={"/register"}
-                    label={"Sign in"}
+                    label={t("su")}
                 />
-            </div>
+            </>
         )
     }
 }
 
-
-export function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
+function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
     if (isAuthorized && status === "loading") {
         return <HeaderProfileSkeleton/>
     }
 }
 
-export function AuthLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
+function AuthLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
     const currentPage = usePathname();
     const publickPages = (currentPage === "/login" || currentPage === "/register" || currentPage === "/");
     
@@ -75,20 +89,22 @@ function Nav({isAuthorized}: {isAuthorized:boolean}) {
                 <div className={style.logoMark} />
                 <Link href="/">Snake.io</Link>
             </div>
-            <ProfileNavLink 
-                status={status}
-                username={username}
-                avatar={avatar}
-            />
-            <ProfileLoadingSkeleton 
-                status={status}
-                isAuthorized={isAuthorized}
+            <div className={style.navLinks}>
+                <NavLinks 
+                    status={status}
+                    username={username}
+                    avatar={avatar}
                 />
-            <NavAuthLinks status={status}/>
-            <AuthLoadingSkeleton 
-                status={status}
-                isAuthorized={isAuthorized}
-            />
+                <ProfileLoadingSkeleton 
+                    status={status}
+                    isAuthorized={isAuthorized}
+                />
+                <NavAuthLinks status={status}/>
+                <AuthLoadingSkeleton 
+                    status={status}
+                    isAuthorized={isAuthorized}
+                />
+            </div>
         </nav>
     );
 }

@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import style from './edit.module.css'
 import { apiFetch } from '@/lib/api-client';
-import { useSession } from 'next-auth/react';
 import { useFormStatus } from 'react-dom';
 import { useProfile } from '@/providers/ProfileContext';
 import { UserProfileSkeleton } from '../../../ui/skeletons';
+import { useTranslations } from 'next-intl';
 
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB Limit
@@ -18,6 +18,7 @@ interface submitProps{
 
 function SubmitFormButton({loading, isActive }: submitProps) {
   const { pending } = useFormStatus();
+  const t = useTranslations("Profile")
 
   return (
     <button 
@@ -25,7 +26,7 @@ function SubmitFormButton({loading, isActive }: submitProps) {
       disabled={pending}
         type="submit" 
       >
-      { pending ? "updating..."  : "submit" }  
+      { pending ? "updating..."  : t("sub")}  
     </button>
   )
 }
@@ -34,6 +35,7 @@ export default function EditProfileForm () {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isActive, setActive] = useState<boolean>(false);
+  const t = useTranslations("Profile");
   
   const {
     username, 
@@ -122,7 +124,7 @@ export default function EditProfileForm () {
                   value={nameOnChange || ""}
                   autoComplete="off"
                   onChange={(e) => updateNameOnChange(e.target.value)}
-                  className="w-full border-none focus:outline-none  text-gray-900 text-lg"
+                  className="w-full border-none focus:outline-none  text-[var(--color-text-primary)]] text-lg"
                 />
               </label>
               <div className={`${style.name} ${isActive ? 'hidden': 'bock'}`}>{username}</div>
@@ -140,7 +142,7 @@ export default function EditProfileForm () {
             type="button"
             className={`${style.pfBtn} ${style.primary} ${isActive ? 'hidden': 'block'}`} 
             onClick={()=> setActive(true)}
-          >edit profile</button>
+          >{t("epBtn")}</button>
         <SubmitFormButton
           loading={loading}
           isActive={isActive}

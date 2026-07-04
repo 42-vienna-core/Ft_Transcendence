@@ -68,13 +68,13 @@ export async function apiFetch(endpoint: string, options: CustomApiOptions = {})
 
   const token = await getValidToken();
 
-  const requestHeaders = new Headers(options.headers);
-  requestHeaders.set('Authorization', `Bearer ${token.accessToken}`);
+  const headers = new Headers(options.headers);
+  headers.set('Authorization', `Bearer ${token.accessToken}`);
   if (options.body && !(options.body instanceof FormData)) {
-    requestHeaders.set('Content-Type', 'application/json');
+    headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(url, { ...options, headers: requestHeaders, cache: 'no-store' });
+  const res = await fetch(url, {...options, headers, cache: 'no-store' });
 
   let data: any = null;
   const contentType = res.headers.get('content-type');

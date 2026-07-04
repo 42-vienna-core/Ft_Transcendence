@@ -61,7 +61,7 @@ function Login() {
 
   return (
     <div className={styles.page}>
-      <div className={`glass ${styles.card}`}>
+      <div className={`${styles.card} ${styles.glass}`}>
         <div className={styles.cardTitle}>
           <h2>Login</h2>
         </div>

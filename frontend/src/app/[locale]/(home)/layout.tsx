@@ -10,14 +10,14 @@ async function HomeLayout({ children }: { children: ReactNode }) {
     const isAuthorized = session?.user ? true : false;
 
     return (
-        <Background>
-            <header>
+        <>
+            <header className="bg-[var(--color-bg-base)]">
                 <Nav isAuthorized={isAuthorized}/>
             </header>
             <main>
                 {children}
             </main>
-        </Background>
+        </>
  );
 }
 

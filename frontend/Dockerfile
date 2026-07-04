@@ -2,10 +2,12 @@ FROM node:20-alpine AS base
 WORKDIR /app
 COPY package*.json ./
 # Increase timeout and retry logic
+# or npm ci
+
 RUN npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
     npm config set fetch-retry-maxtimeout 120000 && \
-    npm ci
+    npm install 
 
 # Development stage — Next.js dev server with HMR
 FROM base AS dev

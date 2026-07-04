@@ -11,10 +11,10 @@ interface CustomLinkProps{
 
 function CustomLink ({label, url}: CustomLinkProps) {
     const pathname = usePathname();
-    const isActive = pathname == url;
+    const isActive = pathname === url;
     
     return (
-        <Link className={clsx(style.btn, isActive ? style.btnPrimary : style.navLink)} href={url}>
+        <Link className={clsx(style.navLink, isActive ? style.linkActive: style.linkNActive)} href={url}>
             {label}
         </Link>
     )
