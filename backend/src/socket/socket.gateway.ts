@@ -1,7 +1,6 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
-import { AddUserGameRoomDto } from 'src/dto/addUser-gameRoom.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { RedisService } from 'src/redis/redis.service';
 @WebSocketGateway(2000, { cors: { origin: 'http://localhost:3000', credentials: true, } })
@@ -13,67 +12,49 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly authService: AuthService,
   ) {}
 
-  async getUser(client: Socket) {
-     const accessToken = client.handshake.headers.cookie?.split(';').find((cookie) => cookie.trim().startsWith('accessToken='))?.split('=')[1];
-    if (!accessToken) {
-      client.disconnect();
-      return;
-    }
-    return await this.authService.me(accessToken || "");
+
+ async getUser(client: Socket) {
+  const cookie = client.handshake.headers.cookie ?? "";
+  const accessToken = cookie.split(";").map((c) => c.trim())
+  .find((c) => c.startsWith("accessToken="))?.slice("accessToken=".length);
+
+  if (!accessToken) {
+    client.disconnect();
+    return null;
   }
+  return await this.authService.me(accessToken);
+}
 
   async handleConnection(client: Socket) {
   
-    console.log("this is client.id > ", client.id);
-    const res = await this.getUser(client);
-    console.log("this is res.id > ", res.id);
+    const user = await this.getUser(client);
 
-    await this.redisService.addOnlineUser(res.id.toString(), client.id);
-    const room  = await this.roomService.createRoom(res.id);
-    return this.handleJoinRoom( client, { userId: res.id, roomId: room.roomId });
-  }
-
-  @SubscribeMessage('join-room')
-  async handleJoinRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto ) {
-    client.data.userId = data.userId;
-    client.data.roomId = data.roomId;
+    if (!user) { 
+      client.disconnect(); return ; 
+    }
+    client.data.userId = user.id;
+    client.data.Username = user.Username;
     client.data.x = 0;
     client.data.y = 0;
-    await client.join(data.roomId);
+    const room  = await this.roomService.createRoom(client.data);
+    client.data.roomId = room.roomId;
+    await this.handleJoinRoom( client);
 
-    await this.roomService.addUserToRoom(data.roomId, data.userId, client.id);
+    if (await this.redisService.addOnlineUser(client.data))
+       this.server.emit('user-online', { userId: user.id, Username: user.Username });
     const onlineUsers = await this.redisService.getOnlineUsers();
-    this.server.emit('online-users-updatet', onlineUsers);
-    const players = await this.roomService.getPlayerCount(data.roomId);
-    this.server.to(data.roomId).emit('room-update', {
-      roomId: data.roomId,
-      players,
-    });
-    return { success: true, players };
+  
+    this.server.emit('online-users', onlineUsers);
   }
 
-  @SubscribeMessage('leave-room')
-  async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto ) {
-    await client.leave(data.roomId);
-    await this.roomService.removeUserFromRoom(data.roomId, data.userId);
-    const players = await this.roomService.getPlayerCount(data.roomId);
-    this.server.to(data.roomId).emit('room-update', {
-      roomId: data.roomId,
-      players,
-    });
-    return { success: true, players };
-  }
-
-  async handleDisconnect(client: Socket) {
+   async handleDisconnect(client: Socket) {
+    console.log(" >>>> handleDisconnect was caled");
+    
     const roomUser = await this.roomService.findBySocketId(client.id);
-    if (!roomUser)
-      return;
-
-    console.log("will remove this id >", client.data.userId)
+    if (!roomUser) return ;
+  
     await this.redisService.removeOnlineUser(client.data.userId);
-    const onlineUsers = await this.redisService.getOnlineUsers();
-    this.server.emit('online-users-updated', onlineUsers);
-   
+    this.server.emit('user-offline', client.data.userId);
     await this.roomService.removeUserFromRoom(client.data.roomId, client.data.userId);
     const players = await this.roomService.getPlayerCount(roomUser.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
@@ -81,9 +62,42 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       players,
     });
   }
+
+  @SubscribeMessage('join-room')
+  async handleJoinRoom(@ConnectedSocket() client: Socket) {
+   
+    console.log(" >>>> handleJoinRoom was caled");
+
+    await client.join(client.data.roomId);
+
+    await this.roomService.addUserToRoom(client.data.roomId, client.data.userId, client.id);
+    const players = await this.roomService.getPlayerCount(client.data.roomId);
+    this.server.to(client.data.roomId).emit('room-update', {
+      roomId: client.data.roomId,
+      players,
+    });
+    return { success: true, players };
+  }
+
+  @SubscribeMessage('leave-room')
+  async handleLeaveRoom(@ConnectedSocket() client: Socket) {
+    console.log(" >>>> handleLeaveRoom was caled");
+
+    await client.leave(client.data.roomId);
+    await this.roomService.removeUserFromRoom(client.data.roomId, client.data.userId);
+    const players = await this.roomService.getPlayerCount(client.data.roomId);
+    this.server.to(client.data.roomId).emit('room-update', {
+      roomId: client.data.roomId,
+      players,
+    });
+    return { success: true, players };
+  }
+
+ 
   
   @SubscribeMessage('player-move')
   async handlePlayerMove( @ConnectedSocket() client: Socket, @MessageBody() newPos: { x: number, y: number}) {
+    console.log(" >>>> handlePlayerMove was caled");
     const userId = client.data.userId;
     const roomId = client.data.roomId;
     await this.redisService.updatePlayerPosition( 
@@ -96,5 +110,4 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       y: newPos.y,
     })
   }
-
 }

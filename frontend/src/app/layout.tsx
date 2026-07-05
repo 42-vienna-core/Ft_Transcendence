@@ -31,6 +31,7 @@ export default async function RootLayout( {
   const accessToken = (await cookies()).get("accessToken")?.value;
   if (accessToken)
     user = await Api.getUser(accessToken || "").then(r => r.json());
+  console.log("RootLayout user:", user);
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} >
       <body className="min-h-full flex flex-col min-w-md">

@@ -30,7 +30,7 @@ export default function UserProvider (
         catch {
             setCntUser(null);
         }
-    },[])
+    },[]);
     
     return (
         <UserContext.Provider value={{cntUser, setCntUser, refreshUser}}>

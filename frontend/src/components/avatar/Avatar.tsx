@@ -1,6 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/components/provider/UserProvider"
 import { useEffect } from "react";
+
 export default function Ava() {
     
     const {cntUser, refreshUser} = useAuth();

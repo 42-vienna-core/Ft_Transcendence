@@ -57,14 +57,12 @@ export class GameRoomService {
   }
 
   async deleteRoom(id: string) {
-    const res = await this.db.gameRoom.delete({
-      where: { id },
-    });
+    const res = await this.db.gameRoom.delete( { where: { id } } );
     return res;
   }
 
   async removeUserFromRoom(roomId: string, userId: number) {
-    return this.db.roomUser.deleteMany({
+    return this.db.roomUser.deleteMany( {
       where: { roomId, userId },
     });
   }
@@ -74,5 +72,6 @@ export class GameRoomService {
   }
 
   async findBySocketId(socketId: string) {
-    return this.db.roomUser.findFirst( { where: { socketId } }) }
+    return this.db.roomUser.findFirst( { where: { socketId } }) 
+  }
 }

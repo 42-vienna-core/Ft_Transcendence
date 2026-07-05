@@ -17,3 +17,10 @@ export type UserContextType = {
     setCntUser: React.Dispatch<React.SetStateAction<UserType>>;
     refreshUser: () => Promise<void>;
 }
+
+
+export type OnlieList = {
+    userId: number;
+    Username: string,
+    role: string,
+}

@@ -1,4 +1,4 @@
-export const DeshboardStyles = {
+export const DashboardStyles = {
   mockBody:
     "grid min-h-[87.5px] grid-cols-[80%_20%]",
 

@@ -4,6 +4,7 @@ import { AuthType } from "./types/Types";
 
 export async function proxy(request: NextRequest) {
 
+    console.log("Proxy middleware called for URL:");
     const pathname = request.nextUrl.pathname;
     if (pathname === "/login" || pathname === "/register" || pathname === "/reset")
        return NextResponse.next();

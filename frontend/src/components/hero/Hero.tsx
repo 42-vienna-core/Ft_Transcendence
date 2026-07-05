@@ -18,8 +18,8 @@ export default  function  Hero() {
             <p className={style.hero.heroSub}>A multiplayer snake battleground where four serpents enter, one slithers out. Real-time. Cross-platform. No mercy.</p>
 
             <div className={style.hero.heroActions}>
-                <Link  href="/deshboard" className={style.btnPrimary}> ▶ Start Playing </Link>
-                <Link  href="/deshboard" className={style.btnPrimary}> Browser Rooms </Link>
+                <Link  href="/dashboard" className={style.btnPrimary}> ▶ Start Playing </Link>
+                <Link  href="/dashboard" className={style.btnPrimary}> Browser Rooms </Link>
             </div>
             
             <div className={style.features.featuresGrid}> </div>

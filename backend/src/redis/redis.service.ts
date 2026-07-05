@@ -1,7 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 
-
+interface onlineUsers {
+  userId: number;
+  userName: string;
+  avatar: string;
+}
 @Injectable()
 export class RedisService implements OnModuleInit {
   private client!: RedisClientType;
@@ -18,17 +22,31 @@ export class RedisService implements OnModuleInit {
     console.log('Redis Connected');
   }
 
-  async addOnlineUser(userId: string, socketId: string) {
-    await this.client.set(`user:online:${userId}`, socketId);
+  async addOnlineUser(data: onlineUsers) : Promise<boolean> {
+    console.log(">> addonline ", data)
+    const key = `user:online:${data.userId}`;
+    const oldSocketId = await this.client.get(key);
+
+    await this.client.set(key, JSON.stringify(data));
+
+    return !oldSocketId;
   }
 
   async removeOnlineUser(userId: number) {
     await this.client.del(`user:online:${userId}`);
   }
 
-  async getOnlineUsers() {
-    return await this.client.keys(`user:online:*`);
-  }
+ async getOnlineUsers(): Promise<onlineUsers[]> {
+  const keys = await this.client.keys('user:online:*');
+  console.log(" >>>> getOnlineUsers keys:", keys);
+  if (keys.length === 0) return [];
+  
+  const values = await this.client.mGet(keys);
+  console.log(">>> value: ", values)
+  return values
+    .filter((val): val is string => val !== null)
+    .map((val) => JSON.parse(val) as onlineUsers);
+}
 
   async setGameState(gameId: string, state: any ) {
     await this.client.set(`game:${gameId}:state`, JSON.stringify(state) );
@@ -47,7 +65,8 @@ export class RedisService implements OnModuleInit {
       ttlSeconds,
       JSON.stringify(state)
     );
-}
+  }
+  
   async set(key: string, value: string) {
     await this.client.set(key, value);
   }

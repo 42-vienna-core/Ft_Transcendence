@@ -3,6 +3,7 @@ import Features from "@/src/components/features/Features"
 
 export default async function Page() {
 
+  console.log("Home page loaded")
   return (
     <main className="bg-black text-white">
           <Hero />
