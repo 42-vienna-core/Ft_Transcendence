@@ -79,6 +79,7 @@ model Users {
   Password                        String
   Username                        String
   role                            Role       @default(PLAYER)
+  
   resetCode                       String?
   codeExpire                      DateTime?
   createdAt                       DateTime   @default(now())

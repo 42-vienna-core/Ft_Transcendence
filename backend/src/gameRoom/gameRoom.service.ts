@@ -21,7 +21,8 @@ export class GameRoomService {
     const rooms = await this.findAll("WAITING");
     if (rooms.length)
     {
-      return {roomId: rooms[0].id};
+      const room = rooms[Math.floor(Math.random() * rooms.length)];
+      return {roomId: room.id, status: room.status};
     }
     const room = await this.db.gameRoom.create({
       data: {
@@ -30,7 +31,7 @@ export class GameRoomService {
       },
       include: { _count: { select: { roomUsers: true } } },
     });
-    return {roomId: room.id};
+    return {roomId: room.id, status: room.status};
   }
   
    async addUserToRoom(roomId: string, userId: number, socketId: string) {

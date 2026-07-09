@@ -23,7 +23,6 @@ export class RedisService implements OnModuleInit {
   }
 
   async addOnlineUser(data: onlineUsers) : Promise<boolean> {
-    console.log(">> addonline ", data)
     const key = `user:online:${data.userId}`;
     const oldSocketId = await this.client.get(key);
 
@@ -38,11 +37,9 @@ export class RedisService implements OnModuleInit {
 
  async getOnlineUsers(): Promise<onlineUsers[]> {
   const keys = await this.client.keys('user:online:*');
-  console.log(" >>>> getOnlineUsers keys:", keys);
   if (keys.length === 0) return [];
   
   const values = await this.client.mGet(keys);
-  console.log(">>> value: ", values)
   return values
     .filter((val): val is string => val !== null)
     .map((val) => JSON.parse(val) as onlineUsers);

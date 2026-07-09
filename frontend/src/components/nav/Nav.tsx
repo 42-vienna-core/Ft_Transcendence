@@ -44,8 +44,8 @@ export default function Navbar() {
       </div>
      
       {/* Desktop Search Section */}
-      
-      <div className={NavStyles.search.div}>
+      {cntUser && (
+            <div className={NavStyles.search.div}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -87,6 +87,11 @@ export default function Navbar() {
           </div>
         )}
       </div>
+      )
+
+      }
+    
+
       {/* Desktop Nav Links */}
       <div className={NavStyles.navLink}>
         {cntUser?.id ? <Avatar /> :

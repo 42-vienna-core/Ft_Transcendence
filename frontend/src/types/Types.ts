@@ -24,3 +24,10 @@ export type OnlieList = {
     Username: string,
     role: string,
 }
+
+export type PlayerRoomData = {
+	players: number;
+	roomId: string;
+	roomStatus: string;
+
+};

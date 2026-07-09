@@ -12,13 +12,13 @@ export default function UserProvider (
         initialUser, 
     } : {
             children: React.ReactNode,
-            initialUser: UserType 
+            initialUser: UserType | null,
     } ) {
 
-    const [ cntUser, setCntUser ] = useState<UserType>(initialUser);
+    const [ cntUser, setCntUser ] = useState<UserType | null>(initialUser);
     const refreshUser = useCallback( async () => {
         
-        if (cntUser !== null)
+        if (cntUser)
         {
             setCntUser({...cntUser});
             return;

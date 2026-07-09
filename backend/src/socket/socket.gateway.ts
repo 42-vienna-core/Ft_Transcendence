@@ -28,17 +28,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
   
     const user = await this.getUser(client);
-
     if (!user) { 
-      client.disconnect(); return ; 
+      client.disconnect();
+      return;
     }
     client.data.userId = user.id;
     client.data.Username = user.Username;
     client.data.x = 0;
     client.data.y = 0;
-    const room  = await this.roomService.createRoom(client.data);
+    const room  = await this.roomService.createRoom(client.data.userId);
     client.data.roomId = room.roomId;
-    await this.handleJoinRoom( client);
+    client.data.roomStatus = room.status;
+    await this.handleJoinRoom(client);
 
     if (await this.redisService.addOnlineUser(client.data))
        this.server.emit('user-online', { userId: user.id, Username: user.Username });
@@ -48,17 +49,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
    async handleDisconnect(client: Socket) {
-    console.log(" >>>> handleDisconnect was caled");
     
     const roomUser = await this.roomService.findBySocketId(client.id);
     if (!roomUser) return ;
   
     await this.redisService.removeOnlineUser(client.data.userId);
-    this.server.emit('user-offline', client.data.userId);
+    this.server.emit('user-offline',  { userId: client.data.userId, Username: client.data.Username });
     await this.roomService.removeUserFromRoom(client.data.roomId, client.data.userId);
     const players = await this.roomService.getPlayerCount(roomUser.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
       roomId: roomUser.roomId,
+      roomStatus: client.data.roomStatus,
       players,
     });
   }
@@ -74,9 +75,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const players = await this.roomService.getPlayerCount(client.data.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
       roomId: client.data.roomId,
+      roomStatus: client.data.roomStatus,
       players,
     });
-    return { success: true, players };
   }
 
   @SubscribeMessage('leave-room')
@@ -88,13 +89,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const players = await this.roomService.getPlayerCount(client.data.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
       roomId: client.data.roomId,
+      roomStatus: client.data.roomStatus,
       players,
     });
     return { success: true, players };
   }
 
- 
-  
   @SubscribeMessage('player-move')
   async handlePlayerMove( @ConnectedSocket() client: Socket, @MessageBody() newPos: { x: number, y: number}) {
     console.log(" >>>> handlePlayerMove was caled");

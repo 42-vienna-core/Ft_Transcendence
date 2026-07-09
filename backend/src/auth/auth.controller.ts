@@ -11,6 +11,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
   
   @Post("me")
+  @Authorization()
   me(@Body('accessToken') accessToken: string) {
     return this.authService.me(accessToken);
   }
@@ -26,6 +27,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Authorization()
   refresh(@Body('refreshToken') refreshToken: string ) {
     return this.authService.refresh(refreshToken);
   }
@@ -38,6 +40,7 @@ export class AuthController {
   }
 
   @Post("reset")
+  @Authorization()
   reset (@Body() body : ResetPasswordDto) {
     return this.authService.reset(body);
   }

@@ -25,7 +25,7 @@ export class AuthService {
         {
             try {
                 const userData = await this.usersService.findOne(payload.userId);
-                return {id: userData?.id, Username: userData?.Username, role: userData?.role}
+                return userData
             }
             catch {console.log("wrong id")}
         }
