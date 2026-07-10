@@ -1,9 +1,10 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { RedisService } from './redis.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
-@Global()
+//@Global()
 @Module({
-  providers: [RedisService],
+  providers: [RedisService, PrismaModule],
   exports: [RedisService],
 })
 export class RedisModule {}
