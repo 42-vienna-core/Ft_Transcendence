@@ -12,7 +12,11 @@ function Hero() {
 
         useEffect( ()  => {
 
-        socketRef.current = io(socketUrl);
+        socketRef.current = io(socketUrl, {
+            auth : {
+                token: "Bearer " + localStorage.getItem("accessToken")
+            }
+        });
 
         socketRef.current.on("connect", () => {
             console.log("✅ Socket connected!", socketRef.current?.id);
@@ -22,7 +26,7 @@ function Hero() {
             console.log("players:", data.players);
         })
 
-        socketRef.current.on("gmae-start", () => {
+        socketRef.current.on("game-start", () => {
             console.log("Start Game");
         });
         return () => {

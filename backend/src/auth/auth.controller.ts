@@ -7,6 +7,7 @@ import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }

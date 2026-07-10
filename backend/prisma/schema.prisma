@@ -61,16 +61,17 @@ model Sessions {
 }
 
 model GameRoom {
-	id			String @id @default(uuid())
-	name		String
-	maxUsers	Int @default(4)
-	ownerId		Int?
-	createdAt	DateTime @default(now())
-	updatedAt	DateTime @updatedAt
+	id			    String @id @default(uuid())
+	name		    String
+	maxUsers	  Int @default(4)
+	ownerId		  Int?
+	createdAt	  DateTime @default(now())
+	updatedAt	  DateTime @updatedAt
 	
-	type		RoomType @default(PUBLIC)
-	users		RoomUser[]
-	owner		Users? @relation(fields: [ownerId], references: [id])
+  status      RoomStatus @default(WAITING)
+	type		    RoomType @default(PUBLIC)
+	roomUsers		RoomUser[]
+	owner		    Users? @relation(fields: [ownerId], references: [id])
 }
 
 model RoomUser {
@@ -90,4 +91,10 @@ model RoomUser {
 enum RoomType {
   PUBLIC
   PRIVATE
+}
+
+enum RoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
 }

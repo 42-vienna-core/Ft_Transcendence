@@ -3,7 +3,7 @@ import { extname } from 'path';
 import type { Request } from 'express';
 import { BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-//import path from 'path';
+import path from 'path';
 
 const allowedMimeTypes = [
     'image/jpeg',
@@ -13,8 +13,8 @@ const allowedMimeTypes = [
 
 export const avatarMulterOptions = {
     storage: diskStorage({
-        destination: '/uploads/avatars',
-        //destination: path.join(process.cwd(), 'uploads/avatars'),
+        //destination: '/uploads/avatars',
+        destination: path.join(process.cwd(), 'uploads/avatars'),
 
         filename: (_req: Request, file: Express.Multer.File, cb) => {
             const safeExt = extname(file.originalname).toLowerCase();

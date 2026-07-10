@@ -9,6 +9,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly roomService: GameRoomService) {}
 
   handleConnection(client: Socket) {
+
+    
     console.log('Client connected:', client.id);
   }
 
