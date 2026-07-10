@@ -28,7 +28,7 @@ function NavLinks ({status, username, avatar}: LinkProps) {
         return (
             <>
                 <CustomLink 
-                    url={"/dashboard"}
+                    url={"/arena"}
                     label={t("a")}
                 />
                 <CustomLink 

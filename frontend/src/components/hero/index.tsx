@@ -12,8 +12,7 @@ function Hero() {
             </h1>
             <p className={style.heroSub}>{t("description")}</p>
             <div className={style.heroActions}>
-                <Link href="/dashboard" className={`${style.btn} ${style.btnPrimary} ${style.btnLarge}`}>▶ {t("sBtn")}</Link>
-                <Link href="" className={`${style.btn} ${style.btnSecondary} ${style.btnLarge}`}>Browse Rooms</Link>
+                <Link href="/arena" className={`${style.btn} ${style.btnPrimary} ${style.btnLarge}`}>▶ {t("sBtn")}</Link>
             </div>
         </div>
     )

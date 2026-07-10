@@ -136,7 +136,7 @@ export default function Profile() {
       <div className={style.pfGrid}>
         <div className={style.panel} aria-label="Settings">
           <h3>preferences</h3>
-            <SettingBtnContainer>
+          <SettingBtnContainer>
               <SettingBatton
                 labelF={t("lang")}
                 labelS={lang}
