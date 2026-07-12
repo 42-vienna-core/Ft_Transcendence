@@ -19,13 +19,18 @@ export type UserContextType = {
 }
 
 
-export type OnlieList = {
-    userId: number;
-    Username: string,
-    role: string,
+export interface OnlineUsersType {
+	id: number;
+	Username: string;
+	role: string;
+	history: {
+		gamesWon: number;
+		gamesLost: number;
+		totalScore: number;
+	}
 }
 
-export type PlayerRoomData = {
+export type RoomStateType = {
 	players: number;
 	roomId: string;
 	roomStatus: string;

@@ -1,11 +1,12 @@
 import Timer from "./Timer";
 import Move from "./Move"
-import { PlayerRoomData } from "@/src/types/Types";
+import { RoomStateType } from "@/src/types/Types";
 
-type Props = { playersData?: PlayerRoomData }
+type Props = { roomState?: RoomStateType }
 
-export default function Settings({ playersData } : Props) {
-	if (!playersData) return null;
+export default function Settings({ roomState } : Props) {
+	
+
 return (
 	<section className=" aria-label='Snake game field' mb-5">
 
@@ -16,14 +17,14 @@ return (
 					<div className="flex items-center gap-3">
 						<span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
 						<span className="text-sm tracking-wide">
-							Live Match · Room {" : "}<span className="text-red-500">{playersData.roomStatus}</span>
+							Live Match · Room {" : "}<span className="text-red-500">{roomState?.roomStatus}</span>
 						</span>
 					</div>
 				</div>
 
 				<div className=" text-sm font-medium  bg-gray-800 px-3 py-1  rounded-md border border-gray-700 text-center whitespace-nowrap ">
 					Players{" "}
-					<span className="text-green-400 font-bold">{playersData.players}</span> / 4
+					<span className="text-green-400 font-bold">{roomState?.players}</span> / 4
 				</div>
 
 				<div className="flex items-center gap-2 justify-between sm:justify-end">

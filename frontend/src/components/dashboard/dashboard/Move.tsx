@@ -1,6 +1,6 @@
 export default function Move () {
     return (
-    <div className="w-full flex justify-center p-10">
+    <div className="w-full flex justify-center p-10 ">
         <div className="  bg-gray-900 text-white rounded-2xl shadow-lg p-6 flex flex-wrap gap-4 justify-center items-center">
 
             <div className="flex items-center gap-2">

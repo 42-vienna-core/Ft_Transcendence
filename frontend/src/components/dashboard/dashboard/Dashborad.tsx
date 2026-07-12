@@ -1,90 +1,63 @@
 "use client"
-import { useCallback ,useEffect , useRef, useState} from 'react';
-import {io, Socket } from "socket.io-client"
 import "@/src/styles/dashboard.css";
-import { useAuth } from "@/src/components/provider/UserProvider"
-import { OnlieList } from '@/src/types/Types';
+import { useRef,  useEffect, useState} from 'react';
+import { OnlineUsersType, RoomStateType } from '@/src/types/Types';
+import { Socket } from "socket.io-client";
 import Settings from './Settings';
 import Game from "./Game"
-import { PlayerRoomData } from "@/src/types/Types";
-
+import { useSocket } from "../../socket/socket";
+import { useUserStore } from "@/src/components/store/useUserStore"
+import OnlineUser from "./OnlineUser";
 
 export default function Dashboard () {
-
-	const {cntUser, refreshUser} = useAuth();
-	const [gamestart, setGameStart] = useState(false);
-
-	const socketRef = useRef<Socket | null>(null);
-	const [playersData, setPlayersData] = useState<PlayerRoomData>();
-
-	const [onlineUsers, setOnlineUsers] = useState<OnlieList[]>([]);
-
-	const handleOnline = useCallback(( onlieUsers : OnlieList[] ) => {
-		setOnlineUsers(onlieUsers);
-	}, []);
-
-	const handleOffline = useCallback(( { userId } : { userId: number } ) => {
-		setOnlineUsers( (prev) => prev.filter((item) => item?.userId !== userId));
-	},[])
-
-	useEffect( ()  => {
-		refreshUser();
-		
-		socketRef.current = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}`,{
-			withCredentials: true,
-		});
-
-		socketRef.current.on("connect", () => {	
-			console.log("✅ Socket connected!", socketRef.current?.id);
-		});
 	
-		socketRef.current.on("online-users", ( onlieUsers : OnlieList[] )  => {
-			setOnlineUsers(onlieUsers);
-		});
+	const [gamestart, setGameStart] = useState(false);
+	const [roomState, setRoomState] = useState<RoomStateType>();
+	const socketRef = useRef<Socket | null>(useSocket());
 
-		socketRef.current.on("room-update", (data) => {
-			console.log(data)
-			setPlayersData({...data});
-			if (data.players > 1)
-			{
-				setTimeout(() => {setGameStart(true)},1000);
-				console.log("if block", gamestart)
-			}
+	const onlineUsers = useUserStore((state) => state.onlineUsers);
+
+	useEffect(() => {
+		if (!socketRef.current) return ;
+
+		const handleOnlineUsers = (data: OnlineUsersType) => { useUserStore.setState({ onlineUsers: data }) };
+		const handleRoomUpdata = (data: RoomStateType) => {
+			if (data.players > 7)
+				setGameStart(true);
 			else
 				setGameStart(false);
-		})
+			setRoomState({...data});
+		}
+		socketRef.current.on("online-users",  handleOnlineUsers);
+		socketRef.current.on("room-update", handleRoomUpdata);
 
-		socketRef.current.on("game-start", () => console.log("Start Game") );
-		socketRef.current.on("user-online",  handleOnline);
-		socketRef.current.on("user-offline", handleOffline);
+		socketRef.current.emit("get-online-users", () => {console.log("get-online-users was caled in dashboard")});
+		socketRef.current.emit("join-room", async () => {console.log("join-room was caled in dashboard")});
 
 		return () => {
-			socketRef.current?.off("user-online",  handleOnline);
-			socketRef.current?.off("user-offline", handleOffline);
-			socketRef.current?.disconnect();
+			if (!socketRef.current) return ;
+			socketRef.current.off("online-users", handleOnlineUsers);
+    		socketRef.current.off("room-update", handleRoomUpdata);
+			socketRef.current.emit("leave-room");
 		}
-	}, []);
-	
+	},[])
+
 	return ( 
 	<>
 		{ gamestart ? ( <Game /> )
 		: (
 			<div className=" bg text-white border rounded-2xl h-screen">
 
-				<Settings playersData={playersData} />
+				<Settings roomState={roomState} />
 				<aside className="mockSide" aria-label="Match sidebar ">
 					<div>
-						{onlineUsers.length && 
-							onlineUsers.map((obj) => {
-								return (
-									<div key={obj.userId} className="playerRow" >
-										
-										<span className="swatch bg-green-500"></span>
-										<span className="name">{obj.userId === cntUser?.id ? "You " : obj.Username}</span>
-										<span className="pts">{555}</span>
-									</div>
-								)
-							})
+						{
+							onlineUsers.length && 
+								onlineUsers.map((obj : OnlineUsersType) => (
+								<div key={obj.id} className="grid grid-cols-2 md:grid-cols-5 gap-3 items-center rounded-lg px-4 py-3 text-sm mb-2 border ">
+									<OnlineUser obj={obj}/>
+								</div>
+							))
 						}
 					</div>		
 				</aside>

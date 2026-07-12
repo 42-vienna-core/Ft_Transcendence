@@ -5,6 +5,7 @@ import Nav from "@/src/components/nav/Nav"
 import "./globals.css";
 import { Api } from "@/src/lib/api"
 import { cookies } from "next/headers";
+import SocketProvider from "../components/provider/SocketProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans", 
@@ -31,13 +32,14 @@ export default async function RootLayout( {
   const accessToken = (await cookies()).get("accessToken")?.value;
   if (accessToken)
     user = await Api.getUser(accessToken || "").then(r => r.json());
-  console.log("RootLayout user:", user);
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} >
       <body className="min-h-full flex flex-col min-w-md">
         <UserProvider initialUser={user}>
            <Nav />
-          {children}
+          <SocketProvider>
+            {children}
+          </SocketProvider>
         </UserProvider>
       </body>
     </html>

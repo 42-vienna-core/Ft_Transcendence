@@ -31,6 +31,7 @@ export const Api = {
             throw new Error()
         }
     },
+
     getUser: async (accessToken: string) => {
         try {
             const user = await fetch("http://localhost:4000/api/auth/me", {
@@ -43,9 +44,9 @@ export const Api = {
                 body: JSON.stringify({accessToken: accessToken})
             });
             return user;
-    }
-    catch {
-        throw new Error()
-    }
+        }
+        catch {
+            throw new Error();
+        }
     },
 }

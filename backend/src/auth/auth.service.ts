@@ -27,7 +27,9 @@ export class AuthService {
                 const userData = await this.usersService.findOne(payload.userId);
                 return userData
             }
-            catch {console.log("wrong id")}
+            catch {
+                throw new UnauthorizedException('Invalid credentials');
+            }
         }
         return payload;
     }

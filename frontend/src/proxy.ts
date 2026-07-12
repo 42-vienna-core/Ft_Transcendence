@@ -12,14 +12,17 @@ export async function proxy(request: NextRequest) {
     const accessToken = request.cookies.get("accessToken");
     if (accessToken)
         return NextResponse.next();
+
+    console.log("Access token not found, attempting to refresh...");
     const refreshToken = request.cookies.get("refreshToken")?.value;
     if (!refreshToken)
         return NextResponse.redirect(new URL("/login", request.url));
+    console.log("Refresh token found, attempting to refresh access token...");
     try {
         const refreshRes: AuthType = await Api.postRequest(process.env.INTERNAL_API_URL + "/auth/refresh", { refreshToken }).then((res) => res.json());
         if (!refreshRes.accessToken || !refreshRes.refreshToken)
             return NextResponse.redirect(new URL("/login", request.url));
-
+        console.log("Access token refreshed successfully, setting cookies...");
         const response = NextResponse.next();
         response.cookies.set("accessToken", refreshRes.accessToken, {
             httpOnly: true,

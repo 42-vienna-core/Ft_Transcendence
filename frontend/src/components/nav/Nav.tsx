@@ -15,13 +15,13 @@ export default function Navbar() {
   const [user, setUser] = useState<UserSearch[]>([]);
   const [filtered, setFiltered] = useState<UserSearch[]>([]);
   const [inputValue, setInputValue] = useState("");
-  
+  const url = process.env.NEXT_PUBLIC_WS_URL;
 
   useEffect(() => {
     if (!cntUser) return;
   
     (async  () =>  {
-        const res = await Api.getRequest(process.env.NEXT_PUBLIC_WS_URL + "/users/search/" + cntUser.id).then(r => r.json())
+        const res = await Api.getRequest( url + "/users/search/" + cntUser.id).then(r => r.json())
         setUser(res);
       })();
   }, [cntUser])

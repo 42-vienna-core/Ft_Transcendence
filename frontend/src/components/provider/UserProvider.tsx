@@ -17,7 +17,6 @@ export default function UserProvider (
 
     const [ cntUser, setCntUser ] = useState<UserType | null>(initialUser);
     const refreshUser = useCallback( async () => {
-        
         if (cntUser)
         {
             setCntUser({...cntUser});

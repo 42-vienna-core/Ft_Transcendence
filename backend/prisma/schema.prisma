@@ -6,7 +6,41 @@ datasource db {
   provider = "postgresql"
 }
 
+model Users {
+  id                              Int        @id @default(autoincrement())
+  Email                           String     @unique
+  Password                        String
+  Username                        String
+  role                            Role       @default(PLAYER)
+  resetCode                       String?
+  codeExpire                      DateTime?
+  createdAt                       DateTime   @default(now())
+  updatedAt                       DateTime   @updatedAt
+  Friends_Friends_friendIdToUsers Friends[]  @relation("Friends_friendIdToUsers")
+  Friends_Friends_userIdToUsers   Friends[]  @relation("Friends_userIdToUsers")
+  gameRooms                       GameRoom[]
+  messages                        Message[]
+  roomsUsers                      RoomUser[]
+  sessions                        Sessions[]
+  history                         UserStats?
+}
+
+model UserStats {
+  id          Int      @id @default(autoincrement())
+
+  Email       String   @unique
+  user        Users    @relation(fields: [Email], references: [Email], onDelete: Cascade)
+  gamesWon    Int      @default(0)
+  gamesLost   Int      @default(0)
+
+  totalScore  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model RoomUser {
+
   id       String   @id @default(uuid())
   roomId   String
   socketId String?
@@ -17,34 +51,6 @@ model RoomUser {
   @@unique([roomId, userId])
 }
 
-model Message {
-  id        String   @id @default(uuid())
-  content   String
-  roomId    String
-  createdAt DateTime @default(now())
-  userId    Int
-  room      GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Friends {
-  id                            String      @id @default(uuid())
-  userId                        Int
-  friendId                      Int
-  status                        FriendStatus @default(PENDING)
-  createdAt                     DateTime     @default(now())
-  updatedAt                     DateTime
-  usersFriendsFriendIdToUsers   Users        @relation("Friends_friendIdToUsers", fields: [friendId], references: [id])
-  usersFriendsUserIdToUsers     Users        @relation("Friends_userIdToUsers", fields: [userId], references: [id])
-
-  @@unique([userId, friendId])
-}
-
-enum RoomStatus {
-  WAITING
-  PLAYING
-  FINISHED
-}
 model GameRoom {
   id            String     @id @default(uuid())
   name          String     @default("Room")
@@ -73,25 +79,28 @@ model Sessions {
   @@index([userId])
 }
 
-model Users {
-  id                              Int        @id @default(autoincrement())
-  Email                           String     @unique
-  Password                        String
-  Username                        String
-  role                            Role       @default(PLAYER)
-  
-  resetCode                       String?
-  codeExpire                      DateTime?
-  createdAt                       DateTime   @default(now())
-  updatedAt                       DateTime   @updatedAt
-  Friends_Friends_friendIdToUsers Friends[]  @relation("Friends_friendIdToUsers")
-  Friends_Friends_userIdToUsers   Friends[]  @relation("Friends_userIdToUsers")
-  gameRooms                       GameRoom[]
-  messages                        Message[]
-  roomsUsers                      RoomUser[]
-  sessions                        Sessions[]
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  roomId    String
+  createdAt DateTime @default(now())
+  userId    Int
+  room      GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Friends {
+  id                            String      @id @default(uuid())
+  userId                        Int
+  friendId                      Int
+  status                        FriendStatus @default(PENDING)
+  createdAt                     DateTime     @default(now())
+  updatedAt                     DateTime
+  usersFriendsFriendIdToUsers   Users        @relation("Friends_friendIdToUsers", fields: [friendId], references: [id])
+  usersFriendsUserIdToUsers     Users        @relation("Friends_userIdToUsers", fields: [userId], references: [id])
+
+  @@unique([userId, friendId])
+}
 enum Role {
   PLAYER
   ADMIN
@@ -109,4 +118,8 @@ enum FriendStatus {
   REJECTED
 }
 
-
+enum RoomStatus {
+  WAITING
+  PLAYING
+  FINISHED
+}

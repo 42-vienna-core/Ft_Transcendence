@@ -17,6 +17,7 @@ export class UsersService {
 	async create(body: CreateUsersDto) {
 		
 		const res = await this.databaseService.users.create({ data: body});
+		await this.databaseService.userStats.create({ data: { Email: body.Email } });
 		return res;
 	}
 
@@ -70,7 +71,23 @@ export class UsersService {
 	}
 
 	async findOne(id: number) {
-		return this.databaseService.users.findUnique( {  where: { id } } );
+		return this.databaseService.users.findUnique( 
+			{  
+				where: { id },
+				select: {
+					id: true,
+					Username: true,
+					role: true,
+					history: {
+						select: {
+							gamesLost: true,
+							gamesWon: true,
+							totalScore: true,
+						}
+					}
+				}
+			} 
+		);
 	}
 
 	async update(id: number, updateUserDto: UpdateUserDto) {

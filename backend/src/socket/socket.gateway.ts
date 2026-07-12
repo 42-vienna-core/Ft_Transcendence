@@ -3,6 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { AuthService } from 'src/auth/auth.service';
 import { RedisService } from 'src/redis/redis.service';
+import { CreateSnake } from 'src/types/interface';
 @WebSocketGateway(2000, { cors: { origin: 'http://localhost:3000', credentials: true, } })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server!: Server;
@@ -11,7 +12,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly redisService: RedisService,
     private readonly authService: AuthService,
   ) {}
-
+// redis updata command (        redis-cli FLUSHALL        )
 
  async getUser(client: Socket) {
   const cookie = client.handshake.headers.cookie ?? "";
@@ -25,37 +26,28 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   return await this.authService.me(accessToken);
 }
 
-  async handleConnection(client: Socket) {
-  
+  async handleConnection(client: Socket) {   
+    console.log("handleConnection was caled ", client.id);
     const user = await this.getUser(client);
     if (!user) { 
       client.disconnect();
-      return;
+      return ;
     }
-    client.data.userId = user.id;
-    client.data.Username = user.Username;
-    client.data.x = 0;
-    client.data.y = 0;
-    const room  = await this.roomService.createRoom(client.data.userId);
-    client.data.roomId = room.roomId;
-    client.data.roomStatus = room.status;
-    await this.handleJoinRoom(client);
-
-    if (await this.redisService.addOnlineUser(client.data))
-       this.server.emit('user-online', { userId: user.id, Username: user.Username });
-    const onlineUsers = await this.redisService.getOnlineUsers();
-  
-    this.server.emit('online-users', onlineUsers);
+    client.data.user = user;
+    console.log("socket was connected", client.data);
+    const addedUser = await this.redisService.addOnlineUser(user);
+    if (addedUser)
+      await this.getOnlineUsers(client);
   }
 
    async handleDisconnect(client: Socket) {
-    
+    console.log("handleDisconnect was caled ")
+    await this.redisService.removeOnlineUser(client.data.user.id);
+    await this.getOnlineUsers(client)
     const roomUser = await this.roomService.findBySocketId(client.id);
-    if (!roomUser) return ;
   
-    await this.redisService.removeOnlineUser(client.data.userId);
-    this.server.emit('user-offline',  { userId: client.data.userId, Username: client.data.Username });
-    await this.roomService.removeUserFromRoom(client.data.roomId, client.data.userId);
+    if (!client.data.roomId || !roomUser) return ;
+    await this.roomService.removeUserFromRoom(client.data.roomId, client.data.user.id);
     const players = await this.roomService.getPlayerCount(roomUser.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
       roomId: roomUser.roomId,
@@ -64,48 +56,63 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  @SubscribeMessage("get-online-users")
+  async getOnlineUsers(client: Socket) {
+    console.log("get_online-users: ", client.id);
+    const onlineUsers = await this.redisService.getOnlineUsers();
+    this.server.emit("online-users", onlineUsers);
+  }
+
   @SubscribeMessage('join-room')
   async handleJoinRoom(@ConnectedSocket() client: Socket) {
    
     console.log(" >>>> handleJoinRoom was caled");
 
-    await client.join(client.data.roomId);
+    if (client.data.user === undefined)
+      client.data.user = await  this.getUser(client);
 
-    await this.roomService.addUserToRoom(client.data.roomId, client.data.userId, client.id);
+    const room = await this.roomService.createRoom(client.data.user.id);
+    client.data.roomId = room.roomId;
+    
+    await this.redisService.set(`game:${room.roomId}:${client.data.user.id}`, JSON.stringify(CreateSnake(client.data.user.id)))
+    await client.join(room.roomId);
+
+    await this.roomService.addUserToRoom(room.roomId, client.data.user.id, client.id);
     const players = await this.roomService.getPlayerCount(client.data.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
-      roomId: client.data.roomId,
-      roomStatus: client.data.roomStatus,
+      roomId: room.roomId,
+      roomStatus: room.status,
       players,
     });
   }
 
   @SubscribeMessage('leave-room')
   async handleLeaveRoom(@ConnectedSocket() client: Socket) {
-    console.log(" >>>> handleLeaveRoom was caled");
+    console.log(" >>>> handleLeaveRoom was caled", client.id, client.data.roomId);
 
+    await this.roomService.removeUserFromRoom(client.data.roomId, client.data.user.id);
     await client.leave(client.data.roomId);
-    await this.roomService.removeUserFromRoom(client.data.roomId, client.data.userId);
+
+    await this.redisService.del(`game:${client.data.roomId}:${client.data.user.id}`);
+
     const players = await this.roomService.getPlayerCount(client.data.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
       roomId: client.data.roomId,
       roomStatus: client.data.roomStatus,
       players,
     });
-    return { success: true, players };
   }
 
   @SubscribeMessage('player-move')
   async handlePlayerMove( @ConnectedSocket() client: Socket, @MessageBody() newPos: { x: number, y: number}) {
-    console.log(" >>>> handlePlayerMove was caled");
-    const userId = client.data.userId;
-    const roomId = client.data.roomId;
+     console.log(" >>>> handlePlayerMove was caled", client.id);
+    
     await this.redisService.updatePlayerPosition( 
-      roomId, userId,
+      client.data.roomId, client.data,
       { x: newPos.x, y: newPos.y }
     );
     this.server.to(client.data.roomId).emit('player-moved', {
-      userId,
+      userId: client.data.user.id,
       x: newPos.x,
       y: newPos.y,
     })
