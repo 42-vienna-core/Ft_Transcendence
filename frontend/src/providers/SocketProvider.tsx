@@ -1,22 +1,44 @@
 'use client'
 
-import { useEffect } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useSocket } from "../socket/socket";
 import { useSession } from "next-auth/react";
+import { io, Socket } from "socket.io-client";
 
-export default function SocketProvider({
+interface SocketContextType {
+    isConnected: boolean;
+}
+
+const SocketContext = createContext<SocketContextType | null>(null);
+
+export const SocketProvider = ({
+    token,
     children,
 }: {
+    token: string | null | undefined;
     children: React.ReactNode;
-}) {
-    const {data: status} = useSession();
-    const socket = useSocket();
+}) => {
+    const [isConnected, setIsConnected] = useState(false);
+    const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        if (!status) return;
+
+        if (!token || socketRef.current) return;
+
+        const socketUrl = process.env.FRONTEND_URL
+
+        const socket = io(socketUrl, {
+            auth: {
+                token: token 
+            },
+            autoConnect: true
+        });
+
+        socketRef.current = socket;
 
         const handleConnect = () => {
             console.log("✅ Socket connected!", socket.id);
+            setIsConnected(true);
         };
 
         const handleDisconnect = () => {
@@ -34,8 +56,25 @@ export default function SocketProvider({
             socket.off("connect", handleConnect);
             socket.off("disconnect", handleDisconnect);
             socket.disconnect();
+            socketRef.current = null;
         };
-    }, [status, socket]);
+    }, [token]);
 
-   return children;
+    return (
+        <SocketContext.Provider 
+            value={{
+                isConnected
+            }}    
+        >
+            {children}
+        </SocketContext.Provider>
+    );
 }
+
+export const useGameSocket = () => {
+  const context = useContext(SocketContext);
+  if (!context) {
+    throw new Error('useGameSocket must be used strictly inside the SocketProvider');
+  }
+  return context;
+};

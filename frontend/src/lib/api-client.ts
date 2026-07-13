@@ -16,6 +16,7 @@ export async function apiFetch(endpoint: string, options: CustomApiOptions = {})
     console.log(url);
 
     const session = await getServerSession(authOptions);
+    console.log("SESSION: ",session);
 
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${session?.accessToken}`);

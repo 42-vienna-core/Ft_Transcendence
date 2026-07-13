@@ -1,7 +1,16 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials'
 
-const URL = `${process.env.INTERNAL_API_URL}/auth`;
+const env = process.env;
+const rawAccessTTL = env.JWT_ACCESS_TTL?.match(/\d+/)?.[0] || '15';
+const JWT_ACCESS_TTL = Number(rawAccessTTL);
+const REFRESH_AGE = (JWT_ACCESS_TTL - 1) * 60 * 1000;
+
+const URL = `${env.INTERNAL_API_URL}/auth`;
+
+function createExpiredTime(): number {
+    return (Date.now() + REFRESH_AGE);
+}
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -43,6 +52,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({token, user, account, trigger, session}) {
             console.log("=================JWT CALLBACK=======================")
+            // console.log(" jwt calback: ",token);
 
             if (user) {
                 token.sub = user.id;
@@ -65,6 +75,10 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
         async session({session, token}) {
+            console.log("=================SESSION CALLBACK=======================")
+
+            // console.log(" session calback: ",token);
+
             if (session.user) {
                 session.user.id = Number(token.sub);
                 session.user.username = token.name as string;
@@ -85,6 +99,3 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET
 }
 
-function createExpiredTime(): number {
-    return (Date.now() + 1 * 60 * 1000);
-}

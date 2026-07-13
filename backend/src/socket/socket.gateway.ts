@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { GameRoomService } from 'src/gameRoom/gameRoom.service';
+import { GameRoomService } from '../gameRoom/gameRoom.service';
 import { AddUserGameRoomDto } from '../gameRoom/dto/addUser-gameRoom.dto';
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -11,7 +11,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(client: Socket) {
 
     
-    console.log('Client connected:', client.id);
+    console.log('Client connected:', client.handshake.auth.token);
   }
 
   @SubscribeMessage('join-room')

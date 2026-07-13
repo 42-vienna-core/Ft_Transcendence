@@ -17,8 +17,8 @@ const rawRefreshTTL = env.JWT_REFRESH_TTL?.match(/\d+/)?.[0] || '7';
 const JWT_ACCESS_TTL = Number(rawAccessTTL);
 const JWT_REFRESH_TTL = Number(rawRefreshTTL);
 
-const REFRESH_AGE = Number(JWT_ACCESS_TTL) * 60 * 1000;
-const COOKIE_MAX_AGE = Number(JWT_REFRESH_TTL) * 24 * 60 * 60;
+const REFRESH_AGE = (JWT_ACCESS_TTL - 1) * 60 * 1000;
+const COOKIE_MAX_AGE = JWT_REFRESH_TTL * 24 * 60 * 60;
 
 function createExpiredTime(): number {
     return Date.now() + REFRESH_AGE;
@@ -61,14 +61,11 @@ const intlMiddleware = createIntlMiddleware({
 
 const authMiddleware = withAuth(
     async function middleware (req) {
+        console.log("========MIDDLEWARE============");
         const path = req.nextUrl.pathname;
         const response = intlMiddleware(req);
-
-        const token = await getToken({
-            req, 
-            secret: SECRET,
-            secureCookie: SECURE_COOKIE
-        });
+        
+        const token = req.nextauth.token;
     
         const isAuthPage = /^\/(ru|en|de|it)?\/?(login|register)$/.test(path);
 
@@ -77,6 +74,7 @@ const authMiddleware = withAuth(
             const isExpired = Date.now() > expiry;
 
             if (isExpired) {
+                console.log("========TOKEN EXPIRED============");
                 const refreshed = await refreshAccessToken(token);
 
                 if (refreshed?.error === 'RefreshAccessTokenError') {
@@ -97,7 +95,8 @@ const authMiddleware = withAuth(
                     secure: SECURE_COOKIE,
                     maxAge: COOKIE_MAX_AGE,
                 });
-                
+
+                req.cookies.set(SESSION_COOKIE_NAME, encoded);
             }    
 
             if (isAuthPage) {
@@ -111,6 +110,7 @@ const authMiddleware = withAuth(
     {
         callbacks: {
             authorized: ({ token, req }) => {
+                // console.log("authorized callback: ",token);
                 const path = req.nextUrl.pathname;
                 if (path.startsWith('/api/auth')) return true;
                 const isPublicPath = /^\/(ru|en|de|it)?\/?(login|register)?$/.test(path);
@@ -124,9 +124,9 @@ const authMiddleware = withAuth(
 export default function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
-    if (path.startsWith('/api/auth')) {
-        return NextResponse.next();
-    }
+    // if (path.startsWith('/api/auth')) {
+    //     return NextResponse.next();
+    // }
 
     return (authMiddleware as any)(req);
 }
