@@ -3,6 +3,7 @@ import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { AvatarService } from '../avatar/avatar.service';
+import { TokenService } from 'src/token/token.service';
 
 export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
 
@@ -12,6 +13,7 @@ export class UserService {
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly avatarService: AvatarService,
+		private readonly tokenService: TokenService
 	) { }
 
 	public async findByEmail(email: string) {
@@ -28,6 +30,14 @@ export class UserService {
 		return user;
 	}
 
+	async verifyUser (accessToken: string) {
+		const user = await this.tokenService.verifyAccessToken(accessToken);
+		if (!user)
+			throw new Error();
+		const userData = await this.getUser(user.userId);
+		return userData;
+	}
+
 	public async getUser(id: number) {
 		const user = await this.prismaService.users.findUnique({
 			where: { id },
@@ -35,8 +45,8 @@ export class UserService {
 				id: true,
 				name: true,
 				avatar: true,
-				createdAt: true,
-				updatedAt: true,
+				// createdAt: true,
+				// updatedAt: true,
 				// isVerified: true,
 			},
 		});
