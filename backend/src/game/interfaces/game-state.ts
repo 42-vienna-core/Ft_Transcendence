@@ -19,7 +19,7 @@ export interface Snake {
 
 export interface Food {
 	position: Position;
-	//type: 'normal' | 'big' | 'huge';
+	eaten: boolean;
 }
 
 export interface GameState {

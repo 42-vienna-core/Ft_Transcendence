@@ -1,38 +1,188 @@
 //import {  } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameState, Direction, Snake, Position, Food } from './interfaces/game-state';
 
+const GRID_WIDTH = 40;
+const GRID_HEIGHT = 30;
+const TICK_MS = 150;
 
+function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
+	if (next === null)
+		return true;
+	if (next === 'DOWN' && cur === 'UP')
+		return true;
+	if (next === 'UP' && cur === 'DOWN')
+		return true;
+	if (next === 'LEFT' && cur === 'RIGHT')
+		return true;
+	if (next === 'RIGHT' && cur === 'LEFT')
+		return true;
+	return false;
+}
+
+function comparePosition(a: Position, b: Position): boolean{
+	return (a.x === b.x && a.y === b.y);
+}
+
+function spawnFood(state: GameState) : GameState {
+	let ok : boolean = false;
+	let pos : Position = {x: 0, y: 0};
+	while (!ok){
+		pos = {
+ 			x : Math.floor(Math.random() * state.gridWidth),
+			y : Math.floor(Math.random() * state.gridHeight),
+		};
+		ok = true;
+		for (const food of state.food){
+			if (comparePosition(food.position, pos)){
+				ok = false;
+				break;
+			}
+		}
+		if (!ok)
+			continue;
+		for (const snake of state.snakes){
+			for (const body of snake.body)
+				if (comparePosition(body, pos)){
+					ok = false;
+					break;
+				}
+		}
+		//EDGE CASE: check that food is reachable (dead snake)
+	}
+	state.food.push({position: pos, eaten: false});
+	return state;
+	//check that tehse positions are empty
+	//check other foods
+	//check other snakes
+	//check that the food is reachable
+}
 
 function newHeadPosition(state: GameState) : GameState{
+	for (const snake of state.snakes){
+		if (isOppositeDir(snake.newDirection, snake.direction))
+			snake.newDirection = snake.direction;
+		snake.newPosition = {x: snake.body[0].x, y: snake.body[0].y}; 
+		if (snake.newDirection === 'UP')
+			snake.newPosition.y--;
+		else if (snake.newDirection === 'DOWN')
+			snake.newPosition.y++;
+		else if (snake.newDirection === 'LEFT')
+			snake.newPosition.x--;		
+		else if (snake.newDirection === 'RIGHT')
+			snake.newPosition.x++;
+	}
 	//for each snake
-		//check if next direction is not opposite
-		//if dir is opposite
+		//if new dir is opposite
 			//new dir == dir
 		//update new head position
 	return state;
 }
 
-function checkCollision(state: GameState) : GameState{
-	//for each snake
-		//check new head position
-		//if wall or other snake body
-			//update alive false
-	return state;
-}
-
 function checkFood(state: GameState) : GameState{
+	for (const snake of state.snakes){
+		if (snake.alive === false)
+			continue;
+		if (snake.newPosition === null)
+			continue;
+		for (const food of state.food){
+			if (comparePosition(snake.newPosition, food.position)){
+				snake.willGrow = true;
+				food.eaten = true;
+			}
+		}
+
+	}
 	//for each alive snake
 		//for each food
 			//if new head position == food position
 				//cur snake will grow === true 
-				//update score
-				//delete current food
-				//create random position new food
+	return state;
+}
+
+function checkCollision(state: GameState) : GameState{
+	for (const snake of state.snakes){
+		if (snake.alive === false)
+			continue;
+		if (snake.newPosition === null)
+			continue;
+		let x = snake.newPosition.x;
+		let y = snake.newPosition.y;
+		if (x < 0 || x >= state.gridWidth)
+			snake.alive = false;
+		if (y < 0 || y >= state.gridHeight)
+			snake.alive = false;
+		for (const other of state.snakes){
+			if (snake.alive === false)
+				break;
+			if (other !== snake){
+				if (other.newPosition != null && comparePosition(other.newPosition, snake.newPosition)){
+					other.alive = false;
+					snake.alive = false;
+					break;
+				}
+			}
+			for (let i = 0; i < other.body.length; i++){
+				const pos = other.body[i];
+				const last = other.body.length - 1;
+				if (comparePosition(pos, snake.newPosition)){
+					if (i === last && !other.willGrow){
+						continue;
+					}
+					snake.alive = false;
+					break;
+				}
+			}
+		}
+	}
+	//for each snake
+		//check new head position
+		//if wall or other snake body 
+			//update alive false
+	return state;
+}
+
+
+function updateFoodScore(state: GameState) : GameState{
+	for (let i = 0; i < state.food.length; i++){
+		if (state.food[i].eaten){
+			state.food.splice(i, 1);
+			spawnFood(state);
+			i--;
+		}
+	}
+	for (const snake of state.snakes){
+		if (!snake.alive)
+			continue;
+		if (snake.willGrow)
+			snake.score++;
+	}
+	//loop all foods
+		//if one is eaten
+			//delete it
+			//create new one
+	//loop all alive snakes
+		//if one will grow
+			//update score	
 	return state;
 }
 
 function moveSnake(state: GameState) : GameState{
+	for (const snake of state.snakes){
+		if (!snake.alive)
+			continue;
+		if (snake.newPosition === null)
+			continue;
+		snake.body.unshift(snake.newPosition);
+		if (!snake.willGrow)
+			snake.body.pop();
+		if (snake.newDirection !== null)
+			snake.direction = snake.newDirection;
+		snake.willGrow = false;
+		snake.newDirection = null;
+		snake.newPosition = null;
+	}
 	//for each alive snake
 		//if alive
 			//move head
@@ -44,19 +194,102 @@ function moveSnake(state: GameState) : GameState{
 	return state;
 }
 
+function createSnake(user: number, index: number, color: string) : Snake{
+	let pos: Position = {x: 2, y: 1};
+	const body : Position[]  = [];
+	let dir : Direction = 'RIGHT';
+	if (index === 2)
+		pos = {x: 2, y: GRID_HEIGHT - 2}
+	if (index === 1)
+		pos = {x: GRID_WIDTH - 3, y: 1}
+	if (index === 3)
+		pos = {x: GRID_WIDTH - 3, y: GRID_HEIGHT - 2}
+	
+	if (index === 0 || index === 2){
+		body.push(pos);
+		body.push({x: pos.x - 1, y: pos.y});
+		body.push({x: pos.x - 1, y: pos.y + 1});
+	}
+	if (index === 1 || index === 3){
+		body.push(pos);
+		body.push({x: pos.x - 1, y: pos.y});
+		body.push({x: pos.x - 1, y: pos.y + 1});
+		dir = 'LEFT';
+	}
+	const snakes : Snake = {
+		id: user,
+		body: body,
+		direction: dir,
+		newDirection: null,
+		newPosition: null,
+		willGrow: false,
+		alive: true,
+		score: 0,
+		color: color,
+	};
+	return snakes;
+}
 
+function initGame(id: string, users: number[]) : GameState{
+	const snakes : Snake[] = [];
+	for (let i = 0; i < users.length; i++)
+		snakes.push(createSnake(users[i], i, 'COLOR'));
+	const foods : Food[] = [];
+	const game : GameState = {
+		roomId: id,
+		snakes: snakes,
+		food: foods,
+		status: 'waiting',
+		tick: 0,
+		gridHeight: GRID_HEIGHT,
+		gridWidth: GRID_WIDTH,
+		winnerId: null,
+	};
+	for (let i = 0; i < users.length + 1; i++)
+		spawnFood(game);
+	return game;
+}
 
 @Injectable()
 export class Game {
 
+
 	public constructor(
 		private readonly prismaService: PrismaService,
 	) { };
-	startGame(roomId: string){
-		void roomId;
-		//retrieve game state
+	async startGame(roomId: string){
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id:roomId },
+			include: {
+				users: true,
+			},
+		});
+		if (!room)
+			throw new BadRequestException ('Room not found');
+		const users = room.users.map((roomUser) => roomUser.userId);
+		const game : GameState = initGame(roomId, users);
+		//send to redis
+		game.status = 'countdown';
+
+
+		//load the room from prisma
+		//init gamestate
+		//create food
+		//save to redis
+		//set countdown status
 	}
 	tick(roomId: string){
+		//load gamestate from redis
+		//newHeadPosition
+		//checkFood
+		//checkCollision
+		//updateFoodScore
+		//moveSnake
+		//check if game over
+		//save updated data to redis
+		//send info to frontend
+		//if game over
+			//save to prisma
 		void roomId;
 	}
 
