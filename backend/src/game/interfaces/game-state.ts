@@ -26,7 +26,7 @@ export interface GameState {
 	roomId: string;
 	snakes: Snake[];
 	food: Food[];
-	status: 'waiting' | 'countdown' | 'running' | 'finished';
+	status: 'waiting' | 'running' | 'finished';
 	tick: number;
 	gridWidth: number;
 	gridHeight: number;

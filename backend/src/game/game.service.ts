@@ -1,7 +1,7 @@
-//import {  } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameState, Direction, Snake, Position, Food } from './interfaces/game-state';
+import { RedisService } from 'src/redis/redis.service';
 
 const GRID_WIDTH = 40;
 const GRID_HEIGHT = 30;
@@ -25,7 +25,7 @@ function comparePosition(a: Position, b: Position): boolean{
 	return (a.x === b.x && a.y === b.y);
 }
 
-function spawnFood(state: GameState) : GameState {
+function spawnFood(state: GameState){
 	let ok : boolean = false;
 	let pos : Position = {x: 0, y: 0};
 	while (!ok){
@@ -52,14 +52,13 @@ function spawnFood(state: GameState) : GameState {
 		//EDGE CASE: check that food is reachable (dead snake)
 	}
 	state.food.push({position: pos, eaten: false});
-	return state;
 	//check that tehse positions are empty
 	//check other foods
 	//check other snakes
 	//check that the food is reachable
 }
 
-function newHeadPosition(state: GameState) : GameState{
+function newHeadPosition(state: GameState){
 	for (const snake of state.snakes){
 		if (isOppositeDir(snake.newDirection, snake.direction))
 			snake.newDirection = snake.direction;
@@ -77,10 +76,9 @@ function newHeadPosition(state: GameState) : GameState{
 		//if new dir is opposite
 			//new dir == dir
 		//update new head position
-	return state;
 }
 
-function checkFood(state: GameState) : GameState{
+function checkFood(state: GameState){
 	for (const snake of state.snakes){
 		if (snake.alive === false)
 			continue;
@@ -92,16 +90,14 @@ function checkFood(state: GameState) : GameState{
 				food.eaten = true;
 			}
 		}
-
 	}
 	//for each alive snake
 		//for each food
 			//if new head position == food position
 				//cur snake will grow === true 
-	return state;
 }
 
-function checkCollision(state: GameState) : GameState{
+function checkCollision(state: GameState){
 	for (const snake of state.snakes){
 		if (snake.alive === false)
 			continue;
@@ -140,11 +136,10 @@ function checkCollision(state: GameState) : GameState{
 		//check new head position
 		//if wall or other snake body 
 			//update alive false
-	return state;
 }
 
 
-function updateFoodScore(state: GameState) : GameState{
+function updateFoodScore(state: GameState){
 	for (let i = 0; i < state.food.length; i++){
 		if (state.food[i].eaten){
 			state.food.splice(i, 1);
@@ -165,10 +160,9 @@ function updateFoodScore(state: GameState) : GameState{
 	//loop all alive snakes
 		//if one will grow
 			//update score	
-	return state;
 }
 
-function moveSnake(state: GameState) : GameState{
+function moveSnake(state: GameState){
 	for (const snake of state.snakes){
 		if (!snake.alive)
 			continue;
@@ -191,7 +185,6 @@ function moveSnake(state: GameState) : GameState{
 			//null new direction
 			//new position null
 			//will grow false
-	return state;
 }
 
 function createSnake(user: number, index: number, color: string) : Snake{
@@ -250,48 +243,64 @@ function initGame(id: string, users: number[]) : GameState{
 	return game;
 }
 
+function gameOver(game : GameState) : GameState{
+	let alive : number = 0;
+	let winners : number[] = [];
+	for (const snake of game.snakes){
+		if (snake.alive){
+			alive++;
+			winners.push(snake.id);
+		}
+	}
+	if (alive <= 1){
+		game.status = 'finished';
+		if (winners.length !== 0)
+			game.winnerId = winners[0];
+	}
+	return game;
+}
+
 @Injectable()
 export class Game {
 
-
 	public constructor(
 		private readonly prismaService: PrismaService,
+		private readonly redisService: RedisService,
 	) { };
+
 	async startGame(roomId: string){
 		const room = await this.prismaService.gameRoom.findUnique({
 			where: { id:roomId },
 			include: {
-				users: true,
+				roomUsers: true,
 			},
 		});
 		if (!room)
 			throw new BadRequestException ('Room not found');
-		const users = room.users.map((roomUser) => roomUser.userId);
+		const users = room.roomUsers.map((roomUser) => roomUser.userId);
 		const game : GameState = initGame(roomId, users);
-		//send to redis
-		game.status = 'countdown';
-
-
-		//load the room from prisma
-		//init gamestate
-		//create food
-		//save to redis
-		//set countdown status
+		game.status = 'running';
+		await this.redisService.setGameState(roomId, game);
+		const intervalId = setInterval(() => this.tick(roomId, intervalId), TICK_MS);
 	}
-	tick(roomId: string){
+
+	async tick(roomId: string, intervalId: NodeJS.Timeout){
 		//load gamestate from redis
-		//newHeadPosition
-		//checkFood
-		//checkCollision
-		//updateFoodScore
-		//moveSnake
-		//check if game over
-		//save updated data to redis
-		//send info to frontend
-		//if game over
-			//save to prisma
-		void roomId;
+		let game : GameState = {}; //to be deleted once i have the function from redis
+		if (game.status !== 'finished'){
+			newHeadPosition(game);
+			checkFood(game);
+			checkCollision(game);
+			updateFoodScore(game);
+			moveSnake(game);
+			game.tick++;
+			gameOver(game);
+		}
+		await this.redisService.setGameState(roomId, game);
+		if (game.status === 'finished'){
+			clearInterval(intervalId);
+			//SAVE TO PRISMA
+		}
+		//send info to frontend??
 	}
-
-	//tick
 }
