@@ -4,39 +4,8 @@ import AllFriends from "@/components/all-friends/all-friends";
 import { Suspense } from "react";
 import { FriendsContentSkeleton } from "@/ui/skeletons";
 
-interface Friend {
-  id: number;
-  name: string;
-  avatar?: string | null;
-}
-
-interface Requests {
-    id: string;
-    sender: {
-        id: number;
-        name: string;
-        avatar?: string | null;
-    };
-}
 
 export default async function Friends() {
-    let requests: Requests[] = [];
-    let friends: Friend[] = [];
-
-    try {
-
-        const [requestsRes, friendsRes] = await Promise.all([
-            apiFetch('friends/request/incoming'),
-            apiFetch('friends'),
-        ]);
-
-        requests = Array.isArray(requestsRes) ? requestsRes : [];
-        friends = Array.isArray(friendsRes) ? friendsRes : [];
-
-    } catch (error) {
-        console.log("ERROR Parallel data fetching: ", error)
-    }
-
   return (
     <>
       <div className={style.body}>
@@ -74,14 +43,7 @@ export default async function Friends() {
             <i className={`${style.ti} ${style.tiChevronDown}`} aria-hidden="true"></i>
           </div>
         </div>
-        <Suspense fallback={
-            <FriendsContentSkeleton friendNumber={friends.length}/>
-            }>
-          <AllFriends
-            friends={friends}
-            requests={requests}
-          />
-        </Suspense>
+          <AllFriends/>
       </div>
     </>
   );

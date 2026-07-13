@@ -1,9 +1,12 @@
+'use client'
+
 import Link from 'next/link';
 import style from './hero.module.css'
 import { useTranslations } from 'next-intl';
 
 function Hero() {
     const t = useTranslations("HomePage");
+
     return (
         <div className={style.hero}>
             <div className={style.heroEyebrow}>// {t("title")}</div>
@@ -12,8 +15,7 @@ function Hero() {
             </h1>
             <p className={style.heroSub}>{t("description")}</p>
             <div className={style.heroActions}>
-                <Link href="/dashboard" className={`${style.btn} ${style.btnPrimary} ${style.btnLarge}`}>▶ {t("sBtn")}</Link>
-                <Link href="" className={`${style.btn} ${style.btnSecondary} ${style.btnLarge}`}>Browse Rooms</Link>
+                <Link href="/arena" className={`${style.btn} ${style.btnPrimary} ${style.btnLarge}`}>▶ {t("sBtn")}</Link>
             </div>
         </div>
     )
