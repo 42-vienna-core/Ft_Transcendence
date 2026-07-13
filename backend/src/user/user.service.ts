@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
-import { AvatarService } from 'src/avatar/avatar.service';
+import { AvatarService } from '../avatar/avatar.service';
 
 export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import style from "./requests.module.css";
 import { apiFetch } from "@/lib/api-client";
 

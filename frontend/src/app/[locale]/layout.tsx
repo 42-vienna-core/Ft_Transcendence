@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { bungee, inter } from "../../ui/font";
-import "./globals.css";
 import { Providers } from "@/providers/providers";
 import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import "./globals.css";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const metadata: Metadata = {
     title: "Snake Multiplayer",
@@ -25,7 +27,8 @@ export default async function rootLayout({
     }
 
     const messages = await getMessages({ locale });
-    console.log("messages", messages);
+    const session = await getServerSession(authOptions);
+
     return (
         <html 
             lang={locale} 
@@ -33,7 +36,9 @@ export default async function rootLayout({
             suppressHydrationWarning
         >
             <body suppressHydrationWarning>
-                <Providers>
+                <Providers 
+                    session={session}
+                >
                     <ThemeProvider 
                         attribute="class"
                         defaultTheme="system"

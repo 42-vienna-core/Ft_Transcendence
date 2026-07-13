@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import style from './all-friends.module.css'
 import FriendsContent from './friends/friends';
 import RequestsContent from './requests/requests';
@@ -22,15 +22,29 @@ interface Friend {
     avatar?: string | null;
 }
 
-interface AllFriendsProps {
-    friends: Friend[];
-    requests: Requests[];
-}
+function AllFriends() {
+    const [friendsArr, setFriendsArr] = useState<Friend[]>([]);
+    const [requestsArr, setRequestsArr] = useState<Requests[]>([]);
 
+    useEffect(() => {
 
-function AllFriends({friends, requests}: AllFriendsProps) {
-    const [friendsArr, setFriendsArr] = useState<Friend[]>(friends);
-    const [requestsArr, setRequestsArr] = useState<Requests[]>(requests);
+        async function getAllFriends() {
+            try {
+                const [requestsRes, friendsRes] = await Promise.all([
+                    apiFetch('friends/request/incoming'),
+                    apiFetch('friends'),
+                ]);
+
+                setRequestsArr(Array.isArray(requestsRes) ? requestsRes : []);
+                setFriendsArr(Array.isArray(friendsRes) ? friendsRes : []);
+
+            } catch (error) {
+                console.log("ERROR Parallel data fetching: ", error)
+            }
+        }
+
+        getAllFriends();
+    },[])
 
     const getListOfFriends = async () => {
         try {
