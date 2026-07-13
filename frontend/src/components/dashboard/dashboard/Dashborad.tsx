@@ -31,8 +31,8 @@ export default function Dashboard () {
 		socketRef.current.on("online-users",  handleOnlineUsers);
 		socketRef.current.on("room-update", handleRoomUpdata);
 
-		socketRef.current.emit("get-online-users", () => {console.log("get-online-users was caled in dashboard")});
-		socketRef.current.emit("join-room", async () => {console.log("join-room was caled in dashboard")});
+		socketRef.current.emit("get-online-users");
+		socketRef.current.emit("join-room");
 
 		return () => {
 			if (!socketRef.current) return ;
