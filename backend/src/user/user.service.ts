@@ -93,8 +93,8 @@ export class UserService {
 
 	public async findUsers(name: string) {
 		if (!name || !name.trim()) {
-  		  return [];
-  		}
+			return [];
+		}
 		const users = await this.prismaService.users.findMany({
 			where: {
 				name: {
@@ -112,12 +112,14 @@ export class UserService {
 	}
 
 	public async deleteUser(userId: number) {
+		console.log('Deleting user with ID:', userId);
 		await this.avatarService.deleteAvatar(userId);
 		await this.prismaService.users.delete({
 			where: {
 				id: userId,
 			},
 		});
+		console.log('User deleted successfully');
 		return { success: true };
 	}
 }
