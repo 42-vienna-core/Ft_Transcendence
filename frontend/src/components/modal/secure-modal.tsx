@@ -5,6 +5,7 @@ import { apiFetch } from "@/lib/api-client";
 import { State } from "@/lib/definitions";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import ModalLayout from "./modal-layout";
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -59,118 +60,113 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg-overlay)] p-4 backdrop-blur-sm">
-            <div
-                className="w-full max-w-md rounded-[var(--radius-xl)] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] p-6 shadow-xl"
-                style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}
-            >
-                <div className="flex items-center justify-between border-b border-[var(--color-border-default)] pb-3 mb-4">
-                    <h3
-                        className="font-medium"
-                        style={{ fontSize: "var(--text-lg)", color: "var(--color-text-primary)" }}
+        <ModalLayout>
+            <div className="flex items-center justify-between border-b border-[var(--color-border-default)] pb-3 mb-4">
+                <h3
+                    className="font-medium"
+                    style={{ fontSize: "var(--text-lg)", color: "var(--color-text-primary)" }}
+                >
+                    Change Password
+                </h3>
+                <button
+                    onClick={onClose}
+                    className="cursor-pointer rounded-[var(--radius-sm)] p-1 transition-colors"
+                    style={{ color: "var(--color-text-secondary)" }}
+                    onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
+                    onMouseOut={e => (e.currentTarget.style.background = "transparent")}
+                    aria-label="Close"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <form action={handleChangePassword} className="space-y-4">
+                <div className="space-y-1">
+                    <label
+                        className="block font-medium"
+                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
                     >
-                        Change Password
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        className="cursor-pointer rounded-[var(--radius-sm)] p-1 transition-colors"
-                        style={{ color: "var(--color-text-secondary)" }}
-                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
-                        onMouseOut={e => (e.currentTarget.style.background = "transparent")}
-                        aria-label="Close"
-                    >
-                        ✕
-                    </button>
+                        Old password
+                    </label>
+                    <input
+                        name="oldPassword"
+                        type="password"
+                        onChange={resetState}
+                        required
+                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
+                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
+                    />
                 </div>
 
-                <form action={handleChangePassword} className="space-y-4">
-                    <div className="space-y-1">
-                        <label
-                            className="block font-medium"
-                            style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                        >
-                            Old password
-                        </label>
-                        <input
-                            name="oldPassword"
-                            type="password"
-                            onChange={resetState}
-                            required
-                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                            style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                        />
-                    </div>
+                <div className="space-y-1">
+                    <label
+                        className="block font-medium"
+                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                    >
+                        New password
+                    </label>
+                    <input
+                        name="newPassword"
+                        type="password"
+                        onChange={resetState}
+                        required
+                        placeholder="At least 8 characters"
+                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
+                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
+                    />
+                </div>
 
-                    <div className="space-y-1">
-                        <label
-                            className="block font-medium"
-                            style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                        >
-                            New password
-                        </label>
-                        <input
-                            name="newPassword"
-                            type="password"
-                            onChange={resetState}
-                            required
-                            placeholder="At least 8 characters"
-                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                            style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                        />
-                    </div>
+                <div className="space-y-1">
+                    <label
+                        className="block font-medium"
+                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                    >
+                        Re-enter your password
+                    </label>
+                    <input
+                        name="confirmPassword"
+                        type="password"
+                        required
+                        placeholder="The password must match"
+                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
+                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
+                    />
+                </div>
 
-                    <div className="space-y-1">
-                        <label
-                            className="block font-medium"
-                            style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                        >
-                            Re-enter your password
-                        </label>
-                        <input
-                            name="confirmPassword"
-                            type="password"
-                            required
-                            placeholder="The password must match"
-                            className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                            style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                        />
-                    </div>
+                <div className="h-4">
+                    {state.message && (
+                        <p style={{ fontSize: "var(--text-sm)", color: "var(--color-danger)" }}>
+                            {state.message}
+                        </p>
+                    )}
+                </div>
 
-                    <div className="h-4">
-                        {state.message && (
-                            <p style={{ fontSize: "var(--text-sm)", color: "var(--color-danger)" }}>
-                                {state.message}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="flex justify-end gap-3 border-t border-[var(--color-border-default)] pt-4 mt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-[var(--color-border-default)] transition-colors"
-                            style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                            onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
-                            onMouseOut={e => (e.currentTarget.style.background = "transparent")}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-transparent transition-colors"
-                            style={{
-                                fontSize: "var(--text-sm)",
-                                background: "var(--color-accent)",
-                                color: "var(--color-text-inverse)",
-                            }}
-                            onMouseOver={e => (e.currentTarget.style.background = "var(--color-accent-hover)")}
-                            onMouseOut={e => (e.currentTarget.style.background = "var(--color-accent)")}
-                        >
-                            Save
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div className="flex justify-end gap-3 border-t border-[var(--color-border-default)] pt-4 mt-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-[var(--color-border-default)] transition-colors"
+                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
+                        onMouseOut={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-transparent transition-colors"
+                        style={{
+                            fontSize: "var(--text-sm)",
+                            background: "var(--color-accent)",
+                            color: "var(--color-text-inverse)",
+                        }}
+                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-accent-hover)")}
+                        onMouseOut={e => (e.currentTarget.style.background = "var(--color-accent)")}
+                    >
+                        Save
+                    </button>
+                </div>
+            </form>
+        </ModalLayout>
     );
 }

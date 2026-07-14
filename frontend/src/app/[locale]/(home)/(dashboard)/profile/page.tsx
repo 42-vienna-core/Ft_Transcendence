@@ -3,7 +3,7 @@
 import EditProfileForm from "@/components/user-profile/edit-form";
 import style from "./profile.module.css";
 import { SettingBatton } from "@/ui/setting-btn";
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ChangePasswordModal from "@/components/modal/secure-modal";
 import { fetchLogout } from "@/lib/actions/auth-actions";
 import { signOut } from "next-auth/react";
@@ -11,6 +11,8 @@ import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api-client";
+import { Trash2 } from "lucide-react";
+import DialogModal from "@/components/modal/dialog-modal";
 
 function SettingBtnContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -22,8 +24,9 @@ function SettingBtnContainer({ children }: { children: React.ReactNode }) {
 
 export default function Profile() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
   const [pending, setPending] = useState<boolean>(false);
-  const { theme, setTheme } = useTheme();
+  const {theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [lang, setLang] = useState("");
@@ -53,11 +56,19 @@ export default function Profile() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const handleAccountRemoving = async () => {
-    setPending(true);
+  const handleAccountRemoving = async (confirm: boolean) => {
+    setIsConfirmModalOpen(false);
 
+    if (!confirm) {
+      return
+    };
+
+    setPending(true);
     try {
-      await apiFetch('/user/me');
+      const res = await apiFetch('user/me', {
+        method: "DELETE"
+      });
+      if (!res.success) return
 
       await signOut({
           callbackUrl: "/login",
@@ -125,7 +136,7 @@ export default function Profile() {
       <div className={style.pfGrid}>
         <div className={style.panel} aria-label="Settings">
           <h3>preferences</h3>
-            <SettingBtnContainer>
+          <SettingBtnContainer>
               <SettingBatton
                 labelF={t("lang")}
                 labelS={lang}
@@ -259,7 +270,7 @@ export default function Profile() {
           <SettingBtnContainer>
             <SettingBatton
               labelF={t("da")}
-              onClick={handleAccountRemoving}
+              onClick={() => setIsConfirmModalOpen(true)}
               disabled={pending}
             />
           </SettingBtnContainer>
@@ -373,10 +384,22 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Modal Windows */}
       <ChangePasswordModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+      <DialogModal
+          isOpen={isConfirmModalOpen}
+          type={'DELETE_ACCOUNT'}
+          title="Delete your account?"
+          warning="This permanently erases your profile, 1 482 rating, match history, and 42 friends. This can't be undone."
+          secondBtn="Delete account"
+          handleConfirmation={handleAccountRemoving}
+      >
+          <Trash2 className="w-4 h-4" />
+      </DialogModal>
     </div>
   );
 }

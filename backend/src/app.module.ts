@@ -11,9 +11,14 @@ import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { FriendsModule } from './friends/friends.module';
+import { SocketService } from './socket/socket.service';
+import { SocketModule } from './socket/socket.module';
+import { GameRoomModule } from './gameRoom/gameRoom.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     UserModule,
     ConfigModule.forRoot({ isGlobal: true, }),
     ThrottlerModule.forRoot([{
@@ -30,15 +35,17 @@ import { FriendsModule } from './friends/friends.module';
     LoggerModule,
     TokenModule,
     AuthModule,
+    SocketModule,
     SessionModule,
     AvatarModule,
+    GameRoomModule,
     FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService, {
     provide: APP_GUARD,
     useClass: ThrottlerGuard
-  }],
+  }, SocketService],
 })
 
 export class AppModule { }
