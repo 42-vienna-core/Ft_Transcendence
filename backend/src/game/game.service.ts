@@ -1,7 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameState, Direction, Snake, Position, Food } from './interfaces/game-state';
 import { RedisService } from 'src/redis/redis.service';
+import { GameGateway } from './game.gateway';
 
 const GRID_WIDTH = 40;
 const GRID_HEIGHT = 30;
@@ -52,10 +53,6 @@ function spawnFood(state: GameState){
 		//EDGE CASE: check that food is reachable (dead snake)
 	}
 	state.food.push({position: pos, eaten: false});
-	//check that tehse positions are empty
-	//check other foods
-	//check other snakes
-	//check that the food is reachable
 }
 
 function newHeadPosition(state: GameState){
@@ -72,10 +69,6 @@ function newHeadPosition(state: GameState){
 		else if (snake.newDirection === 'RIGHT')
 			snake.newPosition.x++;
 	}
-	//for each snake
-		//if new dir is opposite
-			//new dir == dir
-		//update new head position
 }
 
 function checkFood(state: GameState){
@@ -91,10 +84,6 @@ function checkFood(state: GameState){
 			}
 		}
 	}
-	//for each alive snake
-		//for each food
-			//if new head position == food position
-				//cur snake will grow === true 
 }
 
 function checkCollision(state: GameState){
@@ -132,10 +121,6 @@ function checkCollision(state: GameState){
 			}
 		}
 	}
-	//for each snake
-		//check new head position
-		//if wall or other snake body 
-			//update alive false
 }
 
 
@@ -153,13 +138,6 @@ function updateFoodScore(state: GameState){
 		if (snake.willGrow)
 			snake.score++;
 	}
-	//loop all foods
-		//if one is eaten
-			//delete it
-			//create new one
-	//loop all alive snakes
-		//if one will grow
-			//update score	
 }
 
 function moveSnake(state: GameState){
@@ -177,14 +155,6 @@ function moveSnake(state: GameState){
 		snake.newDirection = null;
 		snake.newPosition = null;
 	}
-	//for each alive snake
-		//if alive
-			//move head
-			//cut tail if needed
-			//update direction
-			//null new direction
-			//new position null
-			//will grow false
 }
 
 function createSnake(user: number, index: number, color: string) : Snake{
@@ -261,11 +231,12 @@ function gameOver(game : GameState) : GameState{
 }
 
 @Injectable()
-export class Game {
+export class GameService {
 
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly redisService: RedisService,
+		@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway,
 	) { };
 
 	async startGame(roomId: string){
@@ -281,12 +252,14 @@ export class Game {
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameState(roomId, game);
-		const intervalId = setInterval(() => this.tick(roomId, intervalId), TICK_MS);
+		setTimeout(() => this.tick(roomId), TICK_MS);
 	}
 
-	async tick(roomId: string, intervalId: NodeJS.Timeout){
-		//load gamestate from redis
-		let game : GameState = {}; //to be deleted once i have the function from redis
+	async tick(roomId: string){
+		const game = await this.redisService.getGameState(roomId);
+		if (!game)
+			return ;
+		//let game : GameState = {}; //to be deleted once i have the function from redis
 		if (game.status !== 'finished'){
 			newHeadPosition(game);
 			checkFood(game);
@@ -298,9 +271,12 @@ export class Game {
 		}
 		await this.redisService.setGameState(roomId, game);
 		if (game.status === 'finished'){
-			clearInterval(intervalId);
 			//SAVE TO PRISMA
 		}
-		//send info to frontend??
+		else{
+			setTimeout(() => this.tick(roomId), TICK_MS);
+		}
+		this.gameGateway.broadcastGameState(roomId, game);
+		
 	}
 }

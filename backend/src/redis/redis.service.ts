@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
+import { GameState } from 'src/game/interfaces/game-state';
 
 interface onlineUsers {
   id: number;
@@ -62,6 +63,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async setGameState(gameId: string, state: any ) {
     await this.client.set(`game:${gameId}:state`, JSON.stringify(state) );
+  }
+
+  async getGameState(gameId: string) : Promise<GameState | null> {
+	const data = await this.client.get(`game:${gameId}:state`);
+	if (!data)
+		return null;
+	return (JSON.parse(data));
   }
 
   async updatePlayerPosition(

@@ -11,21 +11,6 @@ export interface startGamePayload { //client to server
 
 export interface changeDirectionPayload { //client to server
 	direction: Direction;
-}
-
-export interface playerJoinedPayload { //server to client
+	roomId: string;
 	userId: number;
-	//username needed?
-}
-
-export interface gameStartedPayload { //server to client
-	gameState: GameState;
-}
-
-export interface gameStatePayload { //server to client
-	gameState: GameState;
-}
-
-export interface gameOverPayload { //server to client
-	gameState: GameState;	
 }
