@@ -29,6 +29,7 @@ model Users {
 
   sessions Sessions[]
 	gameParticipants	GameParticipants[]
+	gamesWon			GameResults[] @relation("Winner")
 
   avatar String?
 
@@ -121,7 +122,7 @@ model GameResults{
 	room			GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
 	
 	winnerId		Int?
-	winner			Users? @relation(fields: [winnerId], references:[id])
+	winner			Users? @relation("Winner",fields: [winnerId], references:[id])
 	
 	participants	GameParticipants[]
 	ticks			Int

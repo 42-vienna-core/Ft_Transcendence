@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameState, Direction, Snake, Position, Food } from './interfaces/game-state';
 import { RedisService } from 'src/redis/redis.service';
@@ -230,6 +230,7 @@ function gameOver(game : GameState) : GameState{
 	return game;
 }
 
+
 @Injectable()
 export class GameService {
 
@@ -238,6 +239,23 @@ export class GameService {
 		private readonly redisService: RedisService,
 		@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway,
 	) { };
+
+	async storeResults(game: GameState){
+		await this.prismaService.gameResults.create({
+			data: {
+				roomId: game.roomId,
+				winnerId: game.winnerId,
+				ticks: game.tick,
+				participants: {
+					create: game.snakes.map(s=> ({
+						userId: s.id,
+						score: s.score,
+						alive: s.alive,
+					}))
+				}
+			}
+		})
+	}
 
 	async startGame(roomId: string){
 		const room = await this.prismaService.gameRoom.findUnique({
@@ -259,7 +277,6 @@ export class GameService {
 		const game = await this.redisService.getGameState(roomId);
 		if (!game)
 			return ;
-		//let game : GameState = {}; //to be deleted once i have the function from redis
 		if (game.status !== 'finished'){
 			newHeadPosition(game);
 			checkFood(game);
@@ -270,13 +287,11 @@ export class GameService {
 			gameOver(game);
 		}
 		await this.redisService.setGameState(roomId, game);
-		if (game.status === 'finished'){
-			//SAVE TO PRISMA
-		}
+		if (game.status === 'finished')
+			await this.storeResults(game);
 		else{
 			setTimeout(() => this.tick(roomId), TICK_MS);
 		}
 		this.gameGateway.broadcastGameState(roomId, game);
-		
 	}
 }

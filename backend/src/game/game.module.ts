@@ -7,6 +7,6 @@ import { GameGateway } from './game.gateway';
 @Module({
 	imports: [PrismaModule, RedisModule],
     providers: [GameService, GameGateway],
-	
+	exports: [GameService],
 })
 export class GameModule {}

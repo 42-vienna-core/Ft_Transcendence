@@ -1,4 +1,4 @@
-import {Direction, GameState} from './game-state'
+import {Direction} from './game-state'
 
 export interface joinRoomPayload { //client to server
 	roomId: string;
