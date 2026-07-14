@@ -28,6 +28,7 @@ model Users {
   //isBlocked  Boolean @default(false) @map("is_blocked")
 
   sessions Sessions[]
+	gameParticipants	GameParticipants[]
 
   avatar String?
 
@@ -73,6 +74,7 @@ model GameRoom {
   status      RoomStatus @default(WAITING)
 	type		    RoomType @default(PUBLIC)
 	roomUsers		RoomUser[]
+	gameResults		GameResults[]
 	owner		    Users? @relation(fields: [ownerId], references: [id])
 }
 
@@ -111,6 +113,39 @@ model FriendsRequest {
 
   @@unique([senderId, receiverId])
 }
+
+model GameResults{
+	id				String @id @default(uuid())
+	
+	roomId			String
+	room			GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+	
+	winnerId		Int?
+	winner			Users? @relation(fields: [winnerId], references:[id])
+	
+	participants	GameParticipants[]
+	ticks			Int
+	createdAt		DateTime @default(now())
+	updatedAt		DateTime @updatedAt
+
+
+}
+
+model GameParticipants{
+	id				String @id @default(uuid())
+
+	gameId			String
+	game			GameResults @relation(fields:[gameId], references:[id], onDelete: Cascade)
+	
+	userId			Int
+	user			Users @relation(fields:[userId], references: [id], onDelete: Cascade)
+	alive			Boolean
+
+	score			Int
+
+	@@unique([gameId, userId])
+}
+
 
 enum RequestStatus {
   ACCEPTED
