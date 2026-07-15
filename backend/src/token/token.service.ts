@@ -10,6 +10,18 @@ export class TokenService {
         private readonly config: ConfigService
     ) { }
 
+    async verifyAccessToken(token: string) {
+        try {
+            const payload = await this.jwt.verifyAsync(token, {
+                secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
+            });
+                return {id: payload.userid, ...payload};
+            } 
+            catch (error) {
+                throw new Error('Invalid access token');
+            }
+    }
+    
     public async generateAccessToken(userId: number, sessionId: string): Promise<string> {
         const accessToken = await this.jwt.signAsync(
             {
@@ -18,7 +30,7 @@ export class TokenService {
             },
             {
                 secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-                expiresIn: '2m',
+                expiresIn: '15m',
             },
         );
         return accessToken

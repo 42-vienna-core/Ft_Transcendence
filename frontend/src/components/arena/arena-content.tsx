@@ -1,17 +1,66 @@
 'use client'
-
-import { useEffect, useRef, useState } from "react";
+//import { useUserStore } from "@/components/store/useUserStore"
+import { useGameSocket } from "@/providers/SocketProvider";
+import { useState, useEffect, useRef } from "react";
 import style from "./arena-content.module.css"
 import GameCanvas from "./game/game-canvas";
+import { Socket } from "socket.io-client";
+import { RmOptions } from "fs";
+import { constants } from "buffer";
+
+interface OnlineUsersType {
+	id: number;
+	username: string;
+    avatar: string | null;
+	role: string;
+}
+
+interface RoomStateType  {
+	players: number;
+	roomId: string;
+	roomStatus: string;
+};
 
 type DIR = 'U' | 'D' | 'L' | 'R' | null;
 type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
 
 
 function ArenaContent() {
+
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [gameDir, setGameDir] = useState<DIR | null>(null);
+    const {isConnected, socket} = useGameSocket();
 
+
+    // I add this to chaeck if the socket works in this component 
+	const [roomState, setRoomState] = useState<RoomStateType>();
+    const socketRef = useRef<Socket | null>(socket);
+
+	//const onlineUsers = useUserStore((state) => state.onlineUsers);
+
+	useEffect(() => {
+		if (!socketRef.current) return ;
+
+		// const handleOnlineUsers = (data: OnlineUsersType) => { useUserStore.setState({ onlineUsers: data }) };
+		// const handleRoomUpdata = (data: RoomStateType) => { setRoomState({...data}) }
+
+		socketRef.current.on("online-users",  (data: OnlineUsersType) => console.log("online users",data)); 
+        //  if you know where use this state do this > socketRef.current.on("online-users", handleOnlineUsers );  
+		socketRef.current.on("room-update", ( data: RoomStateType) => console.log("room data ",data));
+        //  if you know where use this state do this > socketRef.current.on("room-update", handleRoomUpdata );
+        // and do the same in unmount 
+
+		socketRef.current.emit("get-online-users");
+		//socketRef.current.emit("join-room");
+
+		return () => {
+			if (!socketRef.current) return ;
+			socketRef.current.off("online-users", (data: OnlineUsersType) => console.log(data) );
+    		socketRef.current.off("room-update", (data: RoomStateType) => console.log(data));
+			socketRef.current.emit("leave-room");
+		}
+	},[])
+    // =========================================================
     return (
         <div className="grid grid-cols-5 w-full">    
             <div id="canvas-container" className="col-span-4 mr-[15px]">

@@ -16,6 +16,20 @@ export class AuthService {
         private readonly sessionService: SessionService,
     ) { }
 
+    async getUserFromAccessToken(accessToken: string) {
+        const payload = await this.tokenService.verifyAccessToken(accessToken);
+        if (payload)
+        {
+            try {
+                const user =  await this.userService.findById(payload.userId);
+                return user;
+
+            }
+            catch {console.log("wrong id")}
+        }
+        return payload;
+    }
+
     public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
