@@ -1,12 +1,12 @@
 import Hero from '@/components/hero';
-import Features from '@/components/features';
 import Container from '@/components/container';
+import StartMatch from '@/components/arena/start-match';
 
  function HomePage() {
   return (
     <Container>
       <Hero/>
-      {/* <Features/> */}
+      <StartMatch/>
     </Container>
   );
 }
