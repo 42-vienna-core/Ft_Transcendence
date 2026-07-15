@@ -1,7 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-//import { CreateFriendDto } from './dto/create-friend.dto';
-//import { UpdateFriendDto } from './dto/update-friend.dto';
 
 @Injectable()
 export class FriendsService {
@@ -168,16 +166,6 @@ export class FriendsService {
 		return requests;
 	}
 	
-	// async outgoingRequests(userId: number){
-	// 	const requests = await this.prismaService.friendsRequest.findMany({
-	// 		where: {
-	// 			status : 'PENDING',
-	// 			senderId: userId,
-	// 		},
-	// 	});
-	// 	return requests;
-	// }
-	
 	async cancelRequest(userId: number, receiverId: number){
 		const request = await this.prismaService.friendsRequest.findFirstOrThrow({
 			where : {
@@ -193,6 +181,4 @@ export class FriendsService {
 		});
 		return { success: true };
 	}
-
-	//get online friends
 }

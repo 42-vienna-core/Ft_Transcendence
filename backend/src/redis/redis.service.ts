@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
+import { GameState } from 'src/game/interfaces/game-state';
 
 interface OnlineUsersData {
   id: number;
@@ -74,6 +75,45 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       ttlSeconds,
       JSON.stringify(state)
     );
+  }
+  
+  async set(key: string, value: string) {
+    await this.client.set(key, value);
+  }
+
+  async get(key: string) {
+    return await this.client.get(key);
+  }
+
+  async del(key: string) {
+    await this.client.del(key);
+  }
+
+  async saveToken(userId: number, token: string) {
+      await this.client.set(`token:${userId}`, token);
+  }
+
+  async getToken(userId: number) {
+    return await this.client.get(`token:${userId}`);
+  }
+
+  async deleteToken(userId: number) {
+    await this.client.del(`token:${userId}`);
+  }
+
+  async setEx(key: string, secound: number, value: string) {
+    await this.client.setex(key, secound, value);
+  }
+  
+  async exists(key: string) {
+    return await this.client.exists(key);
+  }
+
+  async getGameState(gameId: string) : Promise<GameState | null> {
+    const data = await this.get(`game:${gameId}:state`);
+    if (!data)
+      return null;
+    return (JSON.parse(data));
   }
   
   async set(key: string, value: string) {
