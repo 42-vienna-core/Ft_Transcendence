@@ -269,7 +269,7 @@ export class GameService {
 		const users = room.roomUsers.map((roomUser) => roomUser.userId);
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
-		await this.redisService.setGameState(roomId, game);
+		await this.redisService.setGameWithTTL(roomId, game);
 		setTimeout(() => this.tick(roomId), TICK_MS);
 	}
 
@@ -286,7 +286,7 @@ export class GameService {
 			game.tick++;
 			gameOver(game);
 		}
-		await this.redisService.setGameState(roomId, game);
+		await this.redisService.setGameWithTTL(roomId, game);
 		if (game.status === 'finished')
 			await this.storeResults(game);
 		else{
@@ -294,4 +294,4 @@ export class GameService {
 		}
 		this.gameGateway.broadcastGameState(roomId, game);
 	}
-}
+} 
