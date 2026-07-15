@@ -7,6 +7,7 @@ import { io, Socket } from "socket.io-client";
 
 interface SocketContextType {
     isConnected: boolean;
+    socket: Socket | null;
 }
 
 const SocketContext = createContext<SocketContextType | null>(null);
@@ -23,7 +24,7 @@ export const SocketProvider = ({
 
     useEffect(() => {
 
-        if (!token || socketRef.current) return;
+        if (!token) return;
 
         const socketUrl = process.env.FRONTEND_URL
 
@@ -35,7 +36,6 @@ export const SocketProvider = ({
         });
 
         socketRef.current = socket;
-
         const handleConnect = () => {
             console.log("✅ Socket connected!", socket.id);
             setIsConnected(true);
@@ -43,6 +43,7 @@ export const SocketProvider = ({
 
         const handleDisconnect = () => {
             console.log("❌ Socket disconnected");
+            setIsConnected(false);
         };
 
         socket.on("connect", handleConnect);
@@ -63,8 +64,9 @@ export const SocketProvider = ({
     return (
         <SocketContext.Provider 
             value={{
-                isConnected
-            }}    
+                isConnected,
+                socket: socketRef.current,
+            }}
         >
             {children}
         </SocketContext.Provider>
