@@ -6,6 +6,7 @@ import { SessionService } from '../session/session.service';
 import { LoginRequest } from './dto/login.dto';
 import { hash, verify } from 'argon2';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly tokenService: TokenService,
         private readonly sessionService: SessionService,
+        private readonly configService: ConfigService,
     ) { }
 
     public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
@@ -46,18 +48,18 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
-
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
-        
+        const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
         return {
             accessToken,
             refreshToken,
             user: {
                 id: user.id,
                 name: user.name,
-                avatar: user.avatar ? `https://localhost/avatars/${user.avatar}` : null,
+                avatar: user.avatar ? avatarsUrl + user.avatar : null,
+                //todo: points? friends?
             }
         };
     }
@@ -78,11 +80,13 @@ export class AuthService {
     }
 
     public async logout(sessionId: string) {
+        console.log("logout")
         const count = await this.sessionService.deleteSession(sessionId);
         return count;
     }
 
     public async logoutAll(userId: number) {
+        console.log("logoutAll")
         const count = await this.sessionService.deleteAllUserSessions(userId);
         return count;
     }
@@ -101,5 +105,5 @@ export class AuthService {
         await this.userService.updatePassword(userId, passwordHash);
         await this.sessionService.deleteAllUserSessions(userId);
         return { success: true };
-	}
+    }
 }

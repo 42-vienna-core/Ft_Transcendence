@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FileService } from './file/file.service';
+import { AVATAR_UPLOAD_DIR, FileService } from './file/file.service';
 import { randomUUID } from 'crypto';
 import { join } from 'path';
-import { AVATAR_UPLOAD_DIR } from 'src/user/user.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AvatarService {
@@ -11,6 +11,7 @@ export class AvatarService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly fileService: FileService,
+        private readonly configService: ConfigService,
     ) { }
 
     public async updateAvatar(userId: number, file: Express.Multer.File) {
@@ -69,10 +70,10 @@ export class AvatarService {
         if (oldAvatar) {
             await this.fileService.removeFile(oldAvatar);
         }
+        const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
         return {
             success: true,
-            // TODO: URL
-            avatar: `https://localhost/avatars/${avatarFilename}`,
+            avatar: avatarsUrl + avatarFilename,
         };
     }
 

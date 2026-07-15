@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'crypto';
+import { StringValue } from 'ms';
 
 @Injectable()
 export class TokenService {
@@ -18,7 +19,7 @@ export class TokenService {
             },
             {
                 secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-                expiresIn: '2m',
+                expiresIn: this.config.getOrThrow<StringValue>('JWT_ACCESS_TTL'),
             },
         );
         return accessToken

@@ -3,8 +3,7 @@ import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { AvatarService } from '../avatar/avatar.service';
-
-export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
+import { SessionService } from '../session/session.service';
 
 @Injectable()
 export class UserService {
@@ -12,6 +11,7 @@ export class UserService {
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly avatarService: AvatarService,
+		private readonly sessionService: SessionService,
 	) { }
 
 	public async findByEmail(email: string) {
@@ -114,6 +114,7 @@ export class UserService {
 	public async deleteUser(userId: number) {
 		console.log('Deleting user with ID:', userId);
 		await this.avatarService.deleteAvatar(userId);
+		await this.sessionService.deleteAllUserSessions(userId);
 		await this.prismaService.users.delete({
 			where: {
 				id: userId,

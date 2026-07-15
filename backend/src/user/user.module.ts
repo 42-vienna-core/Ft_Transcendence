@@ -5,12 +5,14 @@ import { MailModule } from '../mail/mail.modul';
 import { JwtService } from '@nestjs/jwt';
 import { AvatarModule } from 'src/avatar/avatar.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { SessionModule } from 'src/session/session.module';
 
 @Module({
   imports: [
     MailModule,
     AvatarModule,
-    PrismaModule
+    PrismaModule,
+    SessionModule,
   ],
   exports: [UserService],
   controllers: [UserController],
