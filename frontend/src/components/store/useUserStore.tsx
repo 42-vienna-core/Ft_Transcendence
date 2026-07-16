@@ -1,14 +1,20 @@
 import { create } from 'zustand'
 
-export const  useUserStore = create((set) => ({
-    onlineUsers: 
-    [
-        {
-            id: 0,
-            username: "",
-            role: "",
-        }
-    ],
+interface OnlineUser {
+    id: number,
+    username: string,
+    role: string,
+}
+
+interface UserStoreState {
+    onlineUsers: OnlineUser[];
+    setOnlineUsers: (OnlineUsers: OnlineUser[]) => void;
+    addOnlineUser: (user: OnlineUser) => void;
+    updateUser: (id: number, data: Partial<Omit<OnlineUser, 'id'>>) => void;
+}
+
+export const  useUserStore = create<UserStoreState>((set) => ({
+    onlineUsers: [],
     
     setOnlineUsers: (onlineUsers) => {
         set({

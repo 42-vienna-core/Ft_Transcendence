@@ -40,9 +40,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   }
 
+  @SubscribeMessage('join-room')
   async handleJoinRoom(@ConnectedSocket() client: Socket) {
    
-    console.log(" >>>> handleJoinRoom was caled");
+    console.log(" >>>> handleJoinRoom was called", client);
 
     if (client.data.user === undefined)
       client.data.user = await  this.userService.verifyUser(client.handshake.auth.token);

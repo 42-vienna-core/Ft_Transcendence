@@ -1,12 +1,11 @@
 'use client'
-//import { useUserStore } from "@/components/store/useUserStore"
+
+import { useUserStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useState, useEffect, useRef } from "react";
 import style from "./arena-content.module.css"
 import GameCanvas from "./game/game-canvas";
 import { Socket } from "socket.io-client";
-import { RmOptions } from "fs";
-import { constants } from "buffer";
 
 interface OnlineUsersType {
 	id: number;
@@ -31,35 +30,42 @@ function ArenaContent() {
     const [gameDir, setGameDir] = useState<DIR | null>(null);
     const {isConnected, socket} = useGameSocket();
 
-
-    // I add this to chaeck if the socket works in this component 
 	const [roomState, setRoomState] = useState<RoomStateType>();
     const socketRef = useRef<Socket | null>(socket);
 
-	//const onlineUsers = useUserStore((state) => state.onlineUsers);z
+	const onlineUsers = useUserStore((state) => state.onlineUsers);
+    const setOnlineUsers = useUserStore((state) => state.setOnlineUsers);
 
 	useEffect(() => {
-		if (!socketRef.current) return ;
+		if (!socket || !isConnected) return ;
 
-		// const handleOnlineUsers = (data: OnlineUsersType) => { useUserStore.setState({ onlineUsers: data }) };
-		// const handleRoomUpdata = (data: RoomStateType) => { setRoomState({...data}) }
+		const handleOnlineUsers = (data: OnlineUsersType[]) => { 
+            console.log("online users", data);
+            setOnlineUsers(data);
+        };
 
-		socketRef.current.on("online-users",  (data: OnlineUsersType) => console.log("online users",data)); 
-        //  if you know where use this state do this > socketRef.current.on("online-users", handleOnlineUsers );  
-		socketRef.current.on("room-update", ( data: RoomStateType) => console.log("room data ",data));
-        //  if you know where use this state do this > socketRef.current.on("room-update", handleRoomUpdata );
-        // and do the same in unmount 
+		const handleRoomUpdate = (data: RoomStateType) => { 
+            console.log("room data", data);
+            setRoomState({...data});
+        }
 
-		socketRef.current.emit("get-online-users");
-		//socketRef.current.emit("join-room");
+        socket.on("online-users", handleOnlineUsers);  
+        socket.on("room-update", handleRoomUpdate);
+
+
+		socket.emit("get-online-users");
+		socket.emit("join-room");
 
 		return () => {
-			if (!socketRef.current) return ;
-			socketRef.current.off("online-users", (data: OnlineUsersType) => console.log(data) );
-    		socketRef.current.off("room-update", (data: RoomStateType) => console.log(data));
-			socketRef.current.emit("leave-room");
+			socket.off("online-users",  handleOnlineUsers);
+    		socket.off("room-update", handleRoomUpdate);
+            socket.emit("leave-room");
 		}
-	},[])
+	},[socket, isConnected, setOnlineUsers]);
+
+    console.log("FRIEND'S LIST: ", onlineUsers);
+    console.log("ROOM status: ", roomState);
+
     // =========================================================
     return (
         <div className="grid grid-cols-5 w-full">    

@@ -1,7 +1,7 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody} from '@nestjs/websockets';
 import { Server} from 'socket.io';
 import type { changeDirectionPayload } from "./interfaces/events";
-import { RedisService } from "src/redis/redis.service";
+import { RedisService } from "../redis/redis.service";
 import { GameState } from './interfaces/game-state';
 
 
