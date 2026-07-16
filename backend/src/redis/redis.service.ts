@@ -3,10 +3,10 @@ import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import ms, { StringValue } from 'ms';
 
-interface onlineUsers {
+interface OnlineUsersData {
   id: number;
   name: string;
-  avatar: string;
+  avatar: string | null
 
 }
 
@@ -41,31 +41,28 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   //// ===========Socket GameRoom =========== /////////
 
-  async addOnlineUser(data: onlineUsers): Promise<boolean> {
-    const key = `user:online:${data.id}`;
-    const oldSocketId = await this.client.get(key);
 
-    await this.client.set(key, JSON.stringify(data));
+  async addOnlineUser(data: OnlineUsersData): Promise<boolean> {
+
+    const key = `user:online:${data.id}`;
+    const oldSocketId = await this.get(key);
+    await this.set(key, JSON.stringify(data));
 
     return !oldSocketId;
   }
 
   async removeOnlineUser(userId: number) {
-    await this.client.del(`user:online:${userId}`);
+    await this.del(`user:online:${String(userId)}`);
   }
 
-  async getOnlineUsers(): Promise<onlineUsers[]> {
+  async getOnlineUsers(): Promise<OnlineUsersData[]> {
     const keys = await this.client.keys('user:online:*');
     if (keys.length === 0) return [];
 
     const values = await this.client.mget(keys);
     return values
       .filter((val): val is string => val !== null)
-      .map((val) => JSON.parse(val) as onlineUsers);
-  }
-
-  async setGameState(gameId: string, state: any) {
-    await this.client.set(`game:${gameId}:state`, JSON.stringify(state));
+      .map((val) => JSON.parse(val) as OnlineUsersData);
   }
 
   async updatePlayerPosition(
@@ -81,6 +78,38 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       ttlSeconds,
       JSON.stringify(state)
     );
+  }
+
+  async set(key: string, value: string) {
+    await this.client.set(key, value);
+  }
+
+  async get(key: string) {
+    return await this.client.get(key);
+  }
+
+  async del(key: string) {
+    await this.client.del(key);
+  }
+
+  async saveToken(userId: number, token: string) {
+    await this.client.set(`token:${userId}`, token);
+  }
+
+  async getToken(userId: number) {
+    return await this.client.get(`token:${userId}`);
+  }
+
+  async deleteToken(userId: number) {
+    await this.client.del(`token:${userId}`);
+  }
+
+  async setEx(key: string, secound: number, value: string) {
+    await this.client.setex(key, secound, value);
+  }
+
+  async exists(key: string) {
+    return await this.client.exists(key);
   }
 
   ///// ========== Socket GameRoom =========== //////////
