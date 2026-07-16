@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { JwtModule } from '@nestjs/jwt';
-
-const {JWT_ACCESS_SECRET} = process.env;
+import { ConfigService } from '@nestjs/config';
+import { StringValue } from 'ms';
 
 @Module({
   imports: [
-    JwtModule.register({
-      global: true,
-      secret: JWT_ACCESS_SECRET,
-      signOptions: { expiresIn: '15m'},
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        global: true,
+        secret: config.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        signOptions: {
+          expiresIn: config.getOrThrow<StringValue>('JWT_ACCESS_TTL'),
+        },
+      }),
     }),
-
   ],
   providers: [TokenService],
   exports: [TokenService],

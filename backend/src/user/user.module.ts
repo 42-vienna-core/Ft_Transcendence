@@ -6,13 +6,15 @@ import { JwtService } from '@nestjs/jwt';
 import { AvatarModule } from 'src/avatar/avatar.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { TokenModule } from 'src/token/token.module';
+import { SessionModule } from 'src/session/session.module';
 
 @Module({
   imports: [
     MailModule,
     AvatarModule,
     PrismaModule,
-    TokenModule
+    TokenModule,
+    SessionModule,
   ],
   exports: [UserService],
   controllers: [UserController],

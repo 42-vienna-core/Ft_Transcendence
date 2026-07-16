@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'crypto';
+import { StringValue } from 'ms';
 
 @Injectable()
 export class TokenService {
@@ -15,13 +16,13 @@ export class TokenService {
             const payload = await this.jwt.verifyAsync(token, {
                 secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
             });
-                return {id: payload.userid, ...payload};
-            } 
-            catch (error) {
-                throw new Error('Invalid access token');
-            }
+            return { id: payload.userid, ...payload };
+        }
+        catch (error) {
+            throw new UnauthorizedException('Invalid access token');
+        }
     }
-    
+
     public async generateAccessToken(userId: number, sessionId: string): Promise<string> {
         const accessToken = await this.jwt.signAsync(
             {
@@ -30,7 +31,7 @@ export class TokenService {
             },
             {
                 secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-                expiresIn: '15m',
+                expiresIn: this.config.getOrThrow<StringValue>('JWT_ACCESS_TTL'),
             },
         );
         return accessToken
