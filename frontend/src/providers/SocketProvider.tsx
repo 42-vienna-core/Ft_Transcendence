@@ -26,7 +26,8 @@ export const SocketProvider = ({
 
         if (!token) return;
 
-        const socketUrl = process.env.FRONTEND_URL
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL
+        console.log(socketUrl);
 
         const socket = io(socketUrl, {
             auth: {
