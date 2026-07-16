@@ -2,11 +2,13 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import ms, { StringValue } from 'ms';
+import { GameState } from 'src/game/interfaces/game-state';
 
 interface OnlineUsersData {
   id: number;
   name: string;
   avatar: string | null
+
 }
 
 @Injectable()
@@ -43,12 +45,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async addOnlineUser(data: OnlineUsersData): Promise<boolean> {
 
-  
-  async addOnlineUser(data: OnlineUsersData) : Promise<boolean> {
-
     const key = `user:online:${data.id}`;
-    const oldSocketId = await this.get(key);
-    await this.set(key, JSON.stringify(data));
     const oldSocketId = await this.get(key);
     await this.set(key, JSON.stringify(data));
 
@@ -57,13 +54,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async removeOnlineUser(userId: number) {
     await this.del(`user:online:${String(userId)}`);
-    await this.del(`user:online:${String(userId)}`);
   }
 
   async getOnlineUsers(): Promise<OnlineUsersData[]> {
     const keys = await this.client.keys('user:online:*');
     if (keys.length === 0) return [];
-    
+
     const values = await this.client.mget(keys);
     return values
       .filter((val): val is string => val !== null)
@@ -113,38 +109,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.setex(key, secound, value);
   }
 
-  async exists(key: string) {
-    return await this.client.exists(key);
-  }
-  
-  async set(key: string, value: string) {
-    await this.client.set(key, value);
-  }
-
-  async get(key: string) {
-    return await this.client.get(key);
-  }
-
-  async del(key: string) {
-    await this.client.del(key);
-  }
-
-  async saveToken(userId: number, token: string) {
-      await this.client.set(`token:${userId}`, token);
-  }
-
-  async getToken(userId: number) {
-    return await this.client.get(`token:${userId}`);
-  }
-
-  async deleteToken(userId: number) {
-    await this.client.del(`token:${userId}`);
-  }
-
-  async setEx(key: string, secound: number, value: string) {
-    await this.client.setex(key, secound, value);
-  }
-  
   async exists(key: string) {
     return await this.client.exists(key);
   }
