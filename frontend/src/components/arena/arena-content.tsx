@@ -2,7 +2,7 @@
 
 import { useUserStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
 import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
 import style from "./arena-content.module.css"
 import GameCanvas from "./game/game-canvas";
@@ -15,11 +15,48 @@ interface OnlineUsersType {
 	role: string;
 }
 
+type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
+
 interface RoomStateType  {
 	players: number;
 	roomId: string;
 	roomStatus: string;
 };
+
+interface Position {
+	x: number;
+	y: number;
+}
+
+interface Snake {
+	id: number; //user id
+	body: Position[]; //first position 
+	direction: Direction;
+	newDirection: Direction | null;
+	newPosition: Position | null;
+	willGrow: boolean;
+	alive: boolean;
+	score: number;
+	color: string;
+	player: 'human' | 'bot';
+}
+
+interface Food {
+	position: Position;
+	eaten: boolean;
+}
+
+export interface Game {
+	roomId: string;
+	snakes: Snake[];
+	food: Food[];
+	status: 'waiting' | 'running' | 'finished';
+	tick: number;
+	gridWidth: number;
+	gridHeight: number;
+	winnerId: number | null;
+	botPresent: boolean;
+}
 
 type DIR = 'U' | 'D' | 'L' | 'R' | null;
 type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
@@ -38,7 +75,14 @@ function ArenaContent() {
     const setOnlineUsers = useUserStore((state) => state.setOnlineUsers);
 
 	useEffect(() => {
-		if (!socket || !isConnected) return ;
+		if (!socket || !isConnected) {
+			return;
+		} ;
+		
+		const handleGameState = (data: Game) => {
+			console.log("game state", data);
+			// setServerGame(data);
+		}
 
 		const handleOnlineUsers = (data: OnlineUsersType[]) => { 
             console.log("online users", data);
@@ -52,20 +96,22 @@ function ArenaContent() {
 
         socket.on("online-users", handleOnlineUsers);  
         socket.on("room-update", handleRoomUpdate);
+		socket.on("game-state", handleGameState);
+
+        socket.emit("join-match", { mode: 'CPU' });
 
 
 		socket.emit("get-online-users");
-		// socket.emit("join-room");
 
 		return () => {
 			socket.off("online-users",  handleOnlineUsers);
     		socket.off("room-update", handleRoomUpdate);
+			socket.off("game-state", handleGameState);
             // socket.emit("leave-room");
 		}
 	},[socket, isConnected, setOnlineUsers]);
-
     console.log("FRIEND'S LIST: ", onlineUsers);
-    // console.log("ROOM status: ", roomState);
+    console.log("ROOM status: ", roomState);
 
     // =========================================================
     return (
@@ -88,6 +134,7 @@ function ArenaContent() {
                     {
                         roomState?.roomStatus === 'READY' &&
                             <GameCanvas
+								//game={serverGame}
                                 setGameState={setGameState}
                                 setGameDir={setGameDir}
                             />

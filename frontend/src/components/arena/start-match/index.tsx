@@ -135,7 +135,7 @@ function StartMatch () {
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         console.log("Event:", mode);
-        socket.emit("join-match", { mode });
+        // socket.emit("join-match", { mode });
 
         setLoading(false);
         setLoadingMode(null)

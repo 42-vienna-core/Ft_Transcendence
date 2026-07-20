@@ -303,6 +303,7 @@ export class GameService {
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
+		this.gameGateway.broadcastGameState(roomId, game);
 		setTimeout(() => this.tick(roomId), TICK_MS);
 	}
 
