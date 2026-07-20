@@ -16,9 +16,10 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   public async register(
     @Body() dto: RegisterRequest,
-    @Req() req: Request,
+    // @Req() req: Request,
   ) {
-    return await this.authService.register(dto, req.headers['user-agent'], req.ip);
+    console.log("!!!!!!!!!!!!!!!!! REGISTER");
+    return await this.authService.register(dto);
   }
 
   @Post('login')
@@ -27,6 +28,8 @@ export class AuthController {
     @Body() dto: LoginRequest,
     @Req() req: Request,
   ) {
+        console.log("!!!!!!!!!!!!!!!!! login");
+
     return await this.authService.login(dto, req.headers['user-agent'], req.ip);
   }
 
@@ -35,6 +38,8 @@ export class AuthController {
   public async refresh(
     @Body('refreshToken') refreshToken: string,
   ) {
+            console.log("!!!!!!!!!!!!!!!!! refresh");
+
     return await this.authService.refresh(refreshToken);
   }
 
@@ -44,6 +49,8 @@ export class AuthController {
   public async logout(
     @Authorized('sessionId') sessionId: string,
   ) {
+                console.log("!!!!!!!!!!!!!!!!! logout");
+
     const count = await this.authService.logout(sessionId);
     return { success: true, count };
   }

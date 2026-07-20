@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
@@ -24,6 +24,8 @@ export class AuthService {
         {
             try {
                 const user =  await this.userService.findById(payload.userId);
+                if (!user)
+                    throw new NotFoundException("User not found");
                 return user;
 
             }
@@ -32,7 +34,7 @@ export class AuthService {
         return payload;
     }
 
-    public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
+    public async register(dto: RegisterRequest) {
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
         const user = await this.userService.findByEmail(email);
@@ -41,11 +43,12 @@ export class AuthService {
             throw new ConflictException('User already exists');
         }
         const passwordHash = await hash(dto.password);
-        const newUser = await this.userService.create(dto, passwordHash);
-        const refreshToken = await this.tokenService.generateRefreshToken();
-        const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
-        const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
-        return { accessToken, refreshToken };
+        await this.userService.create(dto, passwordHash);
+        // const newUser = await this.userService.create(dto, passwordHash);
+        // const refreshToken = await this.tokenService.generateRefreshToken();
+        // const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
+        // const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
+        return { success: true };
     }
 
     public async login(dto: LoginRequest, userAgent?: string, ip?: string) {

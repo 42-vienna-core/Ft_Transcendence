@@ -33,12 +33,13 @@ export class UserService {
 	async verifyUser(accessToken: string) {
 		const user = await this.tokenService.verifyAccessToken(accessToken);
 		if (!user)
-			throw new Error();
+			throw new NotFoundException("User not found");
 		const userData = await this.getUser(user.userId);
 		return userData;
 	}
 
 	public async getUser(id: number) {
+		console.log("~~~~~~~~~~~~~~~~~~~~ getUser me");
 		const user = await this.prismaService.users.findUnique({
 			where: { id },
 			select: {
