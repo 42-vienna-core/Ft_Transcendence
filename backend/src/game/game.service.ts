@@ -1,8 +1,10 @@
 import { Injectable, BadRequestException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameState, Direction, Snake, Position, Food } from './interfaces/game-state';
+import { GameState, Direction, Snake, Position, Food, Player, PlayerType } from './interfaces/game-state';
 import { RedisService } from 'src/redis/redis.service';
 import { GameGateway } from './game.gateway';
+import { AiBotService } from 'src/aiOpponent/ai.service';
+import { RoomStatus } from 'prisma/generated';
 
 const GRID_WIDTH = 40;
 const GRID_HEIGHT = 30;
@@ -157,7 +159,7 @@ function moveSnake(state: GameState){
 	}
 }
 
-function createSnake(user: number, index: number, color: string) : Snake{
+function createSnake(user: Player, index: number, color: string) : Snake{
 	let pos: Position = {x: 2, y: 1};
 	const body : Position[]  = [];
 	let dir : Direction = 'RIGHT';
@@ -179,8 +181,11 @@ function createSnake(user: number, index: number, color: string) : Snake{
 		body.push({x: pos.x - 1, y: pos.y + 1});
 		dir = 'LEFT';
 	}
+	let player: PlayerType = 'human';
+	if (user.isBot)
+		player = 'bot';
 	const snakes : Snake = {
-		id: user,
+		id: user.id,
 		body: body,
 		direction: dir,
 		newDirection: null,
@@ -189,14 +194,20 @@ function createSnake(user: number, index: number, color: string) : Snake{
 		alive: true,
 		score: 0,
 		color: color,
+		player: player,
 	};
 	return snakes;
 }
 
-function initGame(id: string, users: number[]) : GameState{
+function initGame(id: string, users: Player[]) : GameState{
 	const snakes : Snake[] = [];
-	for (let i = 0; i < users.length; i++)
-		snakes.push(createSnake(users[i], i, 'COLOR'));
+	let flag = false;
+	const color = ['#00c849', '#00d5ff', '#da0bf5', '#fb7a09'];
+	for (let i = 0; i < users.length; i++){
+		snakes.push(createSnake(users[i], i, color[i]));
+		if (users[i].isBot)
+			flag = true;
+	}
 	const foods : Food[] = [];
 	const game : GameState = {
 		roomId: id,
@@ -207,6 +218,7 @@ function initGame(id: string, users: number[]) : GameState{
 		gridHeight: GRID_HEIGHT,
 		gridWidth: GRID_WIDTH,
 		winnerId: null,
+		botPresent: flag,
 	};
 	for (let i = 0; i < users.length + 1; i++)
 		spawnFood(game);
@@ -237,6 +249,7 @@ export class GameService {
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly redisService: RedisService,
+		private readonly aiBotService: AiBotService,
 		@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway,
 	) { };
 
@@ -255,18 +268,38 @@ export class GameService {
 				}
 			}
 		})
+		await this.prismaService.gameRoom.update({
+			where: {
+				id: game.roomId
+			},
+			data: {
+				status: RoomStatus.FINISHED
+			},
+		});
 	}
 
 	async startGame(roomId: string){
 		const room = await this.prismaService.gameRoom.findUnique({
 			where: { id:roomId },
 			include: {
-				roomUsers: true,
+				roomUsers: {
+					include: {
+						user: {
+							select: {
+								id:true,
+								isBot: true,
+							}
+						}
+					}
+				}
 			},
 		});
 		if (!room)
 			throw new BadRequestException ('Room not found');
-		const users = room.roomUsers.map((roomUser) => roomUser.userId);
+		const users = room.roomUsers.map((roomUser) => ({
+			id: roomUser.user.id,
+			isBot: roomUser.user.isBot
+		}));
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
@@ -278,6 +311,13 @@ export class GameService {
 		if (!game)
 			return ;
 		if (game.status !== 'finished'){
+			if (game.botPresent){
+				const map = this.aiBotService.createMap(game);
+				for (const snake of game.snakes){
+					if (snake.alive && snake.player === 'bot')
+						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
+				}
+			}
 			newHeadPosition(game);
 			checkFood(game);
 			checkCollision(game);
@@ -294,4 +334,4 @@ export class GameService {
 		}
 		this.gameGateway.broadcastGameState(roomId, game);
 	}
-} 
+}

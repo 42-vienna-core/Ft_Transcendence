@@ -1,8 +1,15 @@
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
+export type PlayerType = 'bot' | 'human';
+
 export interface Position {
 	x: number;
 	y: number;
+}
+
+export interface Player{
+	id: number;
+	isBot: boolean;
 }
 
 export interface Snake {
@@ -15,6 +22,7 @@ export interface Snake {
 	alive: boolean;
 	score: number;
 	color: string;
+	player: PlayerType;
 }
 
 export interface Food {
@@ -31,4 +39,5 @@ export interface GameState {
 	gridWidth: number;
 	gridHeight: number;
 	winnerId: number | null;
+	botPresent: boolean;
 }

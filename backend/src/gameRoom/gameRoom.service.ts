@@ -53,6 +53,47 @@ export class GameRoomService {
     });
   }
 
+  async addBotsToRoom(roomId: string){
+	const room = await this.db.gameRoom.findUnique({
+		where : {id: roomId},
+		select: { 
+			maxUsers: true,
+			roomUsers: {
+				select: {
+					userId: true
+				},
+			},
+		},
+	});
+	if (!room)
+		return;
+	const participants = room.roomUsers.length;
+	const freeSlots = room.maxUsers - participants;
+	if (freeSlots <= 0)
+		return ;
+	const usedUserIds = room.roomUsers.map((roomUser) => roomUser.userId);
+	const freeBots = await this.db.users.findMany({
+		where: {
+			isBot : true,
+			id: {notIn: usedUserIds},
+		},
+		select: {
+			id: true,
+		},
+		take: freeSlots,
+	});
+
+	for (const bot of freeBots){
+		await this.db.roomUser.create({
+			data: {
+				roomId,
+				userId: bot.id,
+				socketId: null,
+			},
+		});
+	}
+  }
+
   async removeUserFromRoom(roomId: string, userId: number) {
     return this.db.roomUser.deleteMany({
       where: { roomId, userId },

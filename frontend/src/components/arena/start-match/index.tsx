@@ -1,5 +1,6 @@
 'use client'
 
+import { useGameSocket } from "@/providers/SocketProvider";
 import style from "../../hero/hero.module.css"
 
 import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
@@ -118,18 +119,23 @@ function MatchList({
 } 
 
 function StartMatch () {
+    const {isConnected, socket} = useGameSocket();
+    
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingMode, setLoadingMode] = useState<GameMode | null>(null);
     const router = useRouter();
 
 
     const handleStartMatch = async (mode: GameMode) => {
+        if (!socket || !isConnected) return;
+
         setLoading(true);
         setLoadingMode(mode);
 
-         await new Promise((resolve) => setTimeout(resolve, 4000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         console.log("Event:", mode);
+        socket.emit("join-match", { mode });
 
         setLoading(false);
         setLoadingMode(null)

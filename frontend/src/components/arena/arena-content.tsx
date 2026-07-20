@@ -3,6 +3,7 @@
 import { useUserStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useState, useEffect, useRef } from "react";
+import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
 import style from "./arena-content.module.css"
 import GameCanvas from "./game/game-canvas";
 import { Socket } from "socket.io-client";
@@ -54,17 +55,17 @@ function ArenaContent() {
 
 
 		socket.emit("get-online-users");
-		socket.emit("join-room");
+		// socket.emit("join-room");
 
 		return () => {
 			socket.off("online-users",  handleOnlineUsers);
     		socket.off("room-update", handleRoomUpdate);
-            socket.emit("leave-room");
+            // socket.emit("leave-room");
 		}
 	},[socket, isConnected, setOnlineUsers]);
 
     console.log("FRIEND'S LIST: ", onlineUsers);
-    console.log("ROOM status: ", roomState);
+    // console.log("ROOM status: ", roomState);
 
     // =========================================================
     return (
@@ -80,10 +81,17 @@ function ArenaContent() {
                 </div>
 
                 <div className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center bg-gray-900 rounded-xl ">
-                    <GameCanvas
-                        setGameState={setGameState}
-                        setGameDir={setGameDir}
-                    />
+                    {
+                        roomState?.roomStatus === 'WAITING' &&
+                            <Loader className="text-center w-15 h-15 animate-spin"/>
+                    }
+                    {
+                        roomState?.roomStatus === 'READY' &&
+                            <GameCanvas
+                                setGameState={setGameState}
+                                setGameDir={setGameDir}
+                            />
+                    }
                 </div>
 
                 <div className={`${style.boardBottom}  py-4`}>

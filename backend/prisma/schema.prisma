@@ -20,6 +20,7 @@ model Users {
   password String @map("password_hash")
   name     String
   role     Role   @default(PLAYER)
+  isBot		Boolean @default(false)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -43,6 +44,7 @@ model Users {
 enum Role {
   PLAYER
   ADMIN
+  BOT
 }
 
 model Sessions {
@@ -156,6 +158,7 @@ enum RequestStatus {
 
 enum RoomStatus {
   WAITING
+  READY
   PLAYING
   FINISHED
 }
