@@ -1,6 +1,6 @@
 'use client'
 
-import { useUserStore } from "@/components/store/useUserStore"
+import { useGameMode, useUserStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
 import type { Socket } from "socket.io-client";
@@ -72,6 +72,7 @@ function ArenaContent() {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [gameDir, setGameDir] = useState<Direction | null>(null);
     const { isConnected, socket } = useGameSocket();
+    const {gameMode} = useGameMode();
 
     const [roomState, setRoomState] = useState<RoomStateType>();
 
@@ -81,7 +82,7 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        if (!socket || !isConnected) return;
+        if (!socket || !isConnected || !gameMode) return;
 
         const handleOnlineUsers = (data: OnlineUsersType[]) => {
             console.log("online users", data);
@@ -98,8 +99,9 @@ function ArenaContent() {
 
         if (joinedSocketRef.current !== socket) {
             joinedSocketRef.current = socket;
-            socket.emit("join-match", { mode: 'CPU' });
+            socket.emit("join-match", { mode: gameMode });
         }
+        
         socket.emit("get-online-users");
 
         return () => {

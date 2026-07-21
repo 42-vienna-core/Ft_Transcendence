@@ -1,4 +1,7 @@
+import { State } from 'pixi.js';
 import { create } from 'zustand'
+
+type GameModeType = 'QUICK' | 'FRIEND' | 'CPU' | null;
 
 interface OnlineUser {
     id: number,
@@ -8,13 +11,21 @@ interface OnlineUser {
 
 interface UserStoreState {
     onlineUsers: OnlineUser[];
+    gameMode: GameModeType;
     setOnlineUsers: (OnlineUsers: OnlineUser[]) => void;
     addOnlineUser: (user: OnlineUser) => void;
     updateUser: (id: number, data: Partial<Omit<OnlineUser, 'id'>>) => void;
 }
 
+interface GameMode {
+    gameMode: GameModeType;
+    setGameMode: (mode: GameModeType) => void;
+    resetMode: () => void;
+}
+
 export const  useUserStore = create<UserStoreState>((set) => ({
     onlineUsers: [],
+    gameMode: null,
     
     setOnlineUsers: (onlineUsers) => {
         set({
@@ -33,5 +44,17 @@ export const  useUserStore = create<UserStoreState>((set) => ({
             : user)
         })),
 
+}));
+
+export const  useGameMode = create<GameMode>((set) => ({
+    gameMode: null,
+
+    setGameMode: (mode) => {
+        set((state) => ({
+            gameMode: mode
+        }))
+    },
+
+    resetMode: () => {set(() => ({gameMode: null}))}
 }));
 

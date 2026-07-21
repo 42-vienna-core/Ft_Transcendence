@@ -6,6 +6,7 @@ import style from "../../hero/hero.module.css"
 import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useGameMode } from "@/components/store/useUserStore";
 
 type GameMode = 'QUICK' | 'FRIEND' | 'CPU';
 
@@ -119,23 +120,21 @@ function MatchList({
 } 
 
 function StartMatch () {
-    const {isConnected, socket} = useGameSocket();
-    
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingMode, setLoadingMode] = useState<GameMode | null>(null);
+    const {setGameMode} = useGameMode();
+
     const router = useRouter();
 
 
     const handleStartMatch = async (mode: GameMode) => {
-        if (!socket || !isConnected) return;
-
         setLoading(true);
         setLoadingMode(mode);
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         console.log("Event:", mode);
-        // socket.emit("join-match", { mode });
+        setGameMode(mode)
 
         setLoading(false);
         setLoadingMode(null)
