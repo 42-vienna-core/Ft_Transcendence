@@ -6,9 +6,9 @@ import { GameGateway } from './game.gateway';
 import { AiBotService } from 'src/aiOpponent/ai.service';
 import { RoomStatus } from 'prisma/generated';
 
-const GRID_WIDTH = 40;
-const GRID_HEIGHT = 30;
-const TICK_MS = 150;
+const GRID_WIDTH = 50;
+const GRID_HEIGHT = 50;
+const TICK_MS = 33;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -59,6 +59,8 @@ function spawnFood(state: GameState){
 
 function newHeadPosition(state: GameState){
 	for (const snake of state.snakes){
+		if (!snake.alive)
+			continue;
 		if (isOppositeDir(snake.newDirection, snake.direction))
 			snake.newDirection = snake.direction;
 		snake.newPosition = {x: snake.body[0].x, y: snake.body[0].y}; 
@@ -176,10 +178,10 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 		body.push({x: pos.x - 1, y: pos.y + 1});
 	}
 	if (index === 1 || index === 3){
-		body.push(pos);
-		body.push({x: pos.x - 1, y: pos.y});
-		body.push({x: pos.x - 1, y: pos.y + 1});
 		dir = 'LEFT';
+		body.push(pos);
+		body.push({x: pos.x + 1, y: pos.y});
+		body.push({x: pos.x + 1, y: pos.y + 1});
 	}
 	let player: PlayerType = 'human';
 	if (user.isBot)

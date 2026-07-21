@@ -2,9 +2,10 @@ import {NextConfig} from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   experimental: {
     serverActions: {
-      bodySizeLimit: '2mb', 
+      bodySizeLimit: '2mb',
     },
   },
 };

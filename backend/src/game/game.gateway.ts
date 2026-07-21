@@ -20,6 +20,7 @@ export class GameGateway {
 		if (!snake)
 			return {success: false};
 		snake.newDirection = data.direction;
+		console.log(data);
 		await this.redisService.setGameWithTTL(game.roomId, game);
 
 		return {success: true};

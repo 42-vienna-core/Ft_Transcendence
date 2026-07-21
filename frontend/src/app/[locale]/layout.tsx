@@ -32,8 +32,7 @@ export default async function rootLayout({
     return (
         <html 
             lang={locale} 
-            className={`${bungee.variable}`}
-            suppressHydrationWarning
+            className={`${bungee.variable}`} 
         >
             <body suppressHydrationWarning>
                 <Providers 
