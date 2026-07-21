@@ -20,19 +20,18 @@ export class AuthService {
 
     async getUserFromAccessToken(accessToken: string) {
         const payload = await this.tokenService.verifyAccessToken(accessToken);
-        if (payload)
-        {
+        if (payload) {
             try {
-                const user =  await this.userService.findById(payload.userId);
+                const user = await this.userService.findById(payload.userId);
                 return user;
 
             }
-            catch {console.log("wrong id")}
+            catch { console.log("wrong id") }
         }
         return payload;
     }
 
-    public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
+    public async register(dto: RegisterRequest) {
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
         const user = await this.userService.findByEmail(email);
@@ -41,11 +40,8 @@ export class AuthService {
             throw new ConflictException('User already exists');
         }
         const passwordHash = await hash(dto.password);
-        const newUser = await this.userService.create(dto, passwordHash);
-        const refreshToken = await this.tokenService.generateRefreshToken();
-        const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
-        const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
-        return { accessToken, refreshToken };
+        await this.userService.create(dto, passwordHash);
+        return { success: true };
     }
 
     public async login(dto: LoginRequest, userAgent?: string, ip?: string) {

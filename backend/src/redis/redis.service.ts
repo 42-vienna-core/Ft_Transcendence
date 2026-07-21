@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
-import { ConfigService } from '@nestjs/config';
-import ms, { StringValue } from 'ms';
+// import { ConfigService } from '@nestjs/config';
+// import ms, { StringValue } from 'ms';
 
 interface OnlineUsersData {
   id: number;
@@ -15,7 +15,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly client: Redis;
 
   constructor(
-    private readonly configService: ConfigService,
+    // private readonly configService: ConfigService,
   ) {
     const url = process.env.REDIS_URL || 'redis://redis:6379';
     this.client = new Redis(url);
@@ -113,25 +113,5 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   ///// ========== Socket GameRoom =========== //////////
-
-  // Sessions
-
-  async addSessionToBlackList(sessionId: string): Promise<void> {
-    const ttlAccessSeconds = ms(this.configService.getOrThrow<StringValue>('JWT_ACCESS_TTL')) / 1000;
-    await this.client.set(`session:blacklist:${sessionId}`, 'true', 'EX', ttlAccessSeconds);
-  }
-
-  async isSessionBlacklisted(sessionId: string): Promise<boolean> {
-    const isInBlackList = await this.client.exists(
-      `session:blacklist:${sessionId}`,
-    );
-    return isInBlackList === 1;
-  }
-
-  async deleteSessionFromBlackList(sessionId: string): Promise<void> {
-    await this.client.del(`session:blacklist:${sessionId}`);
-  }
-
-  // TODO: User rate limits
 
 }

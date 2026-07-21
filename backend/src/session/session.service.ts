@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenService } from '../token/token.service';
-import { RedisService } from '../redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import ms, { StringValue } from 'ms';
 
@@ -13,7 +12,6 @@ export class SessionService {
     public constructor(
         private readonly prisma: PrismaService,
         private readonly tokenService: TokenService,
-        private readonly redisService: RedisService,
         private readonly configService: ConfigService,
 
     ) {
@@ -51,6 +49,18 @@ export class SessionService {
         return session;
     }
 
+    public async findSessionById(id: string) {
+        const session = await this.prisma.sessions.findFirst({
+            where: {
+                id: id,
+                expiresAt: {
+                    gt: new Date(),
+                },
+            },
+        });
+        return session;
+    }
+
     public async rotateSession(sessionId: string, refreshToken: string) {
         const refreshTokenHash = await this.tokenService.hashRefreshToken(refreshToken);
         const expiresAt = new Date(Date.now() + this.refreshTtlMs);
@@ -71,26 +81,13 @@ export class SessionService {
                 id: sessionId,
             },
         });
-        await this.redisService.addSessionToBlackList(sessionId);
         return result;
     }
 
     public async deleteAllUserSessions(userId: number) {
-        const sessions = await this.prisma.sessions.findMany({
-            where: {
-                userId,
-            },
-            select: {
-                id: true
-            },
-        });
         const deletedCount = await this.prisma.sessions.deleteMany({
             where: { userId },
         });
-
-        for (const session of sessions) {
-            await this.redisService.addSessionToBlackList(session.id);
-        }
         return deletedCount;
     }
 }

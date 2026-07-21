@@ -6,10 +6,12 @@ import { GameRoomModule } from 'src/gameRoom/gameRoom.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UserModule } from 'src/user/user.module';
 import { RedisModule } from 'src/redis/redis.module';
+import { TokenModule } from 'src/token/token.module';
+import { SessionModule } from 'src/session/session.module';
 
 @Module({
-  imports: [GameRoomModule, PrismaModule, UserModule, RedisModule ],
+  imports: [GameRoomModule, PrismaModule, UserModule, RedisModule, TokenModule, SessionModule],
   providers: [SocketGateway, SocketService, GameRoomService],
   exports: [SocketService],
 })
-export class SocketModule {}
+export class SocketModule { }

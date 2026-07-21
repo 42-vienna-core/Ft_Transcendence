@@ -4,7 +4,9 @@ import { GameRoomService } from '../gameRoom/gameRoom.service';
 import { AddUserGameRoomDto } from '../gameRoom/dto/addUser-gameRoom.dto';
 import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
-
+import { TokenService } from 'src/token/token.service';
+import { SessionService } from 'src/session/session.service';
+import { UnauthorizedException } from '@nestjs/common';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -12,8 +14,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly roomService: GameRoomService,
     private readonly userService: UserService,
-    private readonly redisService: RedisService
-  ) {}
+    private readonly redisService: RedisService,
+    private readonly tokenService: TokenService,
+    private readonly sessionService: SessionService,
+  ) { }
 
   @SubscribeMessage("get-online-users")
   async getOnlineUsers(client: Socket) {
@@ -23,33 +27,48 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(client: Socket) {
+    console.log('🟣 handleConnection caled');
+    try {
+      const token = client.handshake.auth.token;
+      if (!token)
+        throw new UnauthorizedException("Unauthorized");
 
-    console.log('handleConnection caled');
-    const user = await this.userService.verifyUser(client.handshake.auth.token);
-    if (!user) {
-      console.log("========================?????????????????========================")
-      client.disconnect();
-      return;
-    }
-    client.data.user = user;
-    const addedUser = await this.redisService.addOnlineUser(user);
-    if (addedUser)
+      const payload = await this.tokenService.verifyAccessToken(token);
+      const session = await this.sessionService.findSessionById(payload.sessionId);
+      if (!session)
+        throw new UnauthorizedException("Unauthorized");
+      if (session.userId !== payload.userId)
+        throw new UnauthorizedException("Unauthorized");
+      const user = await this.userService.getUser(payload.userId);
+      if (!user)
+        throw new UnauthorizedException("Unauthorized");
+
+      client.data.userId = payload.userId;
+      client.data.sessionId = payload.sessionId;
+      client.data.user = user;
+
+      const addedUser = await this.redisService.addOnlineUser(user);
+      if (addedUser)
         await this.getOnlineUsers(client);
-
-    console.log("this is the user", user)
-
+      console.log("this is the user", user)
+    } catch (e) {
+      console.log(e);
+      client.disconnect();
+    }
   }
 
   async handleJoinRoom(@ConnectedSocket() client: Socket) {
-   
-    console.log(" >>>> handleJoinRoom was caled");
 
-    if (client.data.user === undefined)
-      client.data.user = await  this.userService.verifyUser(client.handshake.auth.token);
+    console.log("🟣 handleJoinRoom was caled");
+    if (!client.data.user || client.data.user === undefined) {
+      console.log("!client.data.user || client.data.user === undefined");
+      client.disconnect();
+      return;
+    }
 
     const room = await this.roomService.createRoom(client.data.user.id);
     client.data.roomId = room.id;
-    
+
     await this.redisService.set(`game:${room.id}:${client.data.user.id}`,
       JSON.stringify(client.data.user)) // instead of this object ( client.data.user ) will be that object for each user for the game
     await client.join(room.id);
@@ -64,7 +83,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('leave-room')
-  async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto ) {
+  async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto) {
     await client.leave(data.roomId);
     await this.roomService.removeUserFromRoom(data.roomId, data.userId);
     const players = await this.roomService.getPlayerCount(data.roomId);
@@ -82,14 +101,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.getOnlineUsers(client);
 
     const roomUser = await this.roomService.findBySocketId(client.id);
-    if (!client.data.roomId || !roomUser) return ;
+    if (!client.data.roomId || !roomUser) return;
 
     await this.roomService.removeUserFromRoom(client.data.roomId, client.data.user.id);
     const players = await this.roomService.getPlayerCount(roomUser.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
-        roomId: roomUser.roomId,
-        roomStatus: client.data.roomSatus,
-        players,
+      roomId: roomUser.roomId,
+      roomStatus: client.data.roomSatus,
+      players,
     });
   }
 }
