@@ -1,4 +1,4 @@
-import { RoomStatus, RoomType } from "prisma/generated";
+import { RoomStatus, RoomType } from "@prisma/client";
 import { PrismaService } from '../prisma/prisma.service';
 import { GameRoomService } from "src/gameRoom/gameRoom.service";
 import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';

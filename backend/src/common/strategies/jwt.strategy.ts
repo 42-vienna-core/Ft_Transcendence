@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtPayload } from "../interfaces/jwt.interface";
 // import { RedisService } from "src/redis/redis.service";
 import { SessionService } from "src/session/session.service";
-import { Sessions } from "prisma/generated";
+import { Sessions } from "@prisma/client";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

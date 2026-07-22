@@ -1,4 +1,4 @@
-import { PrismaClient, Role} from "./generated";
+import { PrismaClient } from "@prisma/client";
 import { hash } from 'argon2';
 
 const prisma = new PrismaClient()
@@ -18,13 +18,13 @@ async function main() {
 			update:{
 				name: bot.name,
 				isBot: true,
-				role: Role.BOT,
+				role: "BOT",
 			},
 			create:{
 				email: bot.email,
 				name: bot.name,
 				password: password,
-				role: Role.BOT,
+				role: "BOT",
 				isBot: true,
 			},
 		});

@@ -4,7 +4,8 @@ import { GameState, Direction, Snake, Position, Food, Player, PlayerType } from 
 import { RedisService } from 'src/redis/redis.service';
 import { GameGateway } from './game.gateway';
 import { AiBotService } from 'src/aiOpponent/ai.service';
-import { RoomStatus } from 'prisma/generated';
+import { RoomStatus } from "@prisma/client";
+
 
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 50;

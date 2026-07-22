@@ -5,7 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { MatchStarter } from '../matchStarter/matchStarter.service';
 import { StartMatchDto } from '../matchStarter/dto/match.dto';
-import { RoomStatus } from 'prisma/generated';
+import { RoomStatus } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 
 import { TokenService } from 'src/token/token.service';
