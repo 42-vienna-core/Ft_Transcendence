@@ -1,6 +1,5 @@
 'use client'
 
-import { useGameSocket } from "@/providers/SocketProvider";
 import style from "../../hero/hero.module.css"
 
 import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
@@ -136,8 +135,8 @@ function StartMatch () {
         console.log("Event:", mode);
         setGameMode(mode)
 
-        setLoading(false);
-        setLoadingMode(null)
+        // setLoading(false);
+        // setLoadingMode(null)
 
         router.push("/arena");
         router.refresh();

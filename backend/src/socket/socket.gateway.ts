@@ -27,21 +27,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(client: Socket) {
-
-    console.log('handleConnection caled');
-    const user = await this.userService.verifyUser(client.handshake.auth.token);
-    if (!user) {
-      console.log("========================?????????????????========================")
-      client.disconnect();
+    let user;
+    try {
+      user = await this.userService.verifyUser(client.handshake.auth.token);
+    } catch (error) {
+      console.log('handleConnection: auth failed, disconnecting client', error instanceof Error ? error.message : error);
+      client.disconnect(true);
       return;
     }
+
+    if (!user) {
+      client.disconnect(true);
+      return;
+    }
+
     client.data.user = user;
     const addedUser = await this.redisService.addOnlineUser(user);
     if (addedUser)
         await this.getOnlineUsers(client);
-
-    console.log("this is the user", user)
-
   }
 
   // @SubscribeMessage('join-room')
@@ -85,9 +88,16 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log(" >>>> start match was called");
 		console.log("data: ", data);
 		
-		if (client.data.user === undefined)
-			client.data.user = await  this.userService.verifyUser(client.handshake.auth.token);
-		
+		if (client.data.user === undefined) {
+			try {
+				client.data.user = await this.userService.verifyUser(client.handshake.auth.token);
+			} catch (error) {
+				console.log('handleJointMatch: auth failed, disconnecting client', error instanceof Error ? error.message : error);
+				client.disconnect(true);
+				return;
+			}
+		}
+
 		const match = await this.matchStarter.prepareMatch(
 			client.data.user.id, 
 			client.id, data.mode
@@ -120,8 +130,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(client: Socket) {
-    console.log(" handleDisconnect was caled");
-
+   try {
     await this.redisService.removeOnlineUser(client.data.id);
     await this.getOnlineUsers(client);
 
@@ -135,5 +144,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
         roomStatus: client.data.roomSatus,
         players,
     });
+   } catch (error) {
+    console.log('handleDisconnect: error while cleaning up client', error instanceof Error ? error.message : error);
+   }
   }
 }

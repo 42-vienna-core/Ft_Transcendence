@@ -69,10 +69,10 @@ function normalizeRoomStatus(raw: string | undefined): 'WAITING' | 'READY' | 'UN
 }
 
 function ArenaContent() {
-    const [gameState, setGameState] = useState<GameState | null>(null);
-    const [gameDir, setGameDir] = useState<Direction | null>(null);
+    const [ gameState, setGameState ] = useState<GameState | null>(null);
+    const [ gameDir, setGameDir ] = useState<Direction | null>(null);
     const { isConnected, socket } = useGameSocket();
-    const {gameMode} = useGameMode();
+    const { gameMode } = useGameMode();
 
     const [roomState, setRoomState] = useState<RoomStateType>();
 
@@ -108,7 +108,7 @@ function ArenaContent() {
             socket.off("online-users", handleOnlineUsers);
             socket.off("room-update", handleRoomUpdate);
         };
-    }, [socket, isConnected, setOnlineUsers]);
+    }, [socket, isConnected, gameMode, setOnlineUsers]);
 
     const status = normalizeRoomStatus(roomState?.roomStatus);
 

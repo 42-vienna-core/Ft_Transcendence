@@ -1,9 +1,10 @@
 'use client'
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { useSocket } from "../socket/socket";
 import { useSession } from "next-auth/react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+
+const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
 
 interface SocketContextType {
     isConnected: boolean;
@@ -13,62 +14,60 @@ interface SocketContextType {
 const SocketContext = createContext<SocketContextType | null>(null);
 
 export const SocketProvider = ({
-    token,
     children,
 }: {
-    token: string | null | undefined;
     children: React.ReactNode;
 }) => {
+    const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
-    const socketRef = useRef<Socket | null>(null);
+    const {data: session} = useSession();
+    const token = session?.accessToken;
 
     useEffect(() => {
-
         if (!token) return;
 
-        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL
-        console.log(socketUrl);
+        let socketInstance: Socket | null = null;
 
-        const socket = io(socketUrl, {
-            auth: {
-                token: token 
-            },
-            autoConnect: true
-        });
+        try {
+            if (!socketUrl) {
+                throw new Error("NEXT_PUBLIC_SOCKET_URL is not defined in environment variables");
+            }
 
-        socketRef.current = socket;
-        const handleConnect = () => {
-            console.log("✅ Socket connected!", socket.id);
-            setIsConnected(true);
-        };
+            socketInstance = io(socketUrl, {
+                auth: { token },
+                autoConnect: true
+            });
 
-        const handleDisconnect = () => {
-            console.log("❌ Socket disconnected");
-            setIsConnected(false);
-        };
+            const onConnect = () => {
+                console.log("✅ Socket connected!", socketInstance?.id);
+                setIsConnected(true);
+            };
 
-        socket.on("connect", handleConnect);
-        socket.on("disconnect", handleDisconnect);
+            const onDisconnect = () => {
+                console.log("❌ Socket disconnected");
+                setIsConnected(false);
+            };
 
-        if (!socket.connected) {
-            socket.connect();
+            socketInstance.on("connect", onConnect);
+            socketInstance.on("disconnect", onDisconnect);
+
+            setSocket(socketInstance);
+
+        } catch (error: any) {
+            console.error("🚨 Failed to initialize socket connection:", error.message || error);
         }
 
         return () => {
-            socket.off("connect", handleConnect);
-            socket.off("disconnect", handleDisconnect);
-            socket.disconnect();
-            socketRef.current = null;
+            if (socketInstance) {
+                socketInstance.disconnect();
+            }
+            setSocket(null);
+            setIsConnected(false);
         };
     }, [token]);
 
     return (
-        <SocketContext.Provider 
-            value={{
-                isConnected,
-                socket: socketRef.current,
-            }}
-        >
+        <SocketContext.Provider value={{ isConnected, socket }}>
             {children}
         </SocketContext.Provider>
     );

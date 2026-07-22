@@ -27,7 +27,6 @@ export default async function rootLayout({
     }
 
     const messages = await getMessages({ locale });
-    const session = await getServerSession(authOptions);
 
     return (
         <html 
@@ -36,9 +35,7 @@ export default async function rootLayout({
             suppressHydrationWarning
         >
             <body suppressHydrationWarning>
-                <Providers 
-                    session={session}
-                >
+                <Providers>
                     <ThemeProvider 
                         attribute="class"
                         defaultTheme="system"
@@ -51,7 +48,7 @@ export default async function rootLayout({
                             {children}
                         </NextIntlClientProvider>
                     </ThemeProvider>
-                </Providers>
+                </Providers> 
             </body>
         </html>
     );

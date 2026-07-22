@@ -7,6 +7,14 @@ import cookieParser from 'cookie-parser';
 const port = Number(process.env.PORT);
 const prefix = process.env.API_PREFIX as string;
 
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+});
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
