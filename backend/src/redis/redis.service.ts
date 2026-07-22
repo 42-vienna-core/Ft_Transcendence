@@ -7,7 +7,6 @@ interface OnlineUsersData {
   id: number;
   name: string;
   avatar: string | null
-
 }
 
 @Injectable()
@@ -42,9 +41,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   //// ===========Socket GameRoom =========== /////////
 
 
-  async addOnlineUser(data: OnlineUsersData): Promise<boolean> {
+  async addOnlineUser(data: OnlineUsersData, sessionId: string): Promise<boolean> {
 
-    const key = `user:online:${data.id}`;
+    const key = `user:online:${data.id}:${sessionId}`;
     const oldSocketId = await this.get(key);
     await this.set(key, JSON.stringify(data));
 

@@ -27,7 +27,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(client: Socket) {
-    console.log('🟣 handleConnection caled');
+    console.log('🟣 SOCKET handleConnection');
     try {
       const token = client.handshake.auth.token;
       if (!token)
@@ -47,7 +47,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.sessionId = payload.sessionId;
       client.data.user = user;
 
-      const addedUser = await this.redisService.addOnlineUser(user);
+      const addedUser = await this.redisService.addOnlineUser(user, session.id);
       if (addedUser)
         await this.getOnlineUsers(client);
       console.log("this is the user", user)
@@ -57,10 +57,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage("join-room")
   async handleJoinRoom(@ConnectedSocket() client: Socket) {
 
     console.log("🟣 handleJoinRoom was caled");
-    if (!client.data.user || client.data.user === undefined) {
+    if (!client.data.user) {
       console.log("!client.data.user || client.data.user === undefined");
       client.disconnect();
       return;
@@ -95,7 +96,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(client: Socket) {
-    console.log(" handleDisconnect was caled");
+    console.log("🟣 SOCKET handleDisconnect");
 
     await this.redisService.removeOnlineUser(client.data.id);
     await this.getOnlineUsers(client);
