@@ -231,6 +231,18 @@ function initGame(id: string, users: Player[]) : GameState{
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
 	let winners : number[] = [];
+	if (game.botPresent){
+		for (const snake of game.snakes){
+		if (snake.alive && snake.player != 'bot'){
+			alive++;
+			winners.push(snake.id);
+		}
+		if (alive <= 0){
+			game.status = 'finished';
+			return game;
+		}
+	}
+	}
 	for (const snake of game.snakes){
 		if (snake.alive){
 			alive++;
