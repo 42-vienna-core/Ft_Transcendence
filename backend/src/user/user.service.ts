@@ -3,9 +3,7 @@ import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { AvatarService } from '../avatar/avatar.service';
-import { TokenService } from 'src/token/token.service';
-
-export const AVATAR_UPLOAD_DIR = '/uploads/avatars';
+import { SessionService } from '../session/session.service';
 
 @Injectable()
 export class UserService {
@@ -13,7 +11,7 @@ export class UserService {
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly avatarService: AvatarService,
-		private readonly tokenService: TokenService
+		private readonly sessionService: SessionService,
 	) { }
 
 	public async findByEmail(email: string) {
@@ -30,15 +28,8 @@ export class UserService {
 		return user;
 	}
 
-	async verifyUser (accessToken: string) {
-		const user = await this.tokenService.verifyAccessToken(accessToken);
-		if (!user)
-			throw new Error();
-		const userData = await this.getUser(user.userId);
-		return userData;
-	}
-
 	public async getUser(id: number) {
+		console.log("~~~~~~~~~~~~~~~~~~~~ getUser me");
 		const user = await this.prismaService.users.findUnique({
 			where: { id },
 			select: {
@@ -103,8 +94,8 @@ export class UserService {
 
 	public async findUsers(name: string) {
 		if (!name || !name.trim()) {
-  		  return [];
-  		}
+			return [];
+		}
 		const users = await this.prismaService.users.findMany({
 			where: {
 				name: {
@@ -122,12 +113,15 @@ export class UserService {
 	}
 
 	public async deleteUser(userId: number) {
+		console.log('Deleting user with ID:', userId);
 		await this.avatarService.deleteAvatar(userId);
+		await this.sessionService.deleteAllUserSessions(userId);
 		await this.prismaService.users.delete({
 			where: {
 				id: userId,
 			},
 		});
+		console.log('User deleted successfully');
 		return { success: true };
 	}
 }

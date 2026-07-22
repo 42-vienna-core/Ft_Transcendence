@@ -16,9 +16,9 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   public async register(
     @Body() dto: RegisterRequest,
-    @Req() req: Request,
   ) {
-    return await this.authService.register(dto, req.headers['user-agent'], req.ip);
+    console.log("🟡 register")
+    return this.authService.register(dto);
   }
 
   @Post('login')
@@ -27,7 +27,8 @@ export class AuthController {
     @Body() dto: LoginRequest,
     @Req() req: Request,
   ) {
-    return await this.authService.login(dto, req.headers['user-agent'], req.ip);
+    console.log("🟡 login")
+    return this.authService.login(dto, req.headers['user-agent'], req.ip);
   }
 
   @Post('refresh')
@@ -35,7 +36,8 @@ export class AuthController {
   public async refresh(
     @Body('refreshToken') refreshToken: string,
   ) {
-    return await this.authService.refresh(refreshToken);
+    console.log("🟡 refresh")
+    return this.authService.refresh(refreshToken);
   }
 
   @Post('logout')
@@ -44,6 +46,7 @@ export class AuthController {
   public async logout(
     @Authorized('sessionId') sessionId: string,
   ) {
+    console.log("🟡 logout")
     const count = await this.authService.logout(sessionId);
     return { success: true, count };
   }
@@ -54,6 +57,7 @@ export class AuthController {
   public async logoutAll(
     @Authorized('userId') userId: number,
   ) {
+    console.log("🟡 logout-all")
     const count = await this.authService.logoutAll(userId);
     return { success: true, count };
   }
@@ -65,6 +69,7 @@ export class AuthController {
     @Authorized('userId') userId: number,
     @Body() dto: ChangePasswordDto,
   ) {
-    return await this.authService.changePassword(userId, dto);
+    console.log("🟡 change-password")
+    return this.authService.changePassword(userId, dto);
   }
 }

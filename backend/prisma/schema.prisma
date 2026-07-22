@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output = "../prisma/generated"
+  // output = "../prisma/generated"
 }
 
 datasource db {
@@ -20,6 +20,7 @@ model Users {
   password String @map("password_hash")
   name     String
   role     Role   @default(PLAYER)
+  isBot		Boolean @default(false)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -28,6 +29,8 @@ model Users {
   //isBlocked  Boolean @default(false) @map("is_blocked")
 
   sessions Sessions[]
+	gameParticipants	GameParticipants[]
+	gamesWon			GameResults[] @relation("Winner")
 
   avatar String?
 
@@ -41,6 +44,7 @@ model Users {
 enum Role {
   PLAYER
   ADMIN
+  BOT
 }
 
 model Sessions {
@@ -73,6 +77,7 @@ model GameRoom {
   status      RoomStatus @default(WAITING)
 	type		    RoomType @default(PUBLIC)
 	roomUsers		RoomUser[]
+	gameResults		GameResults[]
 	owner		    Users? @relation(fields: [ownerId], references: [id])
 }
 
@@ -112,6 +117,39 @@ model FriendsRequest {
   @@unique([senderId, receiverId])
 }
 
+model GameResults{
+	id				String @id @default(uuid())
+	
+	roomId			String
+	room			GameRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+	
+	winnerId		Int?
+	winner			Users? @relation("Winner",fields: [winnerId], references:[id])
+	
+	participants	GameParticipants[]
+	ticks			Int
+	createdAt		DateTime @default(now())
+	updatedAt		DateTime @updatedAt
+
+
+}
+
+model GameParticipants{
+	id				String @id @default(uuid())
+
+	gameId			String
+	game			GameResults @relation(fields:[gameId], references:[id], onDelete: Cascade)
+	
+	userId			Int
+	user			Users @relation(fields:[userId], references: [id], onDelete: Cascade)
+	alive			Boolean
+
+	score			Int
+
+	@@unique([gameId, userId])
+}
+
+
 enum RequestStatus {
   ACCEPTED
   PENDING
@@ -120,6 +158,7 @@ enum RequestStatus {
 
 enum RoomStatus {
   WAITING
+  READY
   PLAYING
   FINISHED
 }

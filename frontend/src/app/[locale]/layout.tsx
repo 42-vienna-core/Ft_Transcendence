@@ -27,18 +27,15 @@ export default async function rootLayout({
     }
 
     const messages = await getMessages({ locale });
-    const session = await getServerSession(authOptions);
 
     return (
         <html 
             lang={locale} 
-            className={`${bungee.variable}`}
+            className={`${bungee.variable}`} 
             suppressHydrationWarning
         >
             <body suppressHydrationWarning>
-                <Providers 
-                    session={session}
-                >
+                <Providers>
                     <ThemeProvider 
                         attribute="class"
                         defaultTheme="system"
@@ -51,7 +48,7 @@ export default async function rootLayout({
                             {children}
                         </NextIntlClientProvider>
                     </ThemeProvider>
-                </Providers>
+                </Providers> 
             </body>
         </html>
     );

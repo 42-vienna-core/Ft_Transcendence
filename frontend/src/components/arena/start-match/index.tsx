@@ -1,7 +1,11 @@
 'use client'
 
+import style from "../../hero/hero.module.css"
+
 import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useGameMode } from "@/components/store/useUserStore";
 
 type GameMode = 'QUICK' | 'FRIEND' | 'CPU';
 
@@ -18,13 +22,15 @@ const cards =  [{
     btnLabel: "Find match",
     child: <Globe/>
 
-}, {
-    id: 'FRIEND' as GameMode,
-    title: "With a friend",
-    expl: "Private room. Send invitations to friens who are online.",
-    btnLabel: "Start match",
-    child: <UserRoundPlus />
-}];
+}, 
+// {
+//     id: 'FRIEND' as GameMode,
+//     title: "With a friend",
+//     expl: "Private room. Send invitations to friens who are online.",
+//     btnLabel: "Start match",
+//     child: <UserRoundPlus />
+// }
+];
 
 interface MachCard {
     id: GameMode;
@@ -96,7 +102,7 @@ function MatchList({
 }) {
 
     return (
-        <ul className="grid grid-cols-3 gap-2.5 p-5 pt-4 text-[var(--color-text-secondary)]">
+        <ul className="grid grid-cols-2 gap-2.5 p-5 pt-4 text-[var(--color-text-secondary)]">
             {cards.map((card) => 
                 <MatchItem 
                     key={card.id}
@@ -112,29 +118,33 @@ function MatchList({
     )
 } 
 
-function StartMatch ({onStartMatch}: StartMathcProps) {
+function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingMode, setLoadingMode] = useState<GameMode | null>(null);
+    const {setGameMode} = useGameMode();
+
+    const router = useRouter();
 
 
     const handleStartMatch = async (mode: GameMode) => {
         setLoading(true);
         setLoadingMode(mode);
 
-         await new Promise((resolve) => setTimeout(resolve, 4000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         console.log("Event:", mode);
-        onStartMatch(mode);
+        setGameMode(mode)
 
-        setLoading(false);
-        setLoadingMode(null)
+        // setLoading(false);
+        // setLoadingMode(null)
+
+        router.push("/arena");
+        router.refresh();
     }
 
     return (
-        <div className="">
-            <div className="pt-[30px] pb-[50px]">
-                <p className="text-lg text-[var(--color-accent)] mt-0.5 text-center">Pick how you'd like to play</p>
-            </div>
+        <div className={style.hero}>
+            <div className={style.heroEyebrow}>// Pick how you'd like to play</div>
             <MatchList
                 loading={loading}
                 loadingMode={loadingMode}

@@ -8,17 +8,13 @@ import { Session } from 'next-auth';
 
 export function Providers({
     children, 
-    session
 }: {
-    session: Session | null;
     children: React.ReactNode;
 }) {
     return (
         <SessionProvider>
             <ProfileProvider>
-                <SocketProvider
-                    token={session?.accessToken}
-                >
+                <SocketProvider>
                     {children}
                 </SocketProvider>
             </ProfileProvider>

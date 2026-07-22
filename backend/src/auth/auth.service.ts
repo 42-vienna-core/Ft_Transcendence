@@ -6,6 +6,7 @@ import { SessionService } from '../session/session.service';
 import { LoginRequest } from './dto/login.dto';
 import { hash, verify } from 'argon2';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -14,23 +15,10 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly tokenService: TokenService,
         private readonly sessionService: SessionService,
+        private readonly configService: ConfigService,
     ) { }
 
-    async getUserFromAccessToken(accessToken: string) {
-        const payload = await this.tokenService.verifyAccessToken(accessToken);
-        if (payload)
-        {
-            try {
-                const user =  await this.userService.findById(payload.userId);
-                return user;
-
-            }
-            catch {console.log("wrong id")}
-        }
-        return payload;
-    }
-
-    public async register(dto: RegisterRequest, userAgent?: string, ip?: string) {
+    public async register(dto: RegisterRequest) {
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
         const user = await this.userService.findByEmail(email);
@@ -39,11 +27,8 @@ export class AuthService {
             throw new ConflictException('User already exists');
         }
         const passwordHash = await hash(dto.password);
-        const newUser = await this.userService.create(dto, passwordHash);
-        const refreshToken = await this.tokenService.generateRefreshToken();
-        const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
-        const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
-        return { accessToken, refreshToken };
+        await this.userService.create(dto, passwordHash);
+        return { success: true };
     }
 
     public async login(dto: LoginRequest, userAgent?: string, ip?: string) {
@@ -60,18 +45,18 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
-
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
-        
+        const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
         return {
             accessToken,
             refreshToken,
             user: {
                 id: user.id,
                 name: user.name,
-                avatar: user.avatar ? `https://localhost/avatars/${user.avatar}` : null,
+                avatar: user.avatar ? avatarsUrl + user.avatar : null,
+                //todo: points? friends?
             }
         };
     }
@@ -92,11 +77,13 @@ export class AuthService {
     }
 
     public async logout(sessionId: string) {
+        console.log("logout")
         const count = await this.sessionService.deleteSession(sessionId);
         return count;
     }
 
     public async logoutAll(userId: number) {
+        console.log("logoutAll")
         const count = await this.sessionService.deleteAllUserSessions(userId);
         return count;
     }
@@ -115,5 +102,5 @@ export class AuthService {
         await this.userService.updatePassword(userId, passwordHash);
         await this.sessionService.deleteAllUserSessions(userId);
         return { success: true };
-	}
+    }
 }

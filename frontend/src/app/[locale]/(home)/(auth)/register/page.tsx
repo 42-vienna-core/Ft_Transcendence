@@ -57,7 +57,7 @@ function Signup() {
       return;
     } 
 
-    router.push('/arena');
+    router.push('/');
     router.refresh();
   }
 

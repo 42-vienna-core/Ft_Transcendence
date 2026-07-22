@@ -1,115 +1,160 @@
 'use client';
 
-import { boolean } from 'zod';
-import style from '../arena-content.module.css' 
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import { useGameSocket } from '@/providers/SocketProvider';
+import { useProfile } from '@/providers/ProfileContext';
+import { Socket } from 'socket.io-client';
+import { useRouter } from "next/navigation";
 
-const CELL = 20; 
-const STEP = 1 / 10; 
-const WORLD_SIZE = 1000;
-let step: boolean = false;
-let alpha: number;
-let SCREEN_HEIGHT = 0;
-let SCREEN_WIDTH = 0;
+const CELL = 20;
+const STEP = 100 / 1000;   
 
+type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 
-type DIR = 'U' | 'D' | 'L' | 'R' | null;
+interface Position {
+    x: number;
+    y: number;
+}
+
+interface Snake {
+    id: number;
+    body: Position[];
+    direction: Direction;
+    newDirection: Direction | null;
+    newPosition: Position | null;
+    willGrow: boolean;
+    alive: boolean;
+    score: number;
+    color: string;
+    player: 'human' | 'bot';
+}
+
+interface Food {
+    position: Position;
+    eaten: boolean;
+}
+
+export interface Game {
+    roomId: string;
+    snakes: Snake[];
+    food: Food[];
+    status: 'waiting' | 'running' | 'finished';
+    tick: number;
+    gridWidth: number;
+    gridHeight: number;
+    winnerId: number | null;
+    botPresent: boolean;
+}
+
 type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
 
-interface Segments { x: number; y: number; }
-interface Snake { color: string; segments: Segments[]; direction: DIR; }
-interface Food { x: number; y: number; }
-interface State { snake: Snake[]; food: Food[]; }
-
-const state: State = {
-    snake: [{
-        color: 'green', 
-        segments: [{ x: 35, y: 35 }, { x: 34, y: 35 }, { x: 33, y: 35 }],
-        direction: 'R' 
-    }],
-    food: [{ x: 38, y: 35 }, { x: 20, y: 20 }, { x: 45, y: 40 }]
-};
-
 interface FitCanvasProps {
-  canvas: HTMLCanvasElement | null;
-  ctx: CanvasRenderingContext2D | null;
-  cssWidth: number;
-  cssHeight: number;
+    canvas: HTMLCanvasElement | null;
+    ctx: CanvasRenderingContext2D | null;
+    cssWidth: number;
+    cssHeight: number;
 }
 
 interface GameProps {
-  setGameState: Dispatch<SetStateAction<GameState>>;
-  setGameDir: (state: DIR) => void;
+    setGameState: Dispatch<SetStateAction<GameState>>;
+    setGameDir: (state: Direction) => void;
 }
 
 function fitCanvas({ canvas, ctx, cssWidth, cssHeight }: FitCanvasProps) {
-  if (!canvas || !ctx) return;
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = cssWidth * dpr;
-  canvas.height = cssHeight * dpr;
-  canvas.style.width = `${cssWidth}px`;
-  canvas.style.height = `${cssHeight}px`;
-  ctx.scale(dpr, dpr);
+    if (!canvas || !ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = cssWidth * dpr;
+    canvas.height = cssHeight * dpr;
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${cssHeight}px`;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
 }
 
 const lerp = (start: number, end: number, alpha: number): number => {
     return start + (end - start) * alpha;
 };
 
-export default function GameCanvas({setGameState, setGameDir} : GameProps) {
+export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
     const gameStateRef = useRef<GameState>('START');
+    const { id } = useProfile();
+    const router = useRouter();
+
+    const { isConnected, socket } = useGameSocket();
+
+    const prevRef = useRef<Game | null>(null);
+    const currRef = useRef<Game | null>(null);
+    const stateTimeRef = useRef<number>(0);
+
+    const alphaRef = useRef<number>(0);
+    const stepRef = useRef<boolean>(false);
+    const screenRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        setGameState('START');
-        setGameDir(state.snake[0].direction);
+        if (!canvas || !socket || !isConnected) return;
 
         const context = canvas.getContext('2d');
         ctxRef.current = context;
 
+        const handleGameState = (data: Game) => {
+            prevRef.current = currRef.current;  
+            currRef.current = data;             
+            stateTimeRef.current = performance.now();
+            stepRef.current = !stepRef.current;     
+
+            if (data.status === 'finished') {
+                const won = String(data.winnerId) === String(id);
+                gameStateRef.current = won ? 'WIN' : 'OVER';
+                setGameState(won ? 'WIN' : 'OVER');
+            }
+        };
+
+        socket.on("game-state", handleGameState);
+        setGameState('START');
+
         let rafId: number;
-        let lastTime: number = performance.now();
-        let acc: number = 0;
-        
+
         const container = document.getElementById('canvas-container');
         if (!container) return;
 
+        const isEnded = () =>
+            gameStateRef.current === 'OVER' ||
+            gameStateRef.current === 'WIN' ||
+            gameStateRef.current === 'END';
+
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape', ' '].includes(e.key)) {
-                e.preventDefault();
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape', ' '].includes(e.key)) return;
+            e.preventDefault();
 
-                setGameState((current) => {
-                    if (current === 'PAUSE') {
-                        lastTime = performance.now();
-                        gameStateRef.current = 'PAUSE';
-                        return 'START';
-                    }
-                    return current;
-                });
+            if (isEnded()) return; 
 
-                const currentDir = state.snake[0].direction;
-
-                if (e.key === 'ArrowUp' && currentDir !== 'D') {
-                    setGameDir('U');
-                    state.snake[0].direction = 'U'
-                } else if (e.key === 'ArrowDown' && currentDir !== 'U') {
-                    setGameDir('D');
-                    state.snake[0].direction = 'D'
-                } else if (e.key === 'ArrowLeft' && currentDir !== 'R') {
-                    setGameDir('L');
-                    state.snake[0].direction = 'L'
-                } else if (e.key === 'ArrowRight' && currentDir !== 'L') {
-                    setGameDir('R');
-                    state.snake[0].direction = 'R'
-                } else if(e.key === 'Escape') {
-                    setGameDir(null);
-                    setGameState('END');
-                    gameStateRef.current = 'END';
+            setGameState((current) => {
+                if (current === 'PAUSE') {
+                    gameStateRef.current = 'START';
+                    return 'START';
                 }
+                return current;
+            });
+
+            if (e.key === 'ArrowUp') {
+                setGameDir('UP');
+                advanceSnake(socket, 'UP');
+            } else if (e.key === 'ArrowDown') {
+                setGameDir('DOWN');
+                advanceSnake(socket, 'DOWN');
+            } else if (e.key === 'ArrowLeft') {
+                setGameDir('LEFT');
+                advanceSnake(socket, 'LEFT');
+            } else if (e.key === 'ArrowRight') {
+                setGameDir('RIGHT');
+                advanceSnake(socket, 'RIGHT');
+            } else if (e.key === 'Escape') {
+                setGameDir(null);
+                gameStateRef.current = 'END';
+                setGameState('END');
             }
         };
 
@@ -126,64 +171,35 @@ export default function GameCanvas({setGameState, setGameDir} : GameProps) {
         const handleWindowFocus = () => {
             setGameState((currentState) => {
                 if (currentState === 'PAUSE') {
-                    lastTime = performance.now();
                     gameStateRef.current = 'START';
                     return 'START';
-
                 }
                 return currentState;
             });
         };
 
-        window.addEventListener('blur', handleWindowBlur);
-        window.addEventListener('focus', handleWindowFocus);
-
         const resizeObserver = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                const containerWidth = entry.contentRect.width;
-                const containerHeight = entry.contentRect.height;
-
-                const width = Math.floor(containerWidth);
-                const height = Math.floor(containerHeight - 120);
-
-
-                SCREEN_HEIGHT = height;
-                SCREEN_WIDTH =  width;
-
-                console.log("width: ",width);
-                console.log("hight: ",height);
-
-                fitCanvas({ canvas, ctx: context, cssWidth: SCREEN_WIDTH, cssHeight: SCREEN_HEIGHT });
-
+            for (const entry of entries) {
+                const width = Math.floor(entry.contentRect.width);
+                const height = Math.floor(entry.contentRect.height - 120);
+                screenRef.current = { width, height };
+                fitCanvas({ canvas, ctx: context, cssWidth: width, cssHeight: height });
             }
         });
 
+        window.addEventListener('blur', handleWindowBlur);
+        window.addEventListener('focus', handleWindowFocus);
         window.addEventListener('keydown', handleKeyDown);
-
         resizeObserver.observe(container);
 
-
-
-
+        const TICK = STEP;
         const frame = (now: number) => {
-            if (gameStateRef.current === 'START') {
-                acc += (now - lastTime) / 1000;
+            const elapsed = (now - stateTimeRef.current) / 1000;
+            alphaRef.current = Math.min(elapsed / TICK, 1);
 
-                while (acc >= STEP) {
-                    advanceSnake(); 
-                    checkCollision(); 
-                    acc -= STEP;
-                    alpha = acc / STEP;
-                    step = !step;
-                }
-            }
-
-            lastTime = now;
-
-            draw(state);
+            draw();
             rafId = requestAnimationFrame(frame);
         };
-
         rafId = requestAnimationFrame(frame);
 
         return () => {
@@ -192,206 +208,187 @@ export default function GameCanvas({setGameState, setGameDir} : GameProps) {
             window.removeEventListener('blur', handleWindowBlur);
             window.removeEventListener('focus', handleWindowFocus);
             window.removeEventListener('keydown', handleKeyDown);
+            socket.off("game-state", handleGameState);
         };
-    }, [gameStateRef.current === 'START']);
+    }, [socket, isConnected, id, setGameState, setGameDir]);
 
-    function advanceSnake() {
-        for (const snake of state.snake) {
-            const head = snake.segments[0];
-            let newHead: Segments = { x: head.x, y: head.y };
-
-            if (snake.direction === 'U') newHead.y -= 1;
-            else if (snake.direction === 'D') newHead.y += 1;
-            else if (snake.direction === 'L') newHead.x -= 1;
-            else if (snake.direction === 'R') newHead.x += 1;
-
-            snake.segments.unshift(newHead);
-
-            let ateFood = false;
-            for (let i = 0; i < state.food.length; i++) {
-                if (newHead.x === state.food[i].x && newHead.y === state.food[i].y) {
-                    ateFood = true;
-                    state.food[i] = {
-                        x: Math.floor(Math.random() * (WORLD_SIZE / CELL)),
-                        y: Math.floor(Math.random() * (WORLD_SIZE / CELL))
-                    };
-                    break;
-                }
-            }
-
-            if (!ateFood) {
-                snake.segments.pop();
-            }
-        }
-    }
-
-    function checkCollision() {
-        const head = state.snake[0].segments[0];
-        const maxCells = WORLD_SIZE / CELL; 
-
-        if (head.x < 0 || head.x >= maxCells || head.y < 0 || head.y >= maxCells) {
-            setGameState('OVER');
-            gameStateRef.current = 'OVER';
-        }
-
-        const body = state.snake[0].segments;
-        for (let i = 1; i < body.length; i++) {
-            if (head.x === body[i].x && head.y === body[i].y) {
-                setGameState('OVER');
-                gameStateRef.current = 'OVER';
-            }
-        }
+    function advanceSnake(socket: Socket, dir: Direction) {
+        const room = currRef.current?.roomId;
+        if (!room) return;
+        socket.emit('change-direction', { direction: dir, roomId: room, userId: id });
     }
 
     function handleRestart() {
-        state.snake[0].segments = [{ x: 35, y: 35 }, { x: 34, y: 35 }, { x: 33, y: 35 }];
-        setGameDir('R');
-        state.snake[0].direction = 'R';
-        setGameState('START');
-        gameStateRef.current = 'START';
+        const room = currRef.current?.roomId;
+        if (socket && room) {
+            socket.emit('restart-game', { roomId: room, userId: id });
+        }
+        gameStateRef.current = 'END';
+        setGameState('END');
+        router.push('/');
+        router.refresh();
     }
 
-    function draw(gameState: State) {
+    function draw() {
         const ctx = ctxRef.current;
-        if (!ctx) return;
+        const curr = currRef.current;
+        const prev = prevRef.current;
+        if (!ctx || !curr) return;
 
-        const head = gameState.snake[0].segments[0];
-        const myHeadX = head.x * CELL + CELL / 2;
-        const myHeadY = head.y * CELL + CELL / 2;
+        const snakes = curr.snakes;
+        const food = curr.food;
+        const alpha = alphaRef.current;
+        const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = screenRef.current;
+
+        const WORLD_WIDTH = curr.gridWidth * CELL;
+        const WORLD_HEIGHT = curr.gridHeight * CELL;
+
+        const mySnake = snakes.find(s => String(s.id) === String(id));
+        if (!mySnake || mySnake.body.length === 0) return;
+
+        const prevMy = prev?.snakes.find(s => String(s.id) === String(id));
+        const prevHead = prevMy?.body[0] ?? mySnake.body[0];
+        const myHeadX = lerp(prevHead.x, mySnake.body[0].x, alpha) * CELL + CELL / 2;
+        const myHeadY = lerp(prevHead.y, mySnake.body[0].y, alpha) * CELL + CELL / 2;
 
         const cameraX = myHeadX - SCREEN_WIDTH / 2;
         const cameraY = myHeadY - SCREEN_HEIGHT / 2;
 
         ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        ctx.save(); 
+        ctx.save();
         ctx.translate(-cameraX, -cameraY);
 
         ctx.strokeStyle = '#ff3333';
         ctx.lineWidth = 8;
         ctx.shadowColor = '#ff3333';
         ctx.shadowBlur = 15;
-        ctx.strokeRect(0, 0, WORLD_SIZE, WORLD_SIZE);
-        ctx.shadowBlur = 0; 
+        ctx.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+        ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#1e2224'; 
-        ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+        ctx.fillStyle = '#1e2224';
+        ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-        for (let x = 0; x < WORLD_SIZE; x += CELL) {
-            for (let y = 0; y < WORLD_SIZE; y += CELL) {
+        const tileStartX = Math.max(0, Math.floor(cameraX / CELL) * CELL);
+        const tileEndX = Math.min(WORLD_WIDTH, cameraX + SCREEN_WIDTH + CELL);
+        const tileStartY = Math.max(0, Math.floor(cameraY / CELL) * CELL);
+        const tileEndY = Math.min(WORLD_HEIGHT, cameraY + SCREEN_HEIGHT + CELL);
+
+        for (let x = tileStartX; x < tileEndX; x += CELL) {
+            for (let y = tileStartY; y < tileEndY; y += CELL) {
                 ctx.fillStyle = '#23272a';
                 ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
-            
+
                 ctx.fillStyle = '#2c3135';
                 ctx.fillRect(x + 1, y + 1, 1, 1);
             }
         }
 
-        for (const snake of gameState.snake) {
-            const totalSegments = snake.segments.length;
-        
-            for (const [index, seg] of snake.segments.entries()) {
-                const renderX = lerp(seg.x, seg.x, alpha) * CELL;
-                const renderY = lerp(seg.y, seg.y, alpha) * CELL;
-            
-            
+        for (const snake of snakes) {
+            const totalSegments = snake.body.length;
+            const prevSnake = prev?.snakes.find(s => String(s.id) === String(snake.id));
+
+            const facing = snake.newDirection ?? snake.direction;
+
+            snake.body.forEach((seg, index) => {
+                const prevSeg = prevSnake?.body[index] ?? seg; 
+                const renderX = lerp(prevSeg.x, seg.x, alpha) * CELL;
+                const renderY = lerp(prevSeg.y, seg.y, alpha) * CELL;
+
                 const size = CELL - 1;
                 if (index === 0) {
                     ctx.beginPath();
                 }
-            
-                ctx.fillStyle = '#12ea94'; 
-            
+
+                ctx.fillStyle = '#12ea94';
+
                 if (index === 0) {
-                
-                    let radii = 5; 
-                
+                    const radii = 5;
+
                     ctx.roundRect(renderX, renderY, CELL - 1, CELL - 1, radii);
                     ctx.fill();
-                
-                    ctx.fillStyle = '#FF3333'; 
+
+                    ctx.fillStyle = '#FF3333';
                     ctx.beginPath();
-                
-                    if (snake.direction === 'R') {
+
+                    if (facing === 'RIGHT') {
                         ctx.fillRect(renderX + CELL - 1, renderY + CELL / 2 - 2, 6, 3);
                         ctx.fillRect(renderX + CELL + 4, renderY + CELL / 2 - 4, 2, 2);
                         ctx.fillRect(renderX + CELL + 4, renderY + CELL / 2 + 1, 2, 2);
-                    } else if (snake.direction === 'L') {
+                    } else if (facing === 'LEFT') {
                         ctx.fillRect(renderX - 6, renderY + CELL / 2 - 2, 6, 3);
                         ctx.fillRect(renderX - 7, renderY + CELL / 2 - 4, 2, 2);
                         ctx.fillRect(renderX - 7, renderY + CELL / 2 + 1, 2, 2);
-                    } else if (snake.direction === 'U') {
+                    } else if (facing === 'UP') {
                         ctx.fillRect(renderX + CELL / 2 - 2, renderY - 6, 3, 6);
                         ctx.fillRect(renderX + CELL / 2 - 4, renderY - 7, 2, 2);
                         ctx.fillRect(renderX + CELL / 2 + 1, renderY - 7, 2, 2);
-                    } else if (snake.direction === 'D') {
+                    } else if (facing === 'DOWN') {
                         ctx.fillRect(renderX + CELL / 2 - 2, renderY + CELL - 1, 3, 6);
                         ctx.fillRect(renderX + CELL / 2 - 4, renderY + CELL + 4, 2, 2);
                         ctx.fillRect(renderX + CELL / 2 + 1, renderY + CELL + 4, 2, 2);
                     }
-                
+
                     ctx.fillStyle = 'white';
                     let eye1 = { x: 0, y: 0 };
                     let eye2 = { x: 0, y: 0 };
-                
-                    if (snake.direction === 'R') {
+
+                    if (facing === 'RIGHT') {
                         eye1 = { x: renderX + CELL - 8, y: renderY + 4 };
                         eye2 = { x: renderX + CELL - 8, y: renderY + CELL - 9 };
-                    } else if (snake.direction === 'L') {
+                    } else if (facing === 'LEFT') {
                         eye1 = { x: renderX + 4, y: renderY + 4 };
                         eye2 = { x: renderX + 4, y: renderY + CELL - 9 };
-                    } else if (snake.direction === 'U') {
+                    } else if (facing === 'UP') {
                         eye1 = { x: renderX + 4, y: renderY + 4 };
                         eye2 = { x: renderX + CELL - 9, y: renderY + 4 };
-                    } else if (snake.direction === 'D') {
+                    } else if (facing === 'DOWN') {
                         eye1 = { x: renderX + 4, y: renderY + CELL - 8 };
                         eye2 = { x: renderX + CELL - 9, y: renderY + CELL - 8 };
                     }
-                
+
                     ctx.fillRect(eye1.x, eye1.y, 4, 4);
                     ctx.fillRect(eye2.x, eye2.y, 4, 4);
-                
-                    ctx.fillStyle = 'black'; // Зрачки
+
+                    ctx.fillStyle = 'black';
                     ctx.fillRect(eye1.x + 1, eye1.y + 1, 2, 2);
                     ctx.fillRect(eye2.x + 1, eye2.y + 1, 2, 2);
                 } else {
                     const isTipOfTail = index === totalSegments - 1;
-                
+
                     if (isTipOfTail) {
                         ctx.beginPath();
 
-                        const prevSeg = snake.segments[index - 1];
+                        const prevSegBody = snake.body[index - 1];
 
                         let p1 = { x: renderX, y: renderY };
                         let p2 = { x: renderX, y: renderY + CELL - 1 };
-                        let tip =  step ? { x: renderX + CELL, y: renderY + (CELL / 2 + 5) } : 
-                            { x: renderX + CELL, y: renderY + (CELL / 2 - 5) };
-            
-                        if (prevSeg) {
-                            if (seg.x < prevSeg.x) {
-                                p1 = { x: renderX + CELL, y: renderY };          
-                                p2 = { x: renderX + CELL, y: renderY + CELL - 1 }; 
-                                if (step)
-                                    tip = { x: renderX, y: renderY + (CELL / 2 + 5) };       
-                                else 
-                                    tip = { x: renderX, y: renderY + (CELL / 2 - 5) }; 
-                            } else if (seg.y > prevSeg.y) {
+                        let tip = stepRef.current
+                            ? { x: renderX + CELL, y: renderY + (CELL / 2 + 5) }
+                            : { x: renderX + CELL, y: renderY + (CELL / 2 - 5) };
+
+                        if (prevSegBody) {
+                            if (seg.x < prevSegBody.x) {
+                                p1 = { x: renderX + CELL, y: renderY };
+                                p2 = { x: renderX + CELL, y: renderY + CELL - 1 };
+                                tip = stepRef.current
+                                    ? { x: renderX, y: renderY + (CELL / 2 + 5) }
+                                    : { x: renderX, y: renderY + (CELL / 2 - 5) };
+                            } else if (seg.y > prevSegBody.y) {
                                 p1 = { x: renderX, y: renderY };
                                 p2 = { x: renderX + CELL - 1, y: renderY };
-                                if (step)
-                                    tip = { x: renderX + (CELL / 2 + 5), y: renderY + CELL };        
-                                else 
-                                    tip = { x: renderX + (CELL / 2 - 5), y: renderY + CELL };
-                            } else if (seg.y < prevSeg.y) {
+                                tip = stepRef.current
+                                    ? { x: renderX + (CELL / 2 + 5), y: renderY + CELL }
+                                    : { x: renderX + (CELL / 2 - 5), y: renderY + CELL };
+                            } else if (seg.y < prevSegBody.y) {
                                 p1 = { x: renderX, y: renderY + CELL };
                                 p2 = { x: renderX + CELL - 1, y: renderY + CELL };
-                                if (step)
-                                    tip = { x: renderX + (CELL / 2 + 5), y: renderY };
-                                else 
-                                    tip = { x: renderX + (CELL / 2 - 5), y: renderY };
+                                tip = stepRef.current
+                                    ? { x: renderX + (CELL / 2 + 5), y: renderY }
+                                    : { x: renderX + (CELL / 2 - 5), y: renderY };
                             }
                         }
-                        
+
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.lineTo(tip.x, tip.y);
@@ -403,34 +400,43 @@ export default function GameCanvas({setGameState, setGameDir} : GameProps) {
                         ctx.fill();
                     }
                 }
-            }
+            });
         }
 
-        for (const f of gameState.food) {
+        for (const f of food) {
+            if (f.eaten) continue; 
             ctx.beginPath();
-            ctx.arc(f.x * CELL + CELL / 2, f.y * CELL + CELL / 2, CELL / 3, 0, Math.PI * 2);
+            ctx.arc(f.position.x * CELL + CELL / 2, f.position.y * CELL + CELL / 2, CELL / 3, 0, Math.PI * 2);
             ctx.fillStyle = 'red';
             ctx.fill();
         }
 
-        ctx.restore(); 
+        ctx.restore();
     }
 
-    if (gameStateRef.current === 'OVER' || gameStateRef.current === 'END') {
-        return (
-            <div >
-                <h2 className="text-center text-red-500 text-3xl font-bold mb-4">Game Over</h2>
-                <button 
-                    onClick={handleRestart}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+    const showOver = gameStateRef.current === 'OVER' || gameStateRef.current === 'END';
+    const showWin = gameStateRef.current === 'WIN';
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <canvas ref={canvasRef} className="rounded-xl" />
+
+            {(showOver || showWin) && (
+                <div
+                    style={{ position: 'absolute', inset: 0 }}
+                    className="flex flex-col items-center justify-center bg-black/60 rounded-xl"
                 >
-                    Try Again
-                </button>
-            </div>
-        );
-    }
-
-    return ( 
-        <canvas ref={canvasRef}  className="rounded-xl"></canvas>
+                    <h2 className={`text-3xl font-bold mb-4 ${showWin ? 'text-green-400' : 'text-red-500'}`}>
+                        {showWin ? 'You Win!' : 'Game Over'}
+                    </h2>
+                    <button
+                        onClick={handleRestart}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            )}
+        </div>
     );
 }

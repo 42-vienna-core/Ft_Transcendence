@@ -32,7 +32,8 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
 
 
     useEffect(() => {
-        if (session?.error === "RefreshAccessTokenError" && status === "authenticated") {
+        console.log(session?.error);
+        if (session?.error === "RefreshAccessTokenError") {
             signOut({callbackUrl: "/login"});
             console.log("session?.error: ", session?.error);
         } 

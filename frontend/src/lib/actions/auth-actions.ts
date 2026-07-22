@@ -64,7 +64,7 @@ export async function fetchLogout() {
         //  await new Promise((resolve) => setTimeout(resolve, 4000));
 
         const session = await getServerSession(authOptions);
-        if (!session?.error) return {success: true}
+        if (!session) return {success: false};
 
         await fetch(`${url}/auth/logout`, {
             method: 'POST',

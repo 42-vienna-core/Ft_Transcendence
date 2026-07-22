@@ -1,18 +1,21 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
+import { GameState } from 'src/game/interfaces/game-state';
+// import ms, { StringValue } from 'ms'; 
 
 interface OnlineUsersData {
   id: number;
   name: string;
   avatar: string | null
-
 }
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly client: Redis;
 
-  constructor() {
+  constructor(
+    // private readonly configService: ConfigService,
+  ) {
     const url = process.env.REDIS_URL || 'redis://redis:6379';
     this.client = new Redis(url);
 
@@ -37,10 +40,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   //// ===========Socket GameRoom =========== /////////
 
-  
-  async addOnlineUser(data: OnlineUsersData) : Promise<boolean> {
 
-    const key = `user:online:${data.id}`;
+  async addOnlineUser(data: OnlineUsersData, sessionId: string): Promise<boolean> {
+
+    const key = `user:online:${data.id}:${sessionId}`;
     const oldSocketId = await this.get(key);
     await this.set(key, JSON.stringify(data));
 
@@ -74,6 +77,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       ttlSeconds,
       JSON.stringify(state)
     );
+  }
+
+  async getGameState(gameId: string) : Promise<GameState | null> {
+    const data = await this.get(`game:${gameId}:state`);
+    if (!data)
+      return null;
+    return (JSON.parse(data));
   }
   
   async set(key: string, value: string) {
@@ -109,24 +119,5 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   ///// ========== Socket GameRoom =========== //////////
-
-  // Sessions
-
-  async addSessionToBlackList(sessionId: string): Promise<void> {
-    await this.client.set(`session:blacklist:${sessionId}`, 'true', 'EX', 15 * 60); //todo ttl
-  }
-
-  async isSessionBlacklisted(sessionId: string): Promise<boolean> {
-    const isInBlackList = await this.client.exists(
-      `session:blacklist:${sessionId}`,
-    );
-    return isInBlackList === 1;
-  }
-
-  async deleteSessionFromBlackList(sessionId: string): Promise<void> {
-    await this.client.del(`session:blacklist:${sessionId}`);
-  }
-
-  // TODO: User rate limits
 
 }
