@@ -26,10 +26,7 @@ export class UserController {
     @Authorized('userId') userId: number,
     @Body() dto: UpdateUserDto,
   ) {
-    return this.userService.update(
-      userId,
-      dto,
-    );
+    return this.userService.update(userId, dto);
   }
 
   @Patch('me/avatar')

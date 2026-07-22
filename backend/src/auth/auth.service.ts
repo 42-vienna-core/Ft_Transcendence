@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
@@ -18,22 +18,6 @@ export class AuthService {
         private readonly configService: ConfigService,
     ) { }
 
-    async getUserFromAccessToken(accessToken: string) {
-        const payload = await this.tokenService.verifyAccessToken(accessToken);
-        if (payload)
-        {
-            try {
-                const user =  await this.userService.findById(payload.userId);
-                if (!user)
-                    throw new NotFoundException("User not found");
-                return user;
-
-            }
-            catch {console.log("wrong id")}
-        }
-        return payload;
-    }
-
     public async register(dto: RegisterRequest) {
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
@@ -44,10 +28,6 @@ export class AuthService {
         }
         const passwordHash = await hash(dto.password);
         await this.userService.create(dto, passwordHash);
-        // const newUser = await this.userService.create(dto, passwordHash);
-        // const refreshToken = await this.tokenService.generateRefreshToken();
-        // const session = await this.sessionService.createSession(newUser.id, refreshToken, userAgent, ip);
-        // const accessToken = await this.tokenService.generateAccessToken(newUser.id, session.id);
         return { success: true };
     }
 

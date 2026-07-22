@@ -8,7 +8,7 @@ import { RoomStatus } from 'prisma/generated';
 
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 50;
-const TICK_MS = 33;
+const TICK_MS = 100;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)

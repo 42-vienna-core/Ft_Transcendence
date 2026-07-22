@@ -7,7 +7,7 @@ import { Socket } from 'socket.io-client';
 import { useRouter } from "next/navigation";
 
 const CELL = 20;
-const STEP = 30 / 1000;   
+const STEP = 100 / 1000;   
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 

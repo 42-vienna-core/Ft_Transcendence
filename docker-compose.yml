@@ -67,6 +67,7 @@ services:
       sh -c "
       npx prisma db push --schema=/app/prisma/schema.prisma && \
       npx prisma generate --schema=/app/prisma/schema.prisma && \
+      npm run seed && \
       npm run start:dev
       "
     depends_on:
