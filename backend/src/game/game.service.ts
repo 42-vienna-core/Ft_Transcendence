@@ -9,7 +9,7 @@ import { RoomStatus } from "@prisma/client";
 
 const GRID_WIDTH = 50;
 const GRID_HEIGHT = 50;
-const TICK_MS = 100;
+const TICK_MS = 150;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -233,15 +233,14 @@ function gameOver(game : GameState) : GameState{
 	let winners : number[] = [];
 	if (game.botPresent){
 		for (const snake of game.snakes){
-		if (snake.alive && snake.player != 'bot'){
+		if (snake.alive && snake.player != 'bot')
 			alive++;
-			winners.push(snake.id);
-		}
 		if (alive <= 0){
 			game.status = 'finished';
 			return game;
 		}
 	}
+	alive = 0;
 	}
 	for (const snake of game.snakes){
 		if (snake.alive){
