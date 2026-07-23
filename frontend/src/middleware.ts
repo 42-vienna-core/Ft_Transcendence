@@ -1,7 +1,7 @@
 import createIntlMiddleware from 'next-intl/middleware';
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse, NextRequest } from 'next/server';
-import { encode, getToken, type JWT } from 'next-auth/jwt';
+import { encode, type JWT } from 'next-auth/jwt';
 
 const locales = ['en', 'ru', 'de', 'it'];
 
@@ -58,11 +58,15 @@ const intlMiddleware = createIntlMiddleware({
     defaultLocale: 'en',
 });
 
-
 const authMiddleware = withAuth(
     async function middleware (req) {
         console.log("========MIDDLEWARE============");
         const path = req.nextUrl.pathname;
+
+        if (path.startsWith('/api/auth')) {
+            return NextResponse.next();
+        }
+
         const response = intlMiddleware(req);
         
         const token = req.nextauth.token;
@@ -74,17 +78,36 @@ const authMiddleware = withAuth(
             const isExpired = Date.now() > expiry;
 
             if (isExpired) {
-                console.log("========TOKEN EXPIRED============");
+                console.log("========TOKEN EXPIRED============"); 
                 const refreshed = await refreshAccessToken(token);
 
                 if (refreshed?.error === 'RefreshAccessTokenError') {
+                    console.log("🚨 REFRESH ERROR — FORCE LOGOUT");
+    
+                    const currentLocale = path.split('/')[1] || 'en';
+                    const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
+    
+                    let finalResponse: NextResponse;
+    
                     if (!isAuthPage) {
-                        const currentLocale = path.split('/')[1] || 'en';
-                        const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
-                        return NextResponse.redirect(new URL(`${localePrefix}/login`, req.url));
+                        finalResponse = NextResponse.redirect(new URL(`${localePrefix}/login`, req.url));
+                    } else {
+                        finalResponse = response;
                     }
-                    return response;
+
+                    finalResponse.cookies.set(SESSION_COOKIE_NAME, '', {
+                        path: '/',
+                        maxAge: 0,
+                        expires: new Date(0),
+                        httpOnly: true,
+                        secure: SECURE_COOKIE,
+                        sameSite: 'lax'
+                    });
+
+                    req.cookies.set(SESSION_COOKIE_NAME, '');
+                    return finalResponse;
                 }
+
 
                 const encoded = await encode({ token: refreshed, secret: SECRET, maxAge: COOKIE_MAX_AGE });
                 
@@ -124,9 +147,9 @@ const authMiddleware = withAuth(
 export default function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
-    // if (path.startsWith('/api/auth')) {
-    //     return NextResponse.next();
-    // }
+    if (path.startsWith('/api/auth')) {
+        return NextResponse.next();
+    }
 
     return (authMiddleware as any)(req);
 }

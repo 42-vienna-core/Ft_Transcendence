@@ -25,5 +25,34 @@
                 "label2": "Cambia password, 2FA" 
             }
         }
+    },
+    "Login": {
+        "title": "Accedi",
+        "expla": "Accedi per continuare a giocare", 
+        "email": "E-mail",
+        "password": "Password",
+        "button": "Accedi",
+        "loading": "Accesso in corso...",
+        "forgot_password": "Password dimenticata?",
+        "no_account": "Non hai ancora un account?",
+        "register_link": "Registrati"
+    },
+    "Register": {
+        "title": "Registrazione",
+        "expla": "Registrati per continuare a giocare",
+        "name": "Nome utente",
+        "email": "E-mail",
+        "password": "Password",
+        "confirm_password": "Conferma password",
+        "button": "Registrati",
+        "loading": "Registrazione in corso...",
+        "have_account": "Hai già un account?",
+        "login_link": "Accedi"
+    },
+    "Validation": {
+        "required": "Questo campo è obbligatorio",
+        "invalid_email": "Indirizzo e-mail non valido",
+        "invalid_password": "La password deve contenere almeno 8 caratteri",
+        "password_mismatch": "Le password non corrispondono"
     }
 }

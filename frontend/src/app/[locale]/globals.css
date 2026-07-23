@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@config "../../../tailwind.config.js";
 
 :root {
 
@@ -120,8 +121,7 @@
   --modal-max:        640px;
 }
 
-/* @media (prefers-color-scheme: dark) { */
-  .dark {
+.dark {
     --color-bg-base:        #0F1112;
     --color-bg-surface:     #1A1D1F;
     --color-bg-subtle:      #24272A;
@@ -170,9 +170,24 @@
 
     /* Player colors UNCHANGED — players must look the same in both themes */
     --color-focus-ring:     #85B7EB;
-  }
-/* } */
+}
 
+
+@layer base {
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus {
+        -webkit-text-fill-color: inherit !important;
+        -webkit-box-shadow: inherit !important;
+        font-family: inherit !important;
+    }
+}
 .fdfdf{
   --bg-void: #050507;
   --bg-deep: #0a0a0f;

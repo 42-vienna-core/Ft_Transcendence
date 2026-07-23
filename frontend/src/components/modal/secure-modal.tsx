@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchChangePassword } from "@/lib/actions/auth-actions";
+import { fetchChangePassword } from "@/lib/auth-actions";
 import { apiFetch } from "@/lib/api-client";
 import { State } from "@/lib/definitions";
 import { signIn } from "next-auth/react";

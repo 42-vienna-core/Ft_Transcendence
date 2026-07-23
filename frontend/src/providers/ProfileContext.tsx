@@ -27,17 +27,9 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
     const [email, setEmail] = useState<string>("");
     const [id, setId] = useState<number>(0);
 
-    
     console.log("PROFILEPROVIDER useSession");
 
-
     useEffect(() => {
-        console.log(session?.error);
-        if (session?.error === "RefreshAccessTokenError") {
-            signOut({callbackUrl: "/login"});
-            console.log("session?.error: ", session?.error);
-        } 
-
         if (session?.user) {
             const ava = session.user.avatar;
             setId(session.user.id);

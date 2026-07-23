@@ -5,7 +5,7 @@ import style from "./profile.module.css";
 import { SettingBatton } from "@/ui/setting-btn";
 import { useEffect, useState } from "react";
 import ChangePasswordModal from "@/components/modal/secure-modal";
-import { fetchLogout } from "@/lib/actions/auth-actions";
+import { fetchLogout } from "@/lib/auth-actions";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
