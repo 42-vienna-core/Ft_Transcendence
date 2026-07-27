@@ -54,5 +54,23 @@
         "invalid_email": "Ungültige E-Mail-Adresse",
         "invalid_password": "Das Passwort muss mindestens 8 Zeichen lang sein",
         "password_mismatch": "Passwörter stimmen nicht überein"
+    },
+    "Start_game": {
+        "title": "Wähle deine Spielweise",
+        "cards": {
+            "cpu": {
+                "title": "vs. Computer",
+                "expl": "Schnelles Solo-Spiel. Keine Wartezeit.",
+                "label": "Spiel starten",
+                "wait_time": "Durchschn. Wartezeit ~8 Sek."
+            },
+            "quick": {
+                "title": "Schnelles Spiel",
+                "expl": "Online-Matchmaking, basierend auf der Bewertung.",
+                "label": "Spiel suchen",
+                "wait_time": "Durchschn. Wartezeit ~8 Sek."
+            }
+        }
     }
+
 }

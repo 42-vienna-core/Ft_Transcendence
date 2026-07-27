@@ -5,6 +5,7 @@ import { useGameSocket } from '@/providers/SocketProvider';
 import { useProfile } from '@/providers/ProfileContext';
 import { Socket } from 'socket.io-client';
 import { useRouter } from "next/navigation";
+import { useGameMode } from "@/components/store/useUserStore";
 
 const CELL = 20;
 const STEP = 100 / 1000;   
@@ -81,6 +82,8 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
     const gameStateRef = useRef<GameState>('START');
     const { id } = useProfile();
     const router = useRouter();
+    const { gameMode, resetMode} = useGameMode();
+    
 
     const { isConnected, socket } = useGameSocket();
 
@@ -225,6 +228,7 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
         }
         gameStateRef.current = 'END';
         setGameState('END');
+        resetMode();
         router.push('/');
         router.refresh();
     }

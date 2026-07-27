@@ -54,5 +54,23 @@
         "invalid_email": "Indirizzo e-mail non valido",
         "invalid_password": "La password deve contenere almeno 8 caratteri",
         "password_mismatch": "Le password non corrispondono"
+    },
+    "Start_game": {
+        "title": "Scegli come vuoi giocare",
+        "cards": {
+            "cpu": {
+                "title": "vs Computer",
+                "expl": "Partita veloce in singolo. Nessuna attesa.",
+                "label": "Inizia partita",
+                "wait_time": "attesa media ~8 s"
+            },
+            "quick": {
+                "title": "Partita veloce",
+                "expl": "Matchmaking online, bilanciato in base al punteggio.",
+                "label": "Trova partita",
+                "wait_time": "attesa media ~8 s"
+            }
+        }
     }
+
 }
