@@ -38,6 +38,27 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     console.log("Redis destroy");
   }
 
+  // Online users
+
+  async addOnline(data: OnlineUsersData, sessionId: string) {
+    const key = `user:online:${data.id}:${sessionId}`;
+    await this.set(key, JSON.stringify(data));
+  }
+
+  async removeOnline(userId: number, sessionId: string) {
+    console.log("removeOnline", `user:online:${String(userId)}:${sessionId}`)
+    await this.del(`user:online:${String(userId)}:${sessionId}`);
+  }
+
+  async isOnline(userId: number): Promise<boolean> {
+    const users = await this.client.keys(`user:online:${userId}:*`);
+    console.log("IS ONLINE", users)
+    if (users.length === 0)
+      return false;
+    else
+      return true;
+  }
+
   //// ===========Socket GameRoom =========== /////////
 
 

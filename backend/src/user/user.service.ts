@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { AvatarService } from '../avatar/avatar.service';
 import { SessionService } from '../session/session.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class UserService {
@@ -12,6 +13,7 @@ export class UserService {
 		private readonly prismaService: PrismaService,
 		private readonly avatarService: AvatarService,
 		private readonly sessionService: SessionService,
+		private readonly redis: RedisService,
 	) { }
 
 	public async findByEmail(email: string) {
@@ -109,6 +111,11 @@ export class UserService {
 				avatar: true,
 			},
 		});
+		for (const user of users) {
+			const isOnline = await this.redis.isOnline(user.id);
+			console.log("isOnline", user.id, isOnline);
+			(user as any).isOnline = isOnline;
+		}
 		return users;
 	}
 
