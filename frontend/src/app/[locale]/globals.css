@@ -28,8 +28,10 @@
   --color-border-strong:  rgba(31, 41, 55, 0.30);
 
   /* ─── BRAND ACCENT — green (the snake) ─── */
-  --color-accent:         #639922;
-  --color-accent-hover:   #3B6D11;
+  /* --color-accent:         #639922;
+  --color-accent-hover:   #3B6D11; */
+  --color-accent:         #50ab78;
+  --color-accent-hover:   #27aa0a;
   --color-accent-active:  #27500A;
   --color-accent-soft:    #EAF3DE;
   --color-accent-text:    #27500A;
