@@ -4,6 +4,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { encode, type JWT } from 'next-auth/jwt';
 
 const locales = ['en', 'ru', 'de', 'it'];
+let flag:boolean = false;
 
 const env = process.env;
 const REFRESH_URL = `${env.INTERNAL_API_URL}/auth`;
@@ -26,7 +27,13 @@ function createExpiredTime(): number {
 
 export async function refreshAccessToken(token: JWT): Promise<JWT> {
     console.log("================= REFRESH JWT=======================")
+    if (flag) {
+        console.log("refreshAccessToken REFRESHING exit from function")
 
+        throw  new Error("wait to then refreshing end.");
+    }
+
+    flag = true;
     try {
         const res = await fetch(`${REFRESH_URL}/refresh`, {
             method: 'POST',
@@ -50,6 +57,8 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
         }
     } catch (error){
         return {...token, error: "RefreshAccessTokenError" }
+    } finally {
+            flag = false;
     }
 }
 
