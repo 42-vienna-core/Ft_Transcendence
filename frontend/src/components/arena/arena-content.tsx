@@ -8,6 +8,7 @@ import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
 import style from "./arena-content.module.css"
 import GameCanvas from "./game/game-canvas";
 import { useRouter } from 'next/navigation';
+import { ControlType } from "@/types/gameTypes";
 
 interface OnlineUsersType {
     id: number;
@@ -73,8 +74,9 @@ function ArenaContent() {
     const [ gameState, setGameState ] = useState<GameState | null>(null);
     const [ gameDir, setGameDir ] = useState<Direction | null>(null);
     const { isConnected, socket } = useGameSocket();
+    const [control, setControl] = useState<ControlType>('arrow');
     const { gameMode } = useGameMode();
-     const router = useRouter();
+    const router = useRouter();
 
     const [ roomState, setRoomState ] = useState<RoomStateType>();
 
@@ -112,6 +114,15 @@ function ArenaContent() {
         }
         
         socket.emit("get-online-users");
+
+        const setUpContol = () => {
+            const controlLS = localStorage.getItem('controls') as ControlType;
+            if(controlLS) {
+                setControl(controlLS) ;
+            }
+        }
+
+        setUpContol();
 
         return () => {
             socket.off("online-users", handleOnlineUsers);
@@ -155,6 +166,7 @@ function ArenaContent() {
                         <GameCanvas
                             setGameState={setGameState}
                             setGameDir={setGameDir}
+                            control={control}
                         />
                     )}
 
