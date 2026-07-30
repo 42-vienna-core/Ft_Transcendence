@@ -1,15 +1,16 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useGameSocket } from '@/providers/SocketProvider';
 import { useProfile } from '@/providers/ProfileContext';
 import { Socket } from 'socket.io-client';
 import { useRouter } from "next/navigation";
+import { useGameMode } from "@/components/store/useUserStore";
+import { useGameControls } from "@/hooks/useGameControls";
+import { ControlType, Direction } from "@/types/gameTypes";
 
 const CELL = 20;
 const STEP = 100 / 1000;   
-
-type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 
 interface Position {
     x: number;
@@ -47,6 +48,7 @@ export interface Game {
 }
 
 type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
+type SoundEffectType = 'eat' | 'gameover' | 'win';
 
 interface FitCanvasProps {
     canvas: HTMLCanvasElement | null;
@@ -56,6 +58,7 @@ interface FitCanvasProps {
 }
 
 interface GameProps {
+    control: ControlType;
     setGameState: Dispatch<SetStateAction<GameState>>;
     setGameDir: (state: Direction) => void;
 }
@@ -75,13 +78,22 @@ const lerp = (start: number, end: number, alpha: number): number => {
     return start + (end - start) * alpha;
 };
 
-export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
+export default function GameCanvas({control, setGameState, setGameDir }: GameProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
     const gameStateRef = useRef<GameState>('START');
+    const currentDirection = useRef<Direction>('RIGHT');
+    const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+    const gameoverSound = useRef<HTMLAudioElement | null>(null);
+    const winSound = useRef<HTMLAudioElement | null>(null);
+    const eatSound = useRef<HTMLAudioElement | null>(null);
+
+
+    const [isMuted, setIsMuted] = useState(true);
+
     const { id } = useProfile();
     const router = useRouter();
-
+    const { gameMode, resetMode} = useGameMode();
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
@@ -91,6 +103,78 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
     const alphaRef = useRef<number>(0);
     const stepRef = useRef<boolean>(false);
     const screenRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+
+    useEffect(() => {
+        const soundFlagLs = localStorage.getItem('soundtrack');
+        if (soundFlagLs) {
+            const parsedSoundFlag = JSON.parse(soundFlagLs)
+            setIsMuted(parsedSoundFlag);
+        }
+
+        // bgMusicRef.current = new Audio('/sounds/snake-dies-with-game-over.mp3');
+        gameoverSound.current = new Audio('/sounds/gameover.mp3'); 
+        winSound.current = new Audio('/sounds/win.mp3');
+        eatSound.current = new Audio('/sounds/eat.mp3');
+
+        return () => {
+            bgMusicRef.current?.pause();
+            gameoverSound.current?.pause();
+            winSound.current?.pause();
+            bgMusicRef.current = null;
+            gameoverSound.current = null;
+            winSound.current = null;
+        }
+    },[])
+
+    const playSoundEffect = (type: SoundEffectType) => {
+        if (!isMuted) return;
+
+        if (type === 'gameover' && gameoverSound) {
+            gameoverSound.current?.play().catch(() => {})
+        }
+
+        if (type === 'win' && winSound) {
+            winSound.current?.play().catch(() => {})
+        }
+
+        if (type === 'eat' && winSound) {
+            winSound.current?.play().catch(() => {})
+        }
+
+    }
+
+    const isEnded = () =>
+        gameStateRef.current === 'OVER' ||
+        gameStateRef.current === 'WIN' ||
+        gameStateRef.current === 'END';
+
+    const handleDirectionChange = (newDirection: Direction) => {
+        const current = currentDirection.current;
+
+        if (isEnded()) return; 
+
+        setGameState((current) => {
+            if (current === 'PAUSE') {
+                gameStateRef.current = 'START';
+                return 'START';
+            }
+            return current;
+        });
+
+        if (newDirection === 'UP' && current === 'DOWN') return;
+        if (newDirection === 'DOWN' && current === 'UP') return;
+        if (newDirection === 'LEFT' && current === 'RIGHT') return;
+        if (newDirection === 'RIGHT' && current === 'LEFT') return;
+
+        currentDirection.current = newDirection;
+        setGameDir(newDirection);
+    
+        if (socket && isConnected) {
+            advanceSnake(socket, newDirection);
+        }
+    };
+
+    useGameControls(control, handleDirectionChange);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -107,8 +191,14 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
 
             if (data.status === 'finished') {
                 const won = String(data.winnerId) === String(id);
+
                 gameStateRef.current = won ? 'WIN' : 'OVER';
                 setGameState(won ? 'WIN' : 'OVER');
+                if (won) {
+                    playSoundEffect('win');
+                } else {
+                    playSoundEffect('gameover');
+                } 
             }
         };
 
@@ -120,64 +210,6 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
         const container = document.getElementById('canvas-container');
         if (!container) return;
 
-        const isEnded = () =>
-            gameStateRef.current === 'OVER' ||
-            gameStateRef.current === 'WIN' ||
-            gameStateRef.current === 'END';
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape', ' '].includes(e.key)) return;
-            e.preventDefault();
-
-            if (isEnded()) return; 
-
-            setGameState((current) => {
-                if (current === 'PAUSE') {
-                    gameStateRef.current = 'START';
-                    return 'START';
-                }
-                return current;
-            });
-
-            if (e.key === 'ArrowUp') {
-                setGameDir('UP');
-                advanceSnake(socket, 'UP');
-            } else if (e.key === 'ArrowDown') {
-                setGameDir('DOWN');
-                advanceSnake(socket, 'DOWN');
-            } else if (e.key === 'ArrowLeft') {
-                setGameDir('LEFT');
-                advanceSnake(socket, 'LEFT');
-            } else if (e.key === 'ArrowRight') {
-                setGameDir('RIGHT');
-                advanceSnake(socket, 'RIGHT');
-            } else if (e.key === 'Escape') {
-                setGameDir(null);
-                gameStateRef.current = 'END';
-                setGameState('END');
-            }
-        };
-
-        const handleWindowBlur = () => {
-            setGameState((currentState) => {
-                if (currentState === 'START') {
-                    gameStateRef.current = 'PAUSE';
-                    return 'PAUSE';
-                }
-                return currentState;
-            });
-        };
-
-        const handleWindowFocus = () => {
-            setGameState((currentState) => {
-                if (currentState === 'PAUSE') {
-                    gameStateRef.current = 'START';
-                    return 'START';
-                }
-                return currentState;
-            });
-        };
-
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const width = Math.floor(entry.contentRect.width);
@@ -187,9 +219,6 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
             }
         });
 
-        window.addEventListener('blur', handleWindowBlur);
-        window.addEventListener('focus', handleWindowFocus);
-        window.addEventListener('keydown', handleKeyDown);
         resizeObserver.observe(container);
 
         const TICK = STEP;
@@ -205,9 +234,6 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
         return () => {
             cancelAnimationFrame(rafId);
             resizeObserver.disconnect();
-            window.removeEventListener('blur', handleWindowBlur);
-            window.removeEventListener('focus', handleWindowFocus);
-            window.removeEventListener('keydown', handleKeyDown);
             socket.off("game-state", handleGameState);
         };
     }, [socket, isConnected, id, setGameState, setGameDir]);
@@ -225,6 +251,7 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
         }
         gameStateRef.current = 'END';
         setGameState('END');
+        resetMode();
         router.push('/');
         router.refresh();
     }
@@ -300,7 +327,7 @@ export default function GameCanvas({ setGameState, setGameDir }: GameProps) {
                     ctx.beginPath();
                 }
 
-                ctx.fillStyle = '#12ea94';
+                ctx.fillStyle = snake.color;
 
                 if (index === 0) {
                     const radii = 5;

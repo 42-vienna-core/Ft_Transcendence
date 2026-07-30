@@ -1,112 +1,80 @@
 'use client'
 
-import style from './nav.module.css';
 import Link from 'next/link';
-import clsx from 'clsx';
 import CustomLink from '../link';
 import { useProfile } from '@/providers/ProfileContext';
-import { usePathname } from 'next/navigation';
-import { HeaderProfileSkeleton, HeaderAuthLinkSkeleton } from '../skeletons'
 import { useTranslations } from 'next-intl';
+import { HeaderProfileSkeleton } from '../skeletons';
 
 
-interface LinkProps{
-  status: string;
-  username: string; 
-  avatar: string | null;
-}
-
-interface AuthLinkProps {
-    status: string;
-    isAuthorized: boolean;
-}
-
-function NavLinks ({status, username, avatar}: LinkProps) {
+export function NavLinks () {
+    const {status, username, avatar } = useProfile();
     const t = useTranslations("Header");
 
-    if (status === "authenticated") {
-        return (
-            <>
-                <CustomLink 
-                    url={"/arena"}
-                    label={t("a")}
-                />
-                <CustomLink 
-                    url={"/friends"}
-                    label={t("f")}
-                />
-                <Link className={`${style.profile} justify-between`} href="/profile">
-                    <p>{username}</p>
-                    <img 
-                        className={style.ava} 
-                        src={avatar ? avatar : "/png/default_avatar.png"}
-                    />
-                </Link>
-            </>
-        )
-    }
-}
-
-function NavAuthLinks ({status}: {status: string}) {
-    const t = useTranslations("Header");
-
-    if (status === "unauthenticated") {
-        return (
-            <>
-                <CustomLink 
-                    url={"/login"}
-                    label={t("si")}
-                />
-                <CustomLink 
-                    url={"/register"}
-                    label={t("su")}
-                />
-            </>
-        )
-    }
-}
-
-function ProfileLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
-    if (isAuthorized && status === "loading") {
-        return <HeaderProfileSkeleton/>
-    }
-}
-
-function AuthLoadingSkeleton ({status, isAuthorized}: AuthLinkProps) {
-    const currentPage = usePathname();
-    const publickPages = (currentPage === "/login" || currentPage === "/register" || currentPage === "/");
-    
-    if ( (!isAuthorized && publickPages && status === "loading")) {
-        return <HeaderAuthLinkSkeleton/>
-    }
-}
-
-function Nav({isAuthorized}: {isAuthorized:boolean}) {
-    const { status, username, avatar } = useProfile();
     return (
-        <nav className={style.nav}>
-            <div className={style.logo}>
-                <div className={style.logoMark} />
-                <Link href="/">Snake.io</Link>
+        <>
+            <CustomLink
+                url={"/friends"}
+                label={t("f")}
+            />
+            <CustomLink
+                url={"/rating"}
+                label={"Rating"}
+            />
+            {
+                status === "authenticated" &&
+                    <Link
+                        href="/profile"
+                        title={username}
+                        className="flex max-w-[180px] items-center gap-2 rounded-full border border-border-default py-1 pl-1 pr-4 transition-colors duration-150 hover:border-accent hover:bg-bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft"
+                    >
+                        <img
+                            className="h-7 w-7 shrink-0 rounded-full object-cover"
+                            src={avatar ? avatar : "/png/default_avatar.png"}
+                            alt=""
+                        />
+                        <span className="min-w-0 truncate text-sm font-medium text-text-primary">
+                            {username}
+                        </span>
+                    </Link>
+            }
+            {
+                status === "loading" &&
+                    <HeaderProfileSkeleton/>
+            }
+        </>
+    )
+}
+
+export function NavAuthLinks () {
+    const t = useTranslations("Header");
+
+    return (
+        <>
+            <CustomLink
+                url={"/login"}
+                label={t("si")}
+            />
+            <CustomLink
+                url={"/register"}
+                label={t("su")}
+            />
+        </>
+    )
+}
+
+export default function Nav({children}:{children: React.ReactNode}) {
+    return (
+        <nav className="sticky top-0 z-[100] flex items-center justify-between px-8 py-[18px] shadow-[0_8px_24px_0_var(--color-bg-muted)] backdrop-blur-xl after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:animate-[headerBorderShift_8s_ease-in-out_infinite] after:bg-[length:300%_100%] after:bg-[linear-gradient(90deg,var(--color-snake-you),var(--color-snake-1),var(--color-snake-3),var(--color-snake-2))] after:opacity-65 after:content-['']">
+            <div className="flex select-none items-center gap-[10px]">
+                <div className="relative h-8 w-8 rounded-md bg-accent shadow-[0_0_24px_var(--color-accent)] before:absolute before:left-2 before:top-2 before:h-[5px] before:w-[5px] before:rounded-full before:bg-accent-soft before:content-[''] after:absolute after:right-2 after:top-2 after:h-[5px] after:w-[5px] after:rounded-full after:bg-accent-soft after:content-['']" />
+                <Link href="/" className="display text-2xl tracking-wide text-text-primary">
+                    Snake.io
+                </Link>
             </div>
-            <div className={style.navLinks}>
-                <NavLinks 
-                    status={status}
-                    username={username}
-                    avatar={avatar}
-                />
-                <ProfileLoadingSkeleton 
-                    status={status}
-                    isAuthorized={isAuthorized}
-                />
-                <NavAuthLinks status={status}/>
-                <AuthLoadingSkeleton 
-                    status={status}
-                    isAuthorized={isAuthorized}
-                />
+            <div className="flex items-center gap-[25px]">
+                {children}
             </div>
         </nav>
     );
 }
-
-export default Nav;

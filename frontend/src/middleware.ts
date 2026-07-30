@@ -1,9 +1,10 @@
 import createIntlMiddleware from 'next-intl/middleware';
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse, NextRequest } from 'next/server';
-import { encode, getToken, type JWT } from 'next-auth/jwt';
+import { encode, type JWT } from 'next-auth/jwt';
 
 const locales = ['en', 'ru', 'de', 'it'];
+let flag:boolean = false;
 
 const env = process.env;
 const REFRESH_URL = `${env.INTERNAL_API_URL}/auth`;
@@ -24,9 +25,25 @@ function createExpiredTime(): number {
     return Date.now() + REFRESH_AGE;
 }
 
+const PromiseError:JWT = {
+    accessToken: "",
+    refreshToken: "",
+    accessTokenExpiry: 0,
+    error: ""
+}
+
+
 export async function refreshAccessToken(token: JWT): Promise<JWT> {
     console.log("================= REFRESH JWT=======================")
+    if (flag) {
+        console.log("refreshAccessToken REFRESHING exit from function")
 
+        return {
+        ...PromiseError,
+        error: "RaceConditionError"}
+    }
+
+    flag = true;
     try {
         const res = await fetch(`${REFRESH_URL}/refresh`, {
             method: 'POST',
@@ -50,6 +67,8 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
         }
     } catch (error){
         return {...token, error: "RefreshAccessTokenError" }
+    } finally {
+            flag = false;
     }
 }
 
@@ -58,11 +77,15 @@ const intlMiddleware = createIntlMiddleware({
     defaultLocale: 'en',
 });
 
-
 const authMiddleware = withAuth(
     async function middleware (req) {
         console.log("========MIDDLEWARE============");
         const path = req.nextUrl.pathname;
+
+        if (path.startsWith('/api/auth')) {
+            return NextResponse.next();
+        }
+
         const response = intlMiddleware(req);
         
         const token = req.nextauth.token;
@@ -74,17 +97,36 @@ const authMiddleware = withAuth(
             const isExpired = Date.now() > expiry;
 
             if (isExpired) {
-                console.log("========TOKEN EXPIRED============");
+                console.log("========TOKEN EXPIRED============"); 
                 const refreshed = await refreshAccessToken(token);
 
-                if (refreshed?.error === 'RefreshAccessTokenError') {
+                if (refreshed?.error === 'RefreshAccessTokenError' ) {
+                    console.log("🚨 REFRESH ERROR — FORCE LOGOUT");
+    
+                    const currentLocale = path.split('/')[1] || 'en';
+                    const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
+    
+                    let finalResponse: NextResponse;
+    
                     if (!isAuthPage) {
-                        const currentLocale = path.split('/')[1] || 'en';
-                        const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
-                        return NextResponse.redirect(new URL(`${localePrefix}/login`, req.url));
+                        finalResponse = NextResponse.redirect(new URL(`${localePrefix}/login`, req.url));
+                    } else {
+                        finalResponse = response;
                     }
-                    return response;
+
+                    finalResponse.cookies.set(SESSION_COOKIE_NAME, '', {
+                        path: '/',
+                        maxAge: 0,
+                        expires: new Date(0),
+                        httpOnly: true,
+                        secure: SECURE_COOKIE,
+                        sameSite: 'lax'
+                    });
+
+                    req.cookies.set(SESSION_COOKIE_NAME, '');
+                    return finalResponse;
                 }
+
 
                 const encoded = await encode({ token: refreshed, secret: SECRET, maxAge: COOKIE_MAX_AGE });
                 
@@ -124,17 +166,17 @@ const authMiddleware = withAuth(
 export default function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
-    // if (path.startsWith('/api/auth')) {
-    //     return NextResponse.next();
-    // }
+    if (path.startsWith('/api/auth')) {
+        return NextResponse.next();
+    }
 
     return (authMiddleware as any)(req);
 }
 
 export const config = {
     matcher: [
-        '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css)$).*)',
-        '/(ru|en|de|it)/:path*',
+        '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css|mp3)$).*)',
+        '/(ru|en|de|it)/((?!sounds|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css|mp3)$).*)',
         '/arena/:path*', 
         '/friends/:path*', 
         '/profile/:path*',

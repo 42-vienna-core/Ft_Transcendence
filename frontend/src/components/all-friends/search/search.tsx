@@ -5,27 +5,68 @@ import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
 import { useProfile } from '@/providers/ProfileContext';
+import { Check, Loader } from 'lucide-react';
 
 interface FriendCardProps {
     id: number
     name: string;
     avatar?: string | null;
+    isOnline: boolean;
+    loading: boolean;
+    isSuccess: boolean;
     addFriend: (id: number) => void;
 }
 
 interface Friend {
-  id: number;
-  name: string;
-  avatar?: string | null;
+    id: number;
+    name: string;
+    avatar?: string | null;
+    isOnline: boolean;
 }
 
 interface FriendsListProps {
     friends: Friend[];
-    errorMessage: string;
+    message: string;
+    loading: boolean;
+    isSuccess: boolean;
     addFriend: (id: number) => void;
 }
 
-function FriendCard ({id, name, avatar, addFriend}: FriendCardProps) {
+function OnlineStateItem({isOnline}: {isOnline:boolean}) {
+    return  (
+        <div className="flex items-center">
+            <span className="relative flex h-1 w-1 mr-1">
+                {
+                    isOnline && (
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    )
+                }
+        
+                <span 
+                    className={`relative inline-flex rounded-full h-1 w-1 transition-colors duration-300 ${
+                        isOnline ? 'bg-emerald-500' : 'bg-slate-500'
+                    }`}
+                />
+            </span>
+
+            <span className={`text-xs font-medium ${ 
+                isOnline ? 
+                    'text-emerald-500' : 'text-[var(--color-text-muted)]'
+                }`}>
+                {isOnline ? "online" : "offline"}
+            </span>
+        </div>
+    )
+}
+
+function FriendCard ({
+    id, 
+    name, 
+    avatar, 
+    isOnline,
+    loading,
+    isSuccess,
+    addFriend}: FriendCardProps) {
     const av = (name && typeof name === 'string' )? name.slice(0,2): "";
 
     return (
@@ -36,64 +77,73 @@ function FriendCard ({id, name, avatar, addFriend}: FriendCardProps) {
             >
                 {av}
             </div>
-                <div>
-                    <p className={style.name}>{name}</p>
-                    <p className={style.metaR}>5 mutual friends</p>
-                </div>
-            <button 
-                className={style.addMini}
-                onClick={() => addFriend(id)}
-            >
-                + Add
-            </button>
+            <div>
+                <p className={style.name}>{name}</p>
+
+                <OnlineStateItem 
+                    isOnline={isOnline}
+                />
+            
+            </div>           
+                {            
+                    loading && (
+                        <Loader className="h-5 w-5 animate-spin text-center text-accent" />
+                    )
+                }
+
+                {
+                    !loading && (
+                        <button 
+                            className={`text-info transition-colors duration-200 hover:text-accent`}
+                            onClick={() => addFriend(id)}
+                        >
+                            + Add
+                        </button>
+                    )
+                }
         </li>
     )
 }
 
-function FriendsList({friends, errorMessage, addFriend}: FriendsListProps) {
+function FriendsList({friends, message,loading, isSuccess, addFriend}: FriendsListProps) {
     return (
         <ul >
             {friends.length > 0 &&
-                (friends.map(({id, name, avatar}) => 
+                (friends.map(({id, name, avatar, isOnline}) => 
                     <FriendCard 
                         key={`friend-${id}`}
                         id={id}
                         name={name} 
+                        isOnline={isOnline}
+                        loading={loading}
+                        isSuccess={isSuccess}
                         addFriend={addFriend}
                     />
                 ))
             }
-            { errorMessage.length != 0 &&
-                <li key='error-msg' className="py-[5px] text-sm text-[var(--color-warning-text)]">
-                    {errorMessage}
+            { message.length != 0 &&
+                <li key='msg' className={`py-[5px] text-sm ${isSuccess ? "text-success": "text-warning-text"}`}>
+                    {message}
                 </li>
             }
-              
-            <li className={style.sugLabel}>suggested</li>
-            <FriendCard 
-                id={45}
-                name={"dmitriy"}
-                addFriend={addFriend}
-            />
-            <FriendCard
-                id={35} 
-                name={"pickle"}
-                addFriend={addFriend}
-            />
         </ul>
     )
 }
 
 export default function FindFriends() {
     const userContext = useProfile();
-    const [errorMessage, setErrorMessage] = useState<string>("");
+    const [message, setMessage] = useState<string>("");
     const [result, setResult] = useState<Friend[]>([]);
     const [query, setQuery] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [isSuccess, setIsSuccess] = useState<boolean>(true);
+
 
     const handleSearchRequest = useDebouncedCallback(async (value: string) => {
         if (value.trim().length < 3) {
             setResult([]);
-            setErrorMessage("");
+            setMessage("");
+            setIsSuccess(false);
             return
         }
 
@@ -102,19 +152,18 @@ export default function FindFriends() {
             console.log("RES: ",res);
 
             if (Array.isArray(res) && res.length != 0) {
-                console.log(res);
                 setResult(res);
-                setErrorMessage("")
-                return 
+                setMessage("");
+                setIsSuccess(false);
+                return;
             }
 
             setResult([]);
-            setErrorMessage("User not found")
+            setMessage("User not found");
             
         } catch (error) {
-            console.log("ERROR: ", error);
             setResult([]);
-            setErrorMessage("Server error")
+            setMessage("Server error");
         }
     }, 300);
 
@@ -124,8 +173,10 @@ export default function FindFriends() {
 
         if (!senderId || !receiverId) return 
 
+        setLoading(true);
+
         try {
-            const res = await apiFetch('friends/request', {
+            await apiFetch('friends/request', {
                 method: 'POST',
                 body: JSON.stringify({
                     senderId,
@@ -133,10 +184,18 @@ export default function FindFriends() {
                 })
             });
 
-            if (res.success)
-                console.log("SUCCESS");
-        } catch (error) {
-            console.log("ERROR: ",error);
+            setIsSuccess(true);
+            setMessage("The user has been added");
+        } catch (error){
+            setIsSuccess(false);
+
+            if (error instanceof Error) {
+                setMessage(error.message); 
+            } else {
+                setMessage("An unknown error occurred"); 
+            }
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -157,12 +216,13 @@ export default function FindFriends() {
                     value={query}
                     onChange={(e) => handleInputChange(e.target.value)}
                 />
-               
             </div>
             <FriendsList
                 friends={result}
                 addFriend={addFriend}
-                errorMessage={errorMessage}
+                loading={loading}
+                isSuccess={isSuccess}
+                message={message}
             />
         </div>
     )
