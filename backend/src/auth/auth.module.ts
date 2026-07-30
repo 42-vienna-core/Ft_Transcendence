@@ -13,8 +13,15 @@ import { RedisModule } from 'src/redis/redis.module';
   imports: [
     PassportModule,
     PrismaModule,
-    UserModule, SessionModule, TokenModule, RedisModule],
-  providers: [AuthService, JwtStrategy],
+    UserModule,
+    SessionModule,
+    TokenModule,
+    RedisModule
+  ],
+  providers: [
+    AuthService,
+    JwtStrategy
+  ],
   controllers: [AuthController],
 })
 export class AuthModule { }

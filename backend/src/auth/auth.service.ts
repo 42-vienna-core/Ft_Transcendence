@@ -7,6 +7,7 @@ import { LoginRequest } from './dto/login.dto';
 import { hash, verify } from 'argon2';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
         private readonly tokenService: TokenService,
         private readonly sessionService: SessionService,
         private readonly configService: ConfigService,
+        private readonly redis: RedisService
     ) { }
 
     public async register(dto: RegisterRequest) {
@@ -66,14 +68,47 @@ export class AuthService {
             throw new UnauthorizedException('Refresh token missing');
         }
         const tokenHash = await this.tokenService.hashRefreshToken(refreshToken);
-        const session = await this.sessionService.findSessionByHash(tokenHash);
-        if (!session) {
-            throw new UnauthorizedException('Invalid or expired session');
+
+        const cacheKey = `refresh:${tokenHash}`;
+
+        const cachedTokens = await this.redis.get(cacheKey);
+        if (cachedTokens) {
+            console.log("ℹ️ cachedTokens")
+            return JSON.parse(cachedTokens) as { accessToken: string; refreshToken: string };
         }
-        const newRefreshToken = await this.tokenService.generateRefreshToken();
-        await this.sessionService.rotateSession(session.id, newRefreshToken);
-        const accessToken = await this.tokenService.generateAccessToken(session.userId, session.id);
-        return { accessToken, refreshToken: newRefreshToken };
+
+        const lockKey = `lock:refresh:${tokenHash}`;
+        const lockId = await this.redis.acquireLock(lockKey, 10);
+
+        if (!lockId) {
+            console.log("ℹ️ !lockId")
+            const retryCached = await this.redis.waitForCache(cacheKey, 2500);
+            if (retryCached) {
+                console.log("ℹ️ retryCached")
+                return JSON.parse(retryCached) as { accessToken: string; refreshToken: string };
+            }
+            throw new UnauthorizedException('Concurrent refresh request failed, try again');
+        }
+
+        try {
+            const session = await this.sessionService.findSessionByHash(tokenHash);
+            if (!session) {
+                throw new UnauthorizedException('Invalid or expired session');
+            }
+            const newRefreshToken = await this.tokenService.generateRefreshToken();
+            await this.sessionService.rotateSession(session.id, newRefreshToken);
+            const accessToken = await this.tokenService.generateAccessToken(session.userId, session.id);
+
+            const tokens = { accessToken, refreshToken: newRefreshToken };
+
+            await this.redis.setEx(cacheKey, 30, JSON.stringify(tokens));
+            return tokens;
+        } finally {
+            if (lockId) {
+                console.log("ℹ️ finally releaseLock")
+                await this.redis.releaseLock(lockKey, lockId).catch(() => { });
+            }
+        }
     }
 
     public async logout(sessionId: string) {
