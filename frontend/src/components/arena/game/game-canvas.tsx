@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { useGameSocket } from '@/providers/SocketProvider';
 import { useProfile } from '@/providers/ProfileContext';
 import { Socket } from 'socket.io-client';
@@ -48,6 +48,7 @@ export interface Game {
 }
 
 type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
+type SoundEffectType = 'eat' | 'gameover' | 'win';
 
 interface FitCanvasProps {
     canvas: HTMLCanvasElement | null;
@@ -81,10 +82,18 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
     const gameStateRef = useRef<GameState>('START');
+    const currentDirection = useRef<Direction>('RIGHT');
+    const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+    const gameoverSound = useRef<HTMLAudioElement | null>(null);
+    const winSound = useRef<HTMLAudioElement | null>(null);
+    const eatSound = useRef<HTMLAudioElement | null>(null);
+
+
+    const [isMuted, setIsMuted] = useState(true);
+
     const { id } = useProfile();
     const router = useRouter();
     const { gameMode, resetMode} = useGameMode();
-    const currentDirection = useRef<Direction>('RIGHT');
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
@@ -94,6 +103,45 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const alphaRef = useRef<number>(0);
     const stepRef = useRef<boolean>(false);
     const screenRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+
+    useEffect(() => {
+        const soundFlagLs = localStorage.getItem('soundtrack');
+        if (soundFlagLs) {
+            const parsedSoundFlag = JSON.parse(soundFlagLs)
+            setIsMuted(parsedSoundFlag);
+        }
+
+        // bgMusicRef.current = new Audio('/sounds/snake-dies-with-game-over.mp3');
+        gameoverSound.current = new Audio('/sounds/gameover.mp3'); 
+        winSound.current = new Audio('/sounds/win.mp3');
+        eatSound.current = new Audio('/sounds/eat.mp3');
+
+        return () => {
+            bgMusicRef.current?.pause();
+            gameoverSound.current?.pause();
+            winSound.current?.pause();
+            bgMusicRef.current = null;
+            gameoverSound.current = null;
+            winSound.current = null;
+        }
+    },[])
+
+    const playSoundEffect = (type: SoundEffectType) => {
+        if (!isMuted) return;
+
+        if (type === 'gameover' && gameoverSound) {
+            gameoverSound.current?.play().catch(() => {})
+        }
+
+        if (type === 'win' && winSound) {
+            winSound.current?.play().catch(() => {})
+        }
+
+        if (type === 'eat' && winSound) {
+            winSound.current?.play().catch(() => {})
+        }
+
+    }
 
     const isEnded = () =>
         gameStateRef.current === 'OVER' ||
@@ -143,8 +191,14 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
 
             if (data.status === 'finished') {
                 const won = String(data.winnerId) === String(id);
+
                 gameStateRef.current = won ? 'WIN' : 'OVER';
                 setGameState(won ? 'WIN' : 'OVER');
+                if (won) {
+                    playSoundEffect('win');
+                } else {
+                    playSoundEffect('gameover');
+                } 
             }
         };
 

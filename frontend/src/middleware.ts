@@ -25,12 +25,22 @@ function createExpiredTime(): number {
     return Date.now() + REFRESH_AGE;
 }
 
+const PromiseError:JWT = {
+    accessToken: "",
+    refreshToken: "",
+    accessTokenExpiry: 0,
+    error: ""
+}
+
+
 export async function refreshAccessToken(token: JWT): Promise<JWT> {
     console.log("================= REFRESH JWT=======================")
     if (flag) {
         console.log("refreshAccessToken REFRESHING exit from function")
 
-        throw  new Error("wait to then refreshing end.");
+        return {
+        ...PromiseError,
+        error: "RaceConditionError"}
     }
 
     flag = true;
@@ -90,7 +100,7 @@ const authMiddleware = withAuth(
                 console.log("========TOKEN EXPIRED============"); 
                 const refreshed = await refreshAccessToken(token);
 
-                if (refreshed?.error === 'RefreshAccessTokenError') {
+                if (refreshed?.error === 'RefreshAccessTokenError' ) {
                     console.log("🚨 REFRESH ERROR — FORCE LOGOUT");
     
                     const currentLocale = path.split('/')[1] || 'en';
@@ -165,8 +175,8 @@ export default function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css)$).*)',
-        '/(ru|en|de|it)/:path*',
+        '/((?!api/v1|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css|mp3)$).*)',
+        '/(ru|en|de|it)/((?!sounds|.*\\.(?:png|jpg|jpeg|gif|webp|svg|css|mp3)$).*)',
         '/arena/:path*', 
         '/friends/:path*', 
         '/profile/:path*',
