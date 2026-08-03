@@ -89,7 +89,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const eatSound = useRef<HTMLAudioElement | null>(null);
 
 
-    const [isMuted, setIsMuted] = useState(true);
+    const isMuted = useRef<boolean>(false);
 
     const { id } = useProfile();
     const router = useRouter();
@@ -108,10 +108,17 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         const soundFlagLs = localStorage.getItem('soundtrack');
         if (soundFlagLs) {
             const parsedSoundFlag = JSON.parse(soundFlagLs)
-            setIsMuted(parsedSoundFlag);
+            console.log(parsedSoundFlag);
+            isMuted.current = parsedSoundFlag;
+        } else {
+            isMuted.current = true;
         }
 
-        // bgMusicRef.current = new Audio('/sounds/snake-dies-with-game-over.mp3');
+        bgMusicRef.current = new Audio('/sounds/tanweraman.mp3');
+        bgMusicRef.current.loop = true;
+        bgMusicRef.current.volume = 0.4;
+        bgMusicRef.current.play().catch(() => {});
+
         gameoverSound.current = new Audio('/sounds/gameover.mp3'); 
         winSound.current = new Audio('/sounds/win.mp3');
         eatSound.current = new Audio('/sounds/eat.mp3');
@@ -127,8 +134,8 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     },[])
 
     const playSoundEffect = (type: SoundEffectType) => {
-        if (!isMuted) return;
-
+        if (!isMuted.current) return;
+        
         if (type === 'gameover' && gameoverSound) {
             gameoverSound.current?.play().catch(() => {})
         }
@@ -140,7 +147,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         if (type === 'eat' && winSound) {
             winSound.current?.play().catch(() => {})
         }
-
     }
 
     const isEnded = () =>
@@ -194,6 +200,9 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
 
                 gameStateRef.current = won ? 'WIN' : 'OVER';
                 setGameState(won ? 'WIN' : 'OVER');
+
+                bgMusicRef.current?.pause()
+
                 if (won) {
                     playSoundEffect('win');
                 } else {
