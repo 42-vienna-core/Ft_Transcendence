@@ -58,7 +58,8 @@ export class AuthService {
                 id: user.id,
                 name: user.name,
                 avatar: user.avatar ? avatarsUrl + user.avatar : null,
-                //todo: points? friends?
+                score: user.score,
+                //todo: friends?
             }
         };
     }

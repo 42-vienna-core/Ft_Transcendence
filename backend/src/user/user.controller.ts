@@ -58,11 +58,13 @@ export class UserController {
   }
 
   @Get('search')
+  @Authorization()
   @HttpCode(HttpStatus.OK)
   public async searchUsers(
     @Query() query: SearchUserDto,
+    @Authorized('userId') userId: number,
   ) {
-    return this.userService.findUsers(query.name);
+    return this.userService.findUsers(userId, query.name);
   }
 
   @Authorization()

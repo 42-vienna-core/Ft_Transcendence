@@ -1,43 +1,47 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class FriendsService {
 
 	public constructor(
 		private readonly prismaService: PrismaService,
+		private readonly redis: RedisService,
 	) { }
-  
-  	async sendRequest(senderId: number, receiverId: number){
-		if (senderId === receiverId){
-			throw new BadRequestException ('You cannot send a request to yourself');
+
+	async sendRequest(senderId: number, receiverId: number) {
+		if (senderId === receiverId) {
+			throw new BadRequestException('You cannot send a request to yourself');
 		}
 		const check = await this.prismaService.friendsRequest.findUnique({
 			where: {
-				senderId_receiverId: { senderId, receiverId,}
+				senderId_receiverId: { senderId, receiverId, }
 			},
 		})
-		if (check){
+		if (check) {
 			if (check.status === 'PENDING')
-				throw new BadRequestException ('Request already sent');
+				throw new BadRequestException('Request already sent');
 			if (check.status === 'ACCEPTED')
-				throw new BadRequestException ('You are friends already');
+				throw new BadRequestException('You are friends already');
 			if (check.status === 'REJECTED')
 				await this.prismaService.friendsRequest.delete({
-					where: {id: check.id},
+					where: { id: check.id },
 				});
 		}
 
 		const reverse = await this.prismaService.friendsRequest.findUnique({
-			where: { senderId_receiverId: {senderId: receiverId, receiverId: senderId}},
+			where: { senderId_receiverId: { senderId: receiverId, receiverId: senderId } },
 		});
-		if (reverse?.status === 'PENDING'){
-			throw new BadRequestException('The user already sent you a request');}
-		if (reverse?.status === 'ACCEPTED'){
-			throw new BadRequestException('You are friends already');}
-		if (reverse?.status === 'REJECTED'){
+		if (reverse?.status === 'PENDING') {
+			throw new BadRequestException('The user already sent you a request');
+		}
+		if (reverse?.status === 'ACCEPTED') {
+			throw new BadRequestException('You are friends already');
+		}
+		if (reverse?.status === 'REJECTED') {
 			await this.prismaService.friendsRequest.delete({
-				where: {id: reverse.id},
+				where: { id: reverse.id },
 			});
 		}
 		const request = await this.prismaService.friendsRequest.create({
@@ -46,76 +50,78 @@ export class FriendsService {
 				receiverId,
 			},
 			select: {
-				id:true,
+				id: true,
 			}
 		});
 		return request;
-  	}
+	}
 
-	async acceptRequest(userId: number, requestId: string){
+	async acceptRequest(userId: number, requestId: string) {
 		const request = await this.prismaService.friendsRequest.findUniqueOrThrow({
-			where: {id: requestId,},
+			where: { id: requestId, },
 		})
 		if (request.receiverId !== userId) {
-    		throw new BadRequestException('You are not the receiver of this request');
-  		}
-		if (request.status !== 'PENDING'){
-			throw new BadRequestException ('Request is not pending');
+			throw new BadRequestException('You are not the receiver of this request');
+		}
+		if (request.status !== 'PENDING') {
+			throw new BadRequestException('Request is not pending');
 		}
 		await this.prismaService.friendsRequest.update({
 			where: {
-				id : requestId,
+				id: requestId,
 			},
 			data: {
-				status : 'ACCEPTED',
+				status: 'ACCEPTED',
 			},
 		});
 		return { success: true };
 	}
 
-	async rejectRequest(userId: number, requestId: string){
+	async rejectRequest(userId: number, requestId: string) {
 		const request = await this.prismaService.friendsRequest.findUniqueOrThrow({
-			where: {id: requestId,},
+			where: { id: requestId, },
 		})
 		if (request.receiverId !== userId) {
-    		throw new BadRequestException('You are not the receiver of this request');
-  		}
-		if (request.status !== 'PENDING'){
-			throw new BadRequestException ('Request is not pending');
+			throw new BadRequestException('You are not the receiver of this request');
+		}
+		if (request.status !== 'PENDING') {
+			throw new BadRequestException('Request is not pending');
 		}
 		await this.prismaService.friendsRequest.update({
 			where: {
-				id : requestId,
+				id: requestId,
 			},
 			data: {
-				status : 'REJECTED',
+				status: 'REJECTED',
 			},
 		});
 		return { success: true };
 	}
 
-	async getFriends(userId: number){
+	async getFriends(userId: number) {
 		const requests = await this.prismaService.friendsRequest.findMany({
 			where: {
-				status : 'ACCEPTED',
+				status: 'ACCEPTED',
 				OR: [
-					{senderId: userId},
-					{receiverId: userId},
+					{ senderId: userId },
+					{ receiverId: userId },
 				],
 			},
 			include: {
 				sender: {
 					select: {
-						id:true,
+						id: true,
 						name: true,
-						avatar:true,
+						avatar: true,
+						score: true,
 					},
 				},
 				receiver: {
 					select: {
-						id:true,
+						id: true,
 						name: true,
-						avatar:true,
+						avatar: true,
+						score: true,
 					},
 				},
 			}
@@ -126,31 +132,38 @@ export class FriendsService {
 			else
 				return r.sender;
 		});
-		return list;
+		const friends = await Promise.all(
+			list.map(async (user) => ({
+				...user,
+				isOnline: await this.redis.isOnline(user.id),
+			})),
+		);
+
+		return friends;
 	}
 
-	async removeFriend(userId: number, friend: number){
+	async removeFriend(userId: number, friend: number) {
 		const request = await this.prismaService.friendsRequest.findFirstOrThrow({
 			where: {
-				status : 'ACCEPTED',
+				status: 'ACCEPTED',
 				OR: [
-					{senderId: userId, receiverId: friend},
-					{senderId: friend, receiverId: userId},
+					{ senderId: userId, receiverId: friend },
+					{ senderId: friend, receiverId: userId },
 				],
 			},
 		});
 		await this.prismaService.friendsRequest.delete({
 			where: {
-				id : request.id,
+				id: request.id,
 			},
 		});
 		return { success: true };
 	}
 
-	async incomingRequest(userId: number){
+	async incomingRequest(userId: number) {
 		const requests = await this.prismaService.friendsRequest.findMany({
 			where: {
-				status : 'PENDING',
+				status: 'PENDING',
 				receiverId: userId,
 			},
 			include: {
@@ -165,18 +178,18 @@ export class FriendsService {
 		});
 		return requests;
 	}
-	
-	async cancelRequest(userId: number, receiverId: number){
+
+	async cancelRequest(userId: number, receiverId: number) {
 		const request = await this.prismaService.friendsRequest.findFirstOrThrow({
-			where : {
-				status : 'PENDING',	
-				senderId :userId ,
-				receiverId : receiverId,
+			where: {
+				status: 'PENDING',
+				senderId: userId,
+				receiverId: receiverId,
 			},
 		});
 		await this.prismaService.friendsRequest.delete({
 			where: {
-				id : request.id,
+				id: request.id,
 			},
 		});
 		return { success: true };

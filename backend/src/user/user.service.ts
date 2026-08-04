@@ -38,6 +38,8 @@ export class UserService {
 				id: true,
 				name: true,
 				avatar: true,
+				score: true,
+				// isBot: true,
 				// createdAt: true,
 				// updatedAt: true,
 				// isVerified: true,
@@ -94,21 +96,26 @@ export class UserService {
 		return this.avatarService.deleteAvatar(userId);
 	}
 
-	public async findUsers(name: string) {
+	public async findUsers(userId: number, name: string) {
 		if (!name || !name.trim()) {
 			return [];
 		}
 		const users = await this.prismaService.users.findMany({
 			where: {
+				id: {
+					not: userId,
+				},
 				name: {
 					contains: name,
 					mode: 'insensitive',
 				},
+				isBot: false,
 			},
 			select: {
 				id: true,
 				name: true,
 				avatar: true,
+				score: true,
 			},
 		});
 		for (const user of users) {
@@ -116,7 +123,48 @@ export class UserService {
 			console.log("isOnline", user.id, isOnline);
 			(user as any).isOnline = isOnline;
 		}
-		return users;
+
+		// return users;
+		const ids = users.map(u => u.id);
+		const requests = await this.prismaService.friendsRequest.findMany({
+			where: {
+				OR: [
+					{
+						senderId: userId,
+						receiverId: {
+							in: ids,
+						},
+					},
+					{
+						receiverId: userId,
+						senderId: {
+							in: ids,
+						},
+					},
+				],
+			},
+		});
+
+		const map = new Map<number, string>();
+		for (const req of requests) {
+			const otherId = req.senderId === userId ? req.receiverId : req.senderId;
+			if (req.status === 'ACCEPTED') {
+				map.set(otherId, 'FRIEND');
+			}
+			if (req.status === 'PENDING') {
+				if (req.senderId === userId)
+					map.set(otherId, 'OUTGOING');
+				else
+					map.set(otherId, 'INCOMING');
+			}
+		}
+		return Promise.all(
+			users.map(async (user) => ({
+				...user,
+				isOnline: await this.redis.isOnline(user.id),
+				friendStatus: map.get(user.id) ?? 'NONE',
+			})),
+		);
 	}
 
 	public async deleteUser(userId: number) {
