@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/updata-user.dto';
 import { AvatarService } from '../avatar/avatar.service';
 import { SessionService } from '../session/session.service';
 import { RedisService } from 'src/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -14,6 +15,8 @@ export class UserService {
 		private readonly avatarService: AvatarService,
 		private readonly sessionService: SessionService,
 		private readonly redis: RedisService,
+		private readonly configService: ConfigService,
+
 	) { }
 
 	public async findByEmail(email: string) {
@@ -48,7 +51,11 @@ export class UserService {
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		return user;
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL');
+		return {
+			...user,
+			avatar: user.avatar ? avatarsUrl + user.avatar : null,
+		};
 	}
 
 	public async create(dto: RegisterRequest, passwordHash: string) {
@@ -118,12 +125,6 @@ export class UserService {
 				score: true,
 			},
 		});
-		for (const user of users) {
-			const isOnline = await this.redis.isOnline(user.id);
-			console.log("isOnline", user.id, isOnline);
-			(user as any).isOnline = isOnline;
-		}
-
 		// return users;
 		const ids = users.map(u => u.id);
 		const requests = await this.prismaService.friendsRequest.findMany({
@@ -144,7 +145,6 @@ export class UserService {
 				],
 			},
 		});
-
 		const map = new Map<number, string>();
 		for (const req of requests) {
 			const otherId = req.senderId === userId ? req.receiverId : req.senderId;
@@ -158,9 +158,11 @@ export class UserService {
 					map.set(otherId, 'INCOMING');
 			}
 		}
+		const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
 		return Promise.all(
 			users.map(async (user) => ({
 				...user,
+				avatar: user.avatar ? avatarsUrl + user.avatar : null,
 				isOnline: await this.redis.isOnline(user.id),
 				friendStatus: map.get(user.id) ?? 'NONE',
 			})),

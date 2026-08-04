@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FriendsService {
@@ -8,6 +9,7 @@ export class FriendsService {
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly redis: RedisService,
+		private readonly configService: ConfigService,
 	) { }
 
 	async sendRequest(senderId: number, receiverId: number) {
@@ -132,13 +134,14 @@ export class FriendsService {
 			else
 				return r.sender;
 		});
+		const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
 		const friends = await Promise.all(
 			list.map(async (user) => ({
 				...user,
+				avatar: user.avatar ? avatarsUrl + user.avatar : null,
 				isOnline: await this.redis.isOnline(user.id),
 			})),
 		);
-
 		return friends;
 	}
 
@@ -176,7 +179,20 @@ export class FriendsService {
 				}
 			}
 		});
-		return requests;
+		const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
+		const users = await Promise.all(
+			requests.map(async (request) => ({
+				...request,
+				sender: {
+					...request.sender,
+					avatar: request.sender.avatar
+						? avatarsUrl + request.sender.avatar
+						: null,
+					isOnline: await this.redis.isOnline(request.sender.id),
+				},
+			})),
+		);
+		return users;
 	}
 
 	async cancelRequest(userId: number, receiverId: number) {
