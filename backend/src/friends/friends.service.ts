@@ -134,7 +134,7 @@ export class FriendsService {
 			else
 				return r.sender;
 		});
-		const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
 		const friends = await Promise.all(
 			list.map(async (user) => ({
 				...user,
@@ -179,7 +179,7 @@ export class FriendsService {
 				}
 			}
 		});
-		const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
 		const users = await Promise.all(
 			requests.map(async (request) => ({
 				...request,

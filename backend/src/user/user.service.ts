@@ -158,7 +158,7 @@ export class UserService {
 					map.set(otherId, 'INCOMING');
 			}
 		}
-		const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
 		return Promise.all(
 			users.map(async (user) => ({
 				...user,

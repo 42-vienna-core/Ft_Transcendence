@@ -50,7 +50,7 @@ export class AuthService {
         const refreshToken = await this.tokenService.generateRefreshToken();
         const session = await this.sessionService.createSession(user.id, refreshToken, userAgent, ip);
         const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
-        const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
+        const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
         return {
             accessToken,
             refreshToken,
