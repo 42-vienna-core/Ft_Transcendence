@@ -1,13 +1,9 @@
-'use client'
-
-import { useEffect, useState } from 'react';
-import style from './all-friends.module.css'
+import style from '../../app/[locale]/(home)/(dashboard)/friends/friends.module.css'
 import FriendsContent from './friends/friends';
 import RequestsContent from './requests/requests';
 import FindFriends from './search/search';
-import { apiFetch } from '@/lib/api-client';
 
-interface Requests {
+interface Request {
     id: string;
     sender: {
         id: number;
@@ -22,59 +18,26 @@ interface Friend {
     avatar?: string | null;
 }
 
-function AllFriends() {
-    const [friendsArr, setFriendsArr] = useState<Friend[]>([]);
-    const [requestsArr, setRequestsArr] = useState<Requests[]>([]);
+interface AsideBarProps {
+    friends: Friend[];
+    requests: Request[];
+    removeFriendCard: (id: number)=> void;
+    removeRequestCard: (id: string) => void
+    getListOfFriends: () => void;
+}
 
-    useEffect(() => {
+export default function AsideBar({
+    requests, 
+    friends,
+    removeFriendCard,
+    removeRequestCard,
+    getListOfFriends,
 
-        async function getAllFriends() {
-            try {
-                const [requestsRes, friendsRes] = await Promise.all([
-                    apiFetch('friends/request/incoming'),
-                    apiFetch('friends'),
-                ]);
-
-                setRequestsArr(Array.isArray(requestsRes) ? requestsRes : []);
-                setFriendsArr(Array.isArray(friendsRes) ? friendsRes : []);
-
-            } catch (error) {
-                console.log("ERROR Parallel data fetching: ", error)
-            }
-        }
-
-        getAllFriends();
-    },[])
-
-    const getListOfFriends = async () => {
-        try {
-            const res = await apiFetch('friends');
-
-            if (Array.isArray(res) && res.length != 0) {
-                setFriendsArr(res);
-                return;
-            }
-
-            setFriendsArr([]);
-        } catch (error) {
-            console.log("ERROR getting all friends: ", error);
-        }
-    }
-
-    const removeFriendCard = (id: number) => {
-        if (id === 0) return;
-
-        setFriendsArr(prev => prev.filter(f => f.id !== id));
-    }
-
-    const removeRequestCard = (id: string) => {
-        setRequestsArr(prev => prev.filter(r => r.id !== id));
-    }
-
+}:AsideBarProps) {
     return (
         <div className={style.grid}>
-            <FriendsContent 
-                friends={friendsArr}
+            <FriendsContent
+                friends={friends}
                 removeFriendCard={removeFriendCard}
             />
             <aside className={style.col}>
@@ -121,7 +84,7 @@ function AllFriends() {
                 </div>
 
                 <RequestsContent
-                    requests={requestsArr}
+                    requests={requests}
                     removeRequestCard={removeRequestCard}
                     getListOfFriends={getListOfFriends}
                 />
@@ -129,7 +92,5 @@ function AllFriends() {
                 <FindFriends/>
             </aside>
         </div>
-    )
-} 
-
-export default AllFriends;
+    );
+}
