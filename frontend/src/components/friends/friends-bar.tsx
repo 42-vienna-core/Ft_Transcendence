@@ -4,16 +4,7 @@ import { useEffect, useState } from 'react';
 import style from '../../app/[locale]/(home)/(dashboard)/friends/friends.module.css'
 import { apiFetch } from '@/lib/api-client';
 import AsideBar from './aside-bar';
-import FriendsContent from './friends/friends';
-
-interface Requests {
-    id: string;
-    sender: {
-        id: number;
-        name: string;
-        avatar?: string | null;
-    };
-}
+import FriendsContent from './friends-list';
 
 interface Friend {
     id: number;
@@ -21,6 +12,11 @@ interface Friend {
     avatar?: string | null;
     isOnline: boolean;
     score: number;
+}
+
+interface Requests {
+    id: string;
+    sender: Friend;
 }
 
 type ActiveFilterType = 'All' | 'Online' | 'Playing';
@@ -104,7 +100,7 @@ function FriendsBar() {
     const removeRequestCard = (id: string) => {
         setRequestsArr(prev => prev.filter(r => r.id !== id));
     }
-
+    console.log(allFriends);
     const friendsAll = allFriends.length;
     const friensOnline = allFriends.filter(item => item.isOnline).length;
     const labels = [{'All': friendsAll}, {'Online': friensOnline}, {'Playing': 1}];
@@ -154,7 +150,6 @@ function FriendsBar() {
                 />
             </div>
         </>
-       
     )
 } 
 

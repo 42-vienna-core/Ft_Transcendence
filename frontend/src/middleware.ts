@@ -89,7 +89,7 @@ const authMiddleware = withAuth(
                 console.log("========TOKEN EXPIRED============"); 
                 const refreshed = await refreshAccessToken(token);
 
-                if (refreshed?.error === 'RefreshAccessTokenError' ) {
+                if (refreshed?.error === 'RefreshAccessTokenError') {
                     console.log("🚨 REFRESH ERROR — FORCE LOGOUT");
     
                     const currentLocale = path.split('/')[1] || 'en';

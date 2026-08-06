@@ -6,22 +6,21 @@ import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
 import { useProfile } from '@/providers/ProfileContext';
 import { Check, Loader } from 'lucide-react';
+import { OnlineStateItem } from '@/ui/online-tracker';
 
-interface FriendCardProps {
-    id: number
-    name: string;
-    avatar?: string | null;
-    isOnline: boolean;
-    loading: boolean;
-    isSuccess: boolean;
-    addFriend: (id: number) => void;
-}
 
 interface Friend {
     id: number;
     name: string;
     avatar?: string | null;
     isOnline: boolean;
+    score: number;
+}
+
+interface FriendCardProps {
+    friend: Friend;
+    loading: boolean;
+    addFriend: (id: number) => void;
 }
 
 interface FriendsListProps {
@@ -32,55 +31,29 @@ interface FriendsListProps {
     addFriend: (id: number) => void;
 }
 
-function OnlineStateItem({isOnline}: {isOnline:boolean}) {
-    return  (
-        <div className="flex items-center">
-            <span className="relative flex h-1 w-1 mr-1">
-                {
-                    isOnline && (
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    )
-                }
-        
-                <span 
-                    className={`relative inline-flex rounded-full h-1 w-1 transition-colors duration-300 ${
-                        isOnline ? 'bg-emerald-500' : 'bg-slate-500'
-                    }`}
-                />
-            </span>
-
-            <span className={`text-xs font-medium ${ 
-                isOnline ? 
-                    'text-emerald-500' : 'text-[var(--color-text-muted)]'
-                }`}>
-                {isOnline ? "online" : "offline"}
-            </span>
-        </div>
-    )
-}
-
-function FriendCard ({
-    id, 
-    name, 
-    avatar, 
-    isOnline,
-    loading,
-    isSuccess,
-    addFriend}: FriendCardProps) {
+function FriendCard ({friend, addFriend, loading}: FriendCardProps) {
+    const { id, name, avatar, isOnline, score} = friend;
     const av = (name && typeof name === 'string' )? name.slice(0,2): "";
+    const isAvatar = !!avatar;
 
     return (
         <li className={style.sugRow}>
-            <div
-                className={`${style.av} bg-[var(--color-snake-1)] text-[var(--color-text-primary)] capitalize`}
-                style={{ color: "var(--color-info-text)" }}
-            >
-                {av}
+            <div>
+                { isAvatar ? (
+                    <img  className={style.av} src={avatar ? avatar : ""} alt="avatar" />
+                ) : (
+                    <div className={`${style.av} bg-[var(--color-snake-1)] text-[var(--color-text-primary)] capitalize`}
+                        style={{ color: "var(--color-info-text)" }}
+                    >
+                        {av}
+                    </div>
+                )}
             </div>
+
             <div>
                 <p className={style.name}>{name}</p>
 
-                <OnlineStateItem 
+                <OnlineStateItem
                     isOnline={isOnline}
                 />
             
@@ -109,14 +82,11 @@ function FriendsList({friends, message,loading, isSuccess, addFriend}: FriendsLi
     return (
         <ul >
             {friends.length > 0 &&
-                (friends.map(({id, name, avatar, isOnline}) => 
+                (friends.map((item) => 
                     <FriendCard 
-                        key={`friend-${id}`}
-                        id={id}
-                        name={name} 
-                        isOnline={isOnline}
+                        key={`friend-${item.id}`}
+                        friend={item}
                         loading={loading}
-                        isSuccess={isSuccess}
                         addFriend={addFriend}
                     />
                 ))
