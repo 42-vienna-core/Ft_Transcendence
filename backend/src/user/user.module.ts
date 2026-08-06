@@ -5,6 +5,7 @@ import { MailModule } from '../mail/mail.modul';
 import { AvatarModule } from 'src/avatar/avatar.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { SessionModule } from 'src/session/session.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { SessionModule } from 'src/session/session.module';
     AvatarModule,
     PrismaModule,
     SessionModule,
+    RedisModule,
   ],
   exports: [UserService],
   controllers: [UserController],

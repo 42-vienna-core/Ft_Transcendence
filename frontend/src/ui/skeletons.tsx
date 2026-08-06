@@ -14,6 +14,19 @@ export function HeaderProfileSkeleton() {
     );
 }
 
+
+export function HeaderLinkSkeleton() {
+    return (
+        <div
+            className="flex items-center justify-between py-[5px] px-[15px] gap-3 h-[38px] w-[150px] border border-cyan-400 rounded-3xl bg-[#4e4b4b]/70"
+            aria-hidden={true}
+        >
+            <SkeletonBlock className="h-[16px] w-[60px] rounded-sm bg-[#c4c4d0]" />
+            <SkeletonBlock className="w-[26px] h-[26px] rounded-full bg-[#c4c4d0]" />
+        </div>
+    );
+}
+
 export function UserProfileSkeleton() {
   return (
     <>

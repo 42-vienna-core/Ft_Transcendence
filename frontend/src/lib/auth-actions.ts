@@ -1,7 +1,7 @@
 'use server'
 import { changePasswordSchema, loginSchema, registerSchema } from '@/lib/schema'
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth';
+import { authOptions } from './auth';
 
 const url = process.env.INTERNAL_API_URL;
 
@@ -9,21 +9,15 @@ export async function fetchRegister(formData: FormData) {
     const username = formData.get('username');
     const email = formData.get('email');
     const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
+    const passwordConfirm = formData.get('passwordConfirm');
 
-    const validateFilds = registerSchema.safeParse({username, email, password, confirmPassword});
+    const validateFilds = registerSchema.safeParse({username, email, password, passwordConfirm});
 
     if (!validateFilds.success) {
-        let message = "";
-        validateFilds.error.issues.forEach(issue => {
-            message = issue.message;
-        })
-        return {message: message, success: false};
+        return {message: "Invalid email or password. Please try again.", success: false};
     }
 
-    const { confirmPassword: _c, ...registerData } = validateFilds.data;
-
-    console.log(url);
+    const { passwordConfirm: _c, ...registerData } = validateFilds.data;
 
     const response = await fetch(`${url}/auth/register`, {
         method: 'POST',
@@ -47,11 +41,7 @@ export async function fatchLogin(formData: FormData) {
     const validateFilds = loginSchema.safeParse({email, password});
 
     if (!validateFilds.success) {
-        let message = "";
-        validateFilds.error.issues.forEach(issue => {
-            message = issue.message;
-        })
-        return {message: message, success: false};
+        return {message: "Invalid email or password. Please try again.", success: false};
     }
 
     return {success: true};
@@ -60,8 +50,6 @@ export async function fatchLogin(formData: FormData) {
 export async function fetchLogout() {
 
     try {
-
-        //  await new Promise((resolve) => setTimeout(resolve, 4000));
 
         const session = await getServerSession(authOptions);
         if (!session) return {success: false};

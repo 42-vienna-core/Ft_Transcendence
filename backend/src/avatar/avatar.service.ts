@@ -70,7 +70,7 @@ export class AvatarService {
         if (oldAvatar) {
             await this.fileService.removeFile(oldAvatar);
         }
-        const avatarsUrl = this.configService.getOrThrow<String>('AVATARS_URL')
+        const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
         return {
             success: true,
             avatar: avatarsUrl + avatarFilename,

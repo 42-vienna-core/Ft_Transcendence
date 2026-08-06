@@ -1,5 +1,6 @@
 "use client";
 
+import { OnlineStateItem } from "@/ui/online-tracker";
 import style from "./requests.module.css";
 import { apiFetch } from "@/lib/api-client";
 
@@ -9,6 +10,8 @@ interface Requests {
         id: number;
         name: string;
         avatar?: string | null;
+        isOnline: boolean;
+        score: number;
     };
 }
 
@@ -29,20 +32,26 @@ interface RequestContentProps {
 }
 
 function RuquestCard({request:{id, sender}, makeDecision}: RequestItemProps) {
-    const {name, avatar} = sender;
+    const {name, avatar, isOnline} = sender;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
+    const isAvatar = !!avatar;
 
     return (
         <li className={style.sugRow}>
-            <div
-                className={`${style.av} bg-[var(--color-snake-1)] text-[var(--color-text-primary)] capitalize`}
-                style={{ color: "var(--color-info-text)" }}
-            >
-                {av}
+            <div>
+                { isAvatar ? (
+                    <img  className={style.av} src={avatar ? avatar : ""} alt="avatar" />
+                ) : (
+                    <div className={`${style.av} bg-[var(--color-snake-1)] text-[var(--color-text-primary)] capitalize`}
+                        style={{ color: "var(--color-info-text)" }}
+                    >
+                        {av}
+                    </div>
+                )}
             </div>
             <div>
                 <p className={style.name}>{name}</p>
-                <p className={style.metaR}>5 mutual friends</p>
+                <OnlineStateItem isOnline={isOnline}/>
             </div>
             <div className={style.reqActions}>
                 <button className={`${style.iconBtn} ${style.accept}`} onClick={() => makeDecision(id, true)}>
