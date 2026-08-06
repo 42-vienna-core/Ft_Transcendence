@@ -7,8 +7,8 @@ import { AiBotService } from 'src/aiOpponent/ai.service';
 import { RoomStatus } from "@prisma/client";
 
 
-const GRID_WIDTH = 50;
-const GRID_HEIGHT = 50;
+const GRID_WIDTH = 35;
+const GRID_HEIGHT = 35;
 const TICK_MS = 150;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
@@ -228,6 +228,11 @@ function initGame(id: string, users: Player[]) : GameState{
 	return game;
 }
 
+function randomDirection() : Direction{
+	const dir: Direction[] = ['DOWN', 'LEFT', 'RIGHT', 'UP'];	
+	return dir[Math.floor(Math.random()* dir.length)];
+}
+
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
 	let winners : number[] = [];
@@ -329,8 +334,10 @@ export class GameService {
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot')
+					if (snake.alive && snake.player === 'bot' && game.tick % 5 != 0)
 						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
+					else if (snake.alive && snake.player === 'bot' && game.tick % 5 == 0)
+						snake.newDirection = randomDirection();
 				}
 			}
 			newHeadPosition(game);
