@@ -45,10 +45,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.sessionId = payload.sessionId;
       client.data.user = user;
 
-      const addedUser = await this.redisService.addOnlineUser(user, session.id);
-      if (addedUser)
-        await this.getOnlineUsers(client);
-      console.log("this is the user", user)
+      await this.redisService.addOnline(user, session.id);
     } catch (e) {
       console.log(e);
       client.disconnect();
@@ -59,8 +56,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
    try {
     console.log("🟣 SOCKET handleDisconnect");
 
-    await this.redisService.removeOnlineUser(client.data.id);
-    await this.getOnlineUsers(client);
+    await this.redisService.removeOnline(client.data.userId, client.data.sessionId);
 
     const roomUser = await this.roomService.findBySocketId(client.id);
     if (!client.data.roomId || !roomUser) return;

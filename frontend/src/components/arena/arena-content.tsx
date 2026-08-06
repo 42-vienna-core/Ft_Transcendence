@@ -7,6 +7,8 @@ import type { Socket } from "socket.io-client";
 import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
 import style from "./arena-content.module.css"
 import GameCanvas from "./game/game-canvas";
+import { useRouter } from 'next/navigation';
+import { ControlType } from "@/types/gameTypes";
 
 interface OnlineUsersType {
     id: number;
@@ -72,17 +74,26 @@ function ArenaContent() {
     const [ gameState, setGameState ] = useState<GameState | null>(null);
     const [ gameDir, setGameDir ] = useState<Direction | null>(null);
     const { isConnected, socket } = useGameSocket();
+    const [control, setControl] = useState<ControlType>('arrow');
     const { gameMode } = useGameMode();
+    const router = useRouter();
 
-    const [roomState, setRoomState] = useState<RoomStateType>();
+    const [ roomState, setRoomState ] = useState<RoomStateType>();
 
     const onlineUsers = useUserStore((state) => state.onlineUsers);
     const setOnlineUsers = useUserStore((state) => state.setOnlineUsers);
 
     const joinedSocketRef = useRef<Socket | null>(null);
-
+    const r = useRef<boolean>(false);
+  
     useEffect(() => {
-        if (!socket || !isConnected || !gameMode) return;
+        if (!socket || !isConnected) return;
+
+        if (gameMode === null) {
+            router.replace('/');
+        } else {
+            r.current = true;
+        }
 
         const handleOnlineUsers = (data: OnlineUsersType[]) => {
             console.log("online users", data);
@@ -104,14 +115,24 @@ function ArenaContent() {
         
         socket.emit("get-online-users");
 
+        const setUpContol = () => {
+            const controlLS = localStorage.getItem('controls') as ControlType;
+            if(controlLS) {
+                setControl(controlLS) ;
+            }
+        }
+
+        setUpContol();
+
         return () => {
             socket.off("online-users", handleOnlineUsers);
             socket.off("room-update", handleRoomUpdate);
         };
     }, [socket, isConnected, gameMode, setOnlineUsers]);
 
-    const status = normalizeRoomStatus(roomState?.roomStatus);
+    if (r.current === false) return null;
 
+    const status = normalizeRoomStatus(roomState?.roomStatus);
     if (roomState && status === 'UNKNOWN') {
         console.warn(
             `Unknown roomStatus "${roomState.roomStatus}" — GameCanvas will not mount. ` +
@@ -145,6 +166,7 @@ function ArenaContent() {
                         <GameCanvas
                             setGameState={setGameState}
                             setGameDir={setGameDir}
+                            control={control}
                         />
                     )}
 

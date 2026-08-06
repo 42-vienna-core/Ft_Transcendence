@@ -6,8 +6,6 @@ import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 
 export const metadata: Metadata = {
     title: "Snake Multiplayer",

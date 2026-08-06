@@ -1,36 +1,12 @@
 'use client'
 
-import style from "../../hero/hero.module.css"
-
-import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
+import { Globe, Cpu, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useGameMode } from "@/components/store/useUserStore";
+import { useTranslations } from "next-intl";
 
 type GameMode = 'QUICK' | 'FRIEND' | 'CPU';
-
-const cards =  [{
-    id: 'CPU' as GameMode,
-    title: "vs Computer",
-    expl: "Quick solo match. No waiting.",
-    btnLabel: "Start match",
-    child: <Cpu />
-}, {
-    id: 'QUICK' as GameMode,
-    title: "Quick match",
-    expl: "Online matchmaking, balanced by rating.",
-    btnLabel: "Find match",
-    child: <Globe/>
-
-}, 
-// {
-//     id: 'FRIEND' as GameMode,
-//     title: "With a friend",
-//     expl: "Private room. Send invitations to friens who are online.",
-//     btnLabel: "Start match",
-//     child: <UserRoundPlus />
-// }
-];
 
 interface MachCard {
     id: GameMode;
@@ -39,20 +15,16 @@ interface MachCard {
     btnLabel: string,
 }
 
-interface StartMathcProps {
-    onStartMatch: (matchMode: GameMode) => void;
-}
-
 
 function MatchItem({
-    children, 
+    children,
     card,
     loading,
     handleStartMatch,
     loadingMode,
 }: {
     loading: boolean;
-    children: React.ReactNode; 
+    children: React.ReactNode;
     card: MachCard;
     loadingMode: GameMode | null;
     handleStartMatch: (mode: GameMode) => void;
@@ -61,50 +33,74 @@ function MatchItem({
     const isAnyLoadingMode = loadingMode !== null;
 
     return (
-        <li className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] hover:border-[var(--color-focus-ring)] transition-color duration-250 rounded-md p-3.5 flex flex-col gap-2 ">
-            <div className="text-[var(--color-info)]">
+        <li className="flex flex-col gap-2 rounded-md border border-border-default bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
+            <div className="text-info">
                 {children}
             </div>
-            <p className="font-medium text-sm text-[var(--color-text-primary)]">{title}</p>
-            <p className="text-xs mb-auto text-[var(--color-text-tertiary)] leading-snug">{expl}</p>
+            <p className="text-sm font-medium text-text-primary">{title}</p>
+            <p className="mb-auto text-xs leading-snug text-text-tertiary">{expl}</p>
 
-            <p className="text-[11px] text-emerald-700 flex items-center gap-1 mt-1">
+            <p className="mt-1 flex items-center gap-1 text-[11px] text-success">
                 avg. wait ~8 s
             </p>
 
             {loading && loadingMode === id? (
                 <div className="flex items-center justify-center py-2">
-                    <Loader className="text-center w-5 h-5 animate-spin" />
+                    <Loader className="h-5 w-5 animate-spin text-center text-accent" />
                 </div>
             ) : (
                 <button
                     type="button"
                     disabled={isAnyLoadingMode}
-                    className="text-[var(--color-text-secondary)] h-[36px] text-xs  hover:text-[var(--color-info-hover)] font-medium py-2 border border-[var(--color-border-default)] transition-color duration-250 rounded-md flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex h-[36px] cursor-pointer items-center justify-center gap-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary transition-colors duration-150 hover:border-accent hover:text-accent-hover active:text-accent-active disabled:cursor-not-allowed disabled:opacity-40"
                     onClick={() => handleStartMatch(id)}
                 >
                     {btnLabel ? btnLabel: ""}
                 </button>
             )}
-            
         </li>
     )
-} 
+}
 
 function MatchList({
     handleStartMatch,
     loadingMode,
-    loading
+    loading,
 }: {
     loading: boolean;
     loadingMode: GameMode | null;
     handleStartMatch: (mode: GameMode) => void;
 }) {
+    const cpu_t = useTranslations("Start_game.cards.cpu");
+    const quick_t = useTranslations("Start_game.cards.quick");
+
+    const cards =  [{
+            id: 'CPU' as GameMode,
+            title: cpu_t("title"),
+            expl: cpu_t("expl"),
+            btnLabel: cpu_t("label"),
+            child: <Cpu />
+        },
+        {
+            id: 'QUICK' as GameMode,
+            title: quick_t("title"),
+            expl: quick_t("expl"),
+            btnLabel: quick_t("label"),
+            child: <Globe/>
+        },
+        // {
+        //     id: 'FRIEND' as GameMode,
+        //     title: "With a friend",
+        //     expl: "Private room. Send invitations to friens who are online.",
+        //     btnLabel: "Start match",
+        //     child: <UserRoundPlus />
+        // }
+    ];
 
     return (
-        <ul className="grid grid-cols-2 gap-2.5 p-5 pt-4 text-[var(--color-text-secondary)]">
-            {cards.map((card) => 
-                <MatchItem 
+        <ul className="grid grid-cols-2 gap-2.5 p-5 pt-4 text-text-secondary">
+            {cards.map((card) =>
+                <MatchItem
                     key={card.id}
                     card={card}
                     loading={loading}
@@ -116,12 +112,13 @@ function MatchList({
             )}
         </ul>
     )
-} 
+}
 
 function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingMode, setLoadingMode] = useState<GameMode | null>(null);
     const {setGameMode} = useGameMode();
+    const t = useTranslations("Start_game");
 
     const router = useRouter();
 
@@ -143,8 +140,10 @@ function StartMatch () {
     }
 
     return (
-        <div className={style.hero}>
-            <div className={style.heroEyebrow}>// Pick how you'd like to play</div>
+        <div className="relative px-8 pt-20 text-center">
+            <div className="mono mb-8 inline-block rounded-full border border-accent bg-accent/5 px-3.5 py-1.5 text-xs uppercase tracking-[0.2em] text-accent">
+                // {t("title")}
+            </div>
             <MatchList
                 loading={loading}
                 loadingMode={loadingMode}

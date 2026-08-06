@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
 import { AvatarService } from '../avatar/avatar.service';
 import { SessionService } from '../session/session.service';
+import { RedisService } from 'src/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -12,6 +14,9 @@ export class UserService {
 		private readonly prismaService: PrismaService,
 		private readonly avatarService: AvatarService,
 		private readonly sessionService: SessionService,
+		private readonly redis: RedisService,
+		private readonly configService: ConfigService,
+
 	) { }
 
 	public async findByEmail(email: string) {
@@ -36,6 +41,8 @@ export class UserService {
 				id: true,
 				name: true,
 				avatar: true,
+				score: true,
+				// isBot: true,
 				// createdAt: true,
 				// updatedAt: true,
 				// isVerified: true,
@@ -44,7 +51,11 @@ export class UserService {
 		if (!user) {
 			throw new NotFoundException('User not found');
 		}
-		return user;
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL');
+		return {
+			...user,
+			avatar: user.avatar ? avatarsUrl + user.avatar : null,
+		};
 	}
 
 	public async create(dto: RegisterRequest, passwordHash: string) {
@@ -92,24 +103,70 @@ export class UserService {
 		return this.avatarService.deleteAvatar(userId);
 	}
 
-	public async findUsers(name: string) {
+	public async findUsers(userId: number, name: string) {
 		if (!name || !name.trim()) {
 			return [];
 		}
 		const users = await this.prismaService.users.findMany({
 			where: {
+				id: {
+					not: userId,
+				},
 				name: {
 					contains: name,
 					mode: 'insensitive',
 				},
+				isBot: false,
 			},
 			select: {
 				id: true,
 				name: true,
 				avatar: true,
+				score: true,
 			},
 		});
-		return users;
+		// return users;
+		const ids = users.map(u => u.id);
+		const requests = await this.prismaService.friendsRequest.findMany({
+			where: {
+				OR: [
+					{
+						senderId: userId,
+						receiverId: {
+							in: ids,
+						},
+					},
+					{
+						receiverId: userId,
+						senderId: {
+							in: ids,
+						},
+					},
+				],
+			},
+		});
+		const map = new Map<number, string>();
+		for (const req of requests) {
+			const otherId = req.senderId === userId ? req.receiverId : req.senderId;
+			if (req.status === 'ACCEPTED') {
+				map.set(otherId, 'FRIEND');
+			}
+			if (req.status === 'PENDING') {
+				if (req.senderId === userId)
+					map.set(otherId, 'OUTGOING');
+				else
+					map.set(otherId, 'INCOMING');
+			}
+		}
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
+		return Promise.all(
+			users.map(async (user) => ({
+				...user,
+				avatar: user.avatar ? avatarsUrl + user.avatar : null,
+				isOnline: await this.redis.isOnline(user.id),
+				friendStatus: map.get(user.id) ?? 'NONE',
+			})),
+		);
 	}
 
 	public async deleteUser(userId: number) {
