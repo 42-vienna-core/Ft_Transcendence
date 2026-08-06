@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import style from '../../app/[locale]/(home)/(dashboard)/friends/friends.module.css'
 import { apiFetch } from '@/lib/api-client';
 import AsideBar from './aside-bar';
+import FriendsContent from './friends/friends';
 
 interface Requests {
     id: string;
@@ -22,9 +23,37 @@ interface Friend {
     score: number;
 }
 
+type ActiveFilterType = 'All' | 'Online' | 'Playing';
+
+export function SharedBtn({
+    label,
+    friendsNumber,
+    onClick,
+    active,
+}:{
+    label: ActiveFilterType;
+    friendsNumber: number;
+    active: ActiveFilterType;
+    onClick: (compType: ActiveFilterType) => void;
+}) {
+
+    return (
+        <li>
+            <button 
+                className={`${style.chip}  ${active === label && style.on}`}
+                onClick={() => onClick(label)}
+            >
+                {label }
+                <span className={style.ct}>{friendsNumber}</span>
+            </button>
+        </li>
+    );
+}
+
 function FriendsBar() {
-    const [friendsArr, setFriendsArr] = useState<Friend[]>([]);
+    const [allFriends, setAllFriends] = useState<Friend[]>([]);
     const [requestsArr, setRequestsArr] = useState<Requests[]>([]);
+    const [activeFilter, setActiveFilter] = useState<ActiveFilterType>('All');
 
     useEffect(() => {
 
@@ -36,7 +65,7 @@ function FriendsBar() {
                 ]);
 
                 setRequestsArr(Array.isArray(requestsRes) ? requestsRes : []);
-                setFriendsArr(Array.isArray(friendsRes) ? friendsRes : []);
+                setAllFriends(Array.isArray(friendsRes) ? friendsRes : []);
 
             } catch (error) {
                 console.log("ERROR Parallel data fetching: ", error)
@@ -51,28 +80,34 @@ function FriendsBar() {
             const res = await apiFetch('friends');
 
             if (Array.isArray(res) && res.length != 0) {
-                setFriendsArr(res);
+                setAllFriends(res);
                 return;
             }
 
-            setFriendsArr([]);
+            setAllFriends([]);
         } catch (error) {
             console.log("ERROR getting all friends: ", error);
         }
     }
 
+    const handleOnClick = (compType: ActiveFilterType) => {
+        console.log(compType);
+        setActiveFilter(compType);
+    }
+
     const removeFriendCard = (id: number) => {
         if (id === 0) return;
 
-        setFriendsArr(prev => prev.filter(f => f.id !== id));
+        setAllFriends(prev => prev.filter(f => f.id !== id));
     }
 
     const removeRequestCard = (id: string) => {
         setRequestsArr(prev => prev.filter(r => r.id !== id));
     }
 
-    const allFriends = friendsArr.length;
-    const friensOnline = friendsArr.filter(item => item.isOnline).length;
+    const friendsAll = allFriends.length;
+    const friensOnline = allFriends.filter(item => item.isOnline).length;
+    const labels = [{'All': friendsAll}, {'Online': friensOnline}, {'Playing': 1}];
 
     return (
         <>
@@ -80,7 +115,7 @@ function FriendsBar() {
                 <div>
                     <h1>Friends</h1>
                     <div className={style.pageMeta}>
-                        {allFriends} total ·{" "}
+                        {friendsAll} total ·{" "}
                         <span className="text-green-500">{friensOnline} online</span> ·{" "}
                         <span className="text-red-500">1 playing</span>
                     </div>
@@ -88,29 +123,36 @@ function FriendsBar() {
             </div>
 
             <div className={style.filterBar}>
-                <div className={style.chips}>
-                    <span className={`${style.chip} ${style.on}`}>
-                        All 
-                        <span className={style.ct}>{allFriends}</span>
-                    </span>
-                    <span className={style.chip}>
-                        Online 
-                        <span className={style.ct}>{friensOnline}</span>
-                    </span>
-                    <span className={style.chip}>
-                        Playing 
-                        <span className={style.ct}>1</span>
-                    </span>
-                </div>
+                <ul className={style.chips}>
+                    {labels.map((it)=> {
+                        const labelText = Object.keys(it)[0] as ActiveFilterType;
+                        const friendsNum = Object.values(it)[0];
+
+                        return (
+                            <SharedBtn 
+                                key={`${labelText}-filter-bar`}
+                                label={labelText}
+                                friendsNumber={friendsNum}
+                                onClick={handleOnClick}
+                                active={activeFilter} 
+                            />
+                        );
+                    })}
+                </ul>
             </div>
 
-            <AsideBar
-                requests={requestsArr}
-                friends={friendsArr}
-                removeRequestCard={removeRequestCard}
-                getListOfFriends={getListOfFriends}
-                removeFriendCard={removeFriendCard}
-            />
+            <div className={style.grid}>
+                <FriendsContent
+                    friends={allFriends}
+                    filter={activeFilter}
+                    removeFriendCard={removeFriendCard}
+                />
+                <AsideBar
+                    requests={requestsArr}
+                    removeRequestCard={removeRequestCard}
+                    getListOfFriends={getListOfFriends}
+                />
+            </div>
         </>
        
     )

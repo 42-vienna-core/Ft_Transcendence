@@ -10,6 +10,8 @@ interface Friend {
   id: number;
   name: string;
   avatar?: string | null;
+  isOnline: boolean;
+  score: number;
 }
 
 interface FriendCardProps {
@@ -20,11 +22,16 @@ interface FriendCardProps {
 
 interface ListOfFriendsProps {
     friends: Friend[];
+    filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
 }
 
+type ActiveFilterType = 'All' | 'Online' | 'Playing';
+
+
 interface FriendsContentProps {
     friends: Friend[];
+    filter: ActiveFilterType;
     removeFriendCard: (id: number)=> void
 }
 
@@ -68,8 +75,7 @@ function FriendCard({friend, removeFriend}: FriendCardProps) {
     )
 }
 
-function ListOfFriends({friends, removeFriend}: ListOfFriendsProps ) {
-    console.log("friends: ",friends);
+function ListOfFriends({friends, filter, removeFriend}: ListOfFriendsProps ) {
     return (
         <ul className="flex flex-col gap-2">
             {friends.length > 0 &&
@@ -85,9 +91,17 @@ function ListOfFriends({friends, removeFriend}: ListOfFriendsProps ) {
     )
 }
 
-function FriendsContent ({friends, removeFriendCard}: FriendsContentProps) {
+function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProps) {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [user, setUser] = useState<Friend | null>(null);
+    let newFriends: Friend[] = [];
+
+    if (filter === 'All') {
+        newFriends = friends;
+    } else if (filter === 'Online') {
+        newFriends  = friends.filter(it => it.isOnline);
+    } 
+
 
     async function handeleFriendRemoving(friend: Friend) {
         setUser(friend);
@@ -113,16 +127,23 @@ function FriendsContent ({friends, removeFriendCard}: FriendsContentProps) {
         }
     }
 
-    if (friends.length === 0) 
+    if (newFriends.length === 0 && filter === 'All') 
         return  (
             <div className={style.col}>
                 <p className="text-[15px] text-[var(--color-warning)]">No friends yet</p>
+            </div>)
+    
+    if (newFriends.length === 0 && filter === 'Online') 
+        return  (
+            <div className={style.col}>
+                <p className="text-[15px] text-[var(--color-warning)]">No friends online</p>
             </div>)
 
     return (
         <div className={style.col}>
             <ListOfFriends 
-                friends={friends}
+                friends={newFriends}
+                filter={filter}
                 removeFriend={handeleFriendRemoving}
         />
         <DialogModal

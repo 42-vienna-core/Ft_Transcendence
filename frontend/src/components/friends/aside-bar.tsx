@@ -12,34 +12,20 @@ interface Request {
     };
 }
 
-interface Friend {
-    id: number;
-    name: string;
-    avatar?: string | null;
-}
-
 interface AsideBarProps {
-    friends: Friend[];
     requests: Request[];
-    removeFriendCard: (id: number)=> void;
     removeRequestCard: (id: string) => void
     getListOfFriends: () => void;
 }
 
 export default function AsideBar({
     requests, 
-    friends,
-    removeFriendCard,
     removeRequestCard,
     getListOfFriends,
 
 }:AsideBarProps) {
     return (
-        <div className={style.grid}>
-            <FriendsContent
-                friends={friends}
-                removeFriendCard={removeFriendCard}
-            />
+
             <aside className={style.col}>
                 <div className={style.card}>
                     <h3>
@@ -91,6 +77,5 @@ export default function AsideBar({
 
                 <FindFriends/>
             </aside>
-        </div>
     );
 }
