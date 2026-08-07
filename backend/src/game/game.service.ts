@@ -7,9 +7,10 @@ import { AiBotService } from 'src/aiOpponent/ai.service';
 import { RoomStatus } from "@prisma/client";
 
 
-const GRID_WIDTH = 35;
-const GRID_HEIGHT = 35;
-const TICK_MS = 150;
+const GRID_WIDTH = 30;
+const GRID_HEIGHT = 30;
+const TICK_MS = 160;
+const DIFFICULTY = 15; //the higher the harder it gets
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -47,11 +48,14 @@ function spawnFood(state: GameState){
 		if (!ok)
 			continue;
 		for (const snake of state.snakes){
-			for (const body of snake.body)
+			for (const body of snake.body){
 				if (comparePosition(body, pos)){
 					ok = false;
 					break;
 				}
+			}
+			if (snake.newPosition !== null && comparePosition(snake.newPosition, pos))
+				ok = false;
 		}
 		//EDGE CASE: check that food is reachable (dead snake)
 	}
@@ -126,6 +130,24 @@ function checkCollision(state: GameState){
 			}
 		}
 	}
+	let tailKiller: boolean;
+	do {
+		tailKiller = false;
+		for (const snake of state.snakes){
+			if (!snake.alive || !snake.newPosition)
+				continue;
+			for (const other of state.snakes){
+				if (other.alive)
+					continue;
+				if (comparePosition(snake.newPosition, other.body[other.body.length - 1])){
+					snake.alive = false;
+					tailKiller = true;
+					break;
+				}
+			}
+		}
+	}
+	while (tailKiller);
 }
 
 
@@ -238,14 +260,14 @@ function gameOver(game : GameState) : GameState{
 	let winners : number[] = [];
 	if (game.botPresent){
 		for (const snake of game.snakes){
-		if (snake.alive && snake.player != 'bot')
-			alive++;
+			if (snake.alive && snake.player != 'bot')
+				alive++;
+		}
 		if (alive <= 0){
 			game.status = 'finished';
 			return game;
 		}
-	}
-	alive = 0;
+		alive = 0;
 	}
 	for (const snake of game.snakes){
 		if (snake.alive){
@@ -334,9 +356,9 @@ export class GameService {
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot' && game.tick % 5 != 0)
+					if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY != 0)
 						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
-					else if (snake.alive && snake.player === 'bot' && game.tick % 5 == 0)
+					else if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY == 0)
 						snake.newDirection = randomDirection();
 				}
 			}
