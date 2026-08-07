@@ -211,6 +211,7 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 		player = 'bot';
 	const snakes : Snake = {
 		id: user.id,
+		username: user.username,
 		body: body,
 		direction: dir,
 		newDirection: null,
@@ -345,6 +346,7 @@ export class GameService {
 							select: {
 								id:true,
 								isBot: true,
+								name: true,
 							}
 						}
 					}
@@ -355,7 +357,8 @@ export class GameService {
 			throw new BadRequestException ('Room not found');
 		const users = room.roomUsers.map((roomUser) => ({
 			id: roomUser.user.id,
-			isBot: roomUser.user.isBot
+			isBot: roomUser.user.isBot,
+			username: roomUser.user.name,
 		}));
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';

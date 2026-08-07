@@ -33,6 +33,7 @@ interface Position {
 
 interface Snake {
     id: number;
+	username: string;
     body: Position[];
     direction: Direction;
     newDirection: Direction | null;
