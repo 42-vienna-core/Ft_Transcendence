@@ -320,13 +320,19 @@ export class GameService {
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')
 				continue;
-			await this.prismaService.users.update({
+			const user = await this.prismaService.users.update({
 				where: { id: snake.id },
 				data: {
 					score: {increment: snake.score},
 				},
+				select: {
+					id: true,
+					score: true,
+				},
 			});
+			await this.redisService.updateScore(user.id, user.score);
 		}
+		await this.gameGateway.broadcastOnlineUsers();
 	}
 
 	async startGame(roomId: string){

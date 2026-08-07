@@ -15,6 +15,7 @@ interface OnlineUsersType {
     username: string;
     avatar: string | null;
     role: string;
+	score: number;
 }
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;

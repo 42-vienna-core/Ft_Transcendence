@@ -7,6 +7,7 @@ interface OnlineUser {
     id: number,
     username: string,
     role: string,
+	score: number,
 }
 
 interface UserStoreState {
