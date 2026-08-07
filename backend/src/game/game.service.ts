@@ -317,6 +317,16 @@ export class GameService {
 				status: RoomStatus.FINISHED
 			},
 		});
+		for (const snake of game.snakes){
+			if (snake.player === 'bot')
+				continue;
+			await this.prismaService.users.update({
+				where: { id: snake.id },
+				data: {
+					score: {increment: snake.score},
+				},
+			});
+		}
 	}
 
 	async startGame(roomId: string){
