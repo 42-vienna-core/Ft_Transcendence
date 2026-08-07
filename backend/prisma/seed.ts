@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from 'argon2';
+//import 'dotenv/config';
 
 const prisma = new PrismaClient()
 
@@ -9,14 +10,18 @@ async function main() {
 		{email: 'bot2@ai.com', name: "AI Bot 2"},
 		{email: 'bot3@ai.com', name: "AI Bot 3"},
 	]
-	const password = await hash('BOT_PASS');	
-	//password value needs to be changed and taken from env
+	const botPass = process.env.BOT_PASS;
+	if (!botPass)
+		throw new Error('Bot Password missing from .env')
+
+	const password = await hash(botPass);
 
 	for (const bot of bots){
 		await prisma.users.upsert({
 			where: {email: bot.email},
 			update:{
 				name: bot.name,
+				password,
 				isBot: true,
 				role: "BOT",
 			},

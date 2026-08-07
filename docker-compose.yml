@@ -63,6 +63,7 @@ services:
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
       AVATARS_URL: ${AVATARS_URL}
+      BOT_PASS: ${BOT_PASS}
     command: |
       sh -c "
       npx prisma db push --schema=/app/prisma/schema.prisma && \
