@@ -447,107 +447,20 @@ export default function ProfileSettingsContent() {
                 </SettingBtnContainer>
             </div>
 
-        <div className="flex flex-col gap-4">
-          <div className={style.panel} aria-label="Friends">
-            <h3 className="flex justify-between m-1">
-              <span>friends</span>
-              <span>
-                42 · <span className="text-blue-500">+ add</span>
-              </span>
-            </h3>
-            <div className={style.friendRow}>
-              <div className={style.av}>MR</div>
-              <div className={style.nm}>
-                <div className={style.n}>Mira</div>
-                <div className={style.s}>
-                  <span className={style.dot}></span> in match · room 47
+            <div className="flex flex-col ">
+                <div className={style.panel} aria-label="Friends">
+                    <p className="mb-13 text-[13px] text-text-secondary"> 
+                        Cobras are famous venomous snakes known for their dramatic neck hoods. The king cobra is the longest venomous snake on Earth, growing up to 18 feet, and a single bite can kill an elephant or 20 people. Some cobras can even spit venom at a target's eyes.
+                    </p>
+                    <img className="object-contain" 
+                        alt="Magnific Snake" 
+                        style={{
+                            filter: `drop-shadow(0px 0px 12px ${snakeColor})`
+                        }} src="/png/magnific_snake.png"
+                    />
                 </div>
-              </div>
-              <div className={style.rk}>1 920</div>
             </div>
-            <div className={style.friendRow}>
-              <div
-                className={style.av}
-                style={{ background: "var(--color-warning-soft)", color: "var(--color-warning)" }}
-              >
-                KO
-              </div>
-              <div className={style.nm}>
-                <div className={style.n}>Kostia</div>
-                <div className={style.s}>
-                  <span className={style.dot}></span> online
-                </div>
-              </div>
-              <div className={style.rk}>1 760</div>
             </div>
-            <div className={style.friendRow}>
-              <div
-                className={style.av}
-                style={{ background: "var(--color-danger-soft)", color: "var(--color-danger)" }}
-              >
-                LI
-              </div>
-              <div className={style.nm}>
-                <div className={style.n}>Lila</div>
-                <div className={style.s}>
-                  <span className={`${style.dot} ${style.off}`}></span> 2 h ago
-                </div>
-              </div>
-              <div className={style.rk}>1 480</div>
-            </div>
-            <div className={style.friendRow}>
-              <div
-                className={style.av}
-                style={{ background: "#EEEDFE", color: "#3C3489" }}
-              >
-                JO
-              </div>
-              <div className={style.nm}>
-                <div className={style.n}>Jonas</div>
-                <div className={style.s}>
-                  <span className={`${style.dot} ${style.off}`}></span>{" "}
-                  yesterday
-                </div>
-              </div>
-              <div className={style.rk}>1 210</div>
-            </div>
-          </div>
-
-          <div className={style.panel} aria-label="Recent achievements">
-            <h3>recent achievements</h3>
-            <div className={style.row}>
-              <div className={style.lbl}>
-                <i
-                  className={`${style.ti} ${style.iconWarning}`}
-                  aria-hidden="true"
-                ></i>{" "}
-                first to 1 000
-              </div>
-              <div className={style.val}>2 days ago</div>
-            </div>
-            <div className={style.row}>
-              <div className={style.lbl}>
-                <i
-                  className={`${style.ti} ${style.iconInfo}`}
-                  aria-hidden="true"
-                ></i>{" "}
-                10-match win streak
-              </div>
-              <div className={style.val}>last week</div>
-            </div>
-            <div className={style.row}>
-              <div className={style.lbl}>
-                <i
-                  className={`${style.ti} ${style.iconSuccess}`}
-                  aria-hidden="true"
-                ></i>{" "}
-                invited 5 friends
-              </div>
-              <div className={style.val}>apr 12</div>
-            </div>
-          </div>
-        </div>
-        </div>
 
             {/* Modal Windows */}
             <ChangePasswordModal
