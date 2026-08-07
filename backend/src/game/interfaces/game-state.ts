@@ -11,6 +11,7 @@ export interface Player{
 	id: number;
 	username: string;
 	isBot: boolean;
+	color: string;
 }
 
 export interface Snake {

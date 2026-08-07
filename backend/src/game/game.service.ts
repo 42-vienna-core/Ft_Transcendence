@@ -184,7 +184,7 @@ function moveSnake(state: GameState){
 	}
 }
 
-function createSnake(user: Player, index: number, color: string) : Snake{
+function createSnake(user: Player, index: number) : Snake{
 	let pos: Position = {x: 2, y: 1};
 	const body : Position[]  = [];
 	let dir : Direction = 'RIGHT';
@@ -219,7 +219,7 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 		willGrow: false,
 		alive: true,
 		score: 0,
-		color: color,
+		color: user.color,
 		player: player,
 	};
 	return snakes;
@@ -228,9 +228,8 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 function initGame(id: string, users: Player[]) : GameState{
 	const snakes : Snake[] = [];
 	let flag = false;
-	const color = ['#00c849', '#00d5ff', '#da0bf5', '#fb7a09'];
 	for (let i = 0; i < users.length; i++){
-		snakes.push(createSnake(users[i], i, color[i]));
+		snakes.push(createSnake(users[i], i));
 		if (users[i].isBot)
 			flag = true;
 	}
@@ -347,6 +346,7 @@ export class GameService {
 								id:true,
 								isBot: true,
 								name: true,
+								color: true,
 							}
 						}
 					}
@@ -359,6 +359,7 @@ export class GameService {
 			id: roomUser.user.id,
 			isBot: roomUser.user.isBot,
 			username: roomUser.user.name,
+			color: roomUser.user.color,
 		}));
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';

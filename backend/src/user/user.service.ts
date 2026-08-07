@@ -42,6 +42,7 @@ export class UserService {
 				name: true,
 				avatar: true,
 				score: true,
+				color: true,
 				// isBot: true,
 				// createdAt: true,
 				// updatedAt: true,
@@ -97,6 +98,14 @@ export class UserService {
 
 	public async updateAvatar(userId: number, file: Express.Multer.File) {
 		return this.avatarService.updateAvatar(userId, file);
+	}
+
+	public async updateColor(userId: number, color:string){
+		await this.prismaService.users.update({
+			where: { id: userId },
+			data: { color: color },
+		});
+		return {success: true};
 	}
 
 	public async deleteAvatar(userId: number) {
