@@ -7,9 +7,10 @@ import { AiBotService } from 'src/aiOpponent/ai.service';
 import { RoomStatus } from "@prisma/client";
 
 
-const GRID_WIDTH = 50;
-const GRID_HEIGHT = 50;
-const TICK_MS = 150;
+const GRID_WIDTH = 30;
+const GRID_HEIGHT = 30;
+const TICK_MS = 160;
+const DIFFICULTY = 15; //the higher the harder it gets
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -47,11 +48,14 @@ function spawnFood(state: GameState){
 		if (!ok)
 			continue;
 		for (const snake of state.snakes){
-			for (const body of snake.body)
+			for (const body of snake.body){
 				if (comparePosition(body, pos)){
 					ok = false;
 					break;
 				}
+			}
+			if (snake.newPosition !== null && comparePosition(snake.newPosition, pos))
+				ok = false;
 		}
 		//EDGE CASE: check that food is reachable (dead snake)
 	}
@@ -126,6 +130,24 @@ function checkCollision(state: GameState){
 			}
 		}
 	}
+	let tailKiller: boolean;
+	do {
+		tailKiller = false;
+		for (const snake of state.snakes){
+			if (!snake.alive || !snake.newPosition)
+				continue;
+			for (const other of state.snakes){
+				if (other.alive)
+					continue;
+				if (comparePosition(snake.newPosition, other.body[other.body.length - 1])){
+					snake.alive = false;
+					tailKiller = true;
+					break;
+				}
+			}
+		}
+	}
+	while (tailKiller);
 }
 
 
@@ -162,7 +184,7 @@ function moveSnake(state: GameState){
 	}
 }
 
-function createSnake(user: Player, index: number, color: string) : Snake{
+function createSnake(user: Player, index: number) : Snake{
 	let pos: Position = {x: 2, y: 1};
 	const body : Position[]  = [];
 	let dir : Direction = 'RIGHT';
@@ -189,6 +211,7 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 		player = 'bot';
 	const snakes : Snake = {
 		id: user.id,
+		username: user.username,
 		body: body,
 		direction: dir,
 		newDirection: null,
@@ -196,7 +219,7 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 		willGrow: false,
 		alive: true,
 		score: 0,
-		color: color,
+		color: user.color,
 		player: player,
 	};
 	return snakes;
@@ -205,9 +228,8 @@ function createSnake(user: Player, index: number, color: string) : Snake{
 function initGame(id: string, users: Player[]) : GameState{
 	const snakes : Snake[] = [];
 	let flag = false;
-	const color = ['#00c849', '#00d5ff', '#da0bf5', '#fb7a09'];
 	for (let i = 0; i < users.length; i++){
-		snakes.push(createSnake(users[i], i, color[i]));
+		snakes.push(createSnake(users[i], i));
 		if (users[i].isBot)
 			flag = true;
 	}
@@ -228,19 +250,24 @@ function initGame(id: string, users: Player[]) : GameState{
 	return game;
 }
 
+function randomDirection() : Direction{
+	const dir: Direction[] = ['DOWN', 'LEFT', 'RIGHT', 'UP'];	
+	return dir[Math.floor(Math.random()* dir.length)];
+}
+
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
 	let winners : number[] = [];
 	if (game.botPresent){
 		for (const snake of game.snakes){
-		if (snake.alive && snake.player != 'bot')
-			alive++;
+			if (snake.alive && snake.player != 'bot')
+				alive++;
+		}
 		if (alive <= 0){
 			game.status = 'finished';
 			return game;
 		}
-	}
-	alive = 0;
+		alive = 0;
 	}
 	for (const snake of game.snakes){
 		if (snake.alive){
@@ -290,6 +317,22 @@ export class GameService {
 				status: RoomStatus.FINISHED
 			},
 		});
+		for (const snake of game.snakes){
+			if (snake.player === 'bot')
+				continue;
+			const user = await this.prismaService.users.update({
+				where: { id: snake.id },
+				data: {
+					score: {increment: snake.score},
+				},
+				select: {
+					id: true,
+					score: true,
+				},
+			});
+			await this.redisService.updateScore(user.id, user.score);
+		}
+		await this.gameGateway.broadcastOnlineUsers();
 	}
 
 	async startGame(roomId: string){
@@ -302,6 +345,8 @@ export class GameService {
 							select: {
 								id:true,
 								isBot: true,
+								name: true,
+								color: true,
 							}
 						}
 					}
@@ -312,7 +357,9 @@ export class GameService {
 			throw new BadRequestException ('Room not found');
 		const users = room.roomUsers.map((roomUser) => ({
 			id: roomUser.user.id,
-			isBot: roomUser.user.isBot
+			isBot: roomUser.user.isBot,
+			username: roomUser.user.name,
+			color: roomUser.user.color,
 		}));
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
@@ -329,8 +376,10 @@ export class GameService {
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot')
+					if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY != 0)
 						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
+					else if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY == 0)
+						snake.newDirection = randomDirection();
 				}
 			}
 			newHeadPosition(game);
