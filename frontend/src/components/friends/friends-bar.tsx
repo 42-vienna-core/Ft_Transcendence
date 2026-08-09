@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import style from '../../app/[locale]/(home)/(dashboard)/friends/friends.module.css'
 import { apiFetch } from '@/lib/api-client';
 import AsideBar from './aside-bar';
 import FriendsContent from './friends-list';
@@ -32,15 +31,20 @@ export function SharedBtn({
     active: ActiveFilterType;
     onClick: (compType: ActiveFilterType) => void;
 }) {
+    const isActive = active === label;
 
     return (
         <li>
-            <button 
-                className={`${style.chip}  ${active === label && style.on}`}
+            <button
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
+                    isActive
+                        ? 'border-transparent bg-accent text-text-inverse'
+                        : 'border-border-default text-text-secondary hover:border-accent hover:text-accent-hover active:text-accent-active'
+                }`}
                 onClick={() => onClick(label)}
             >
-                {label }
-                <span className={style.ct}>{friendsNumber}</span>
+                {label}
+                <span className={`text-xs ${isActive ? 'opacity-80' : 'opacity-70'}`}>{friendsNumber}</span>
             </button>
         </li>
     );
@@ -107,37 +111,37 @@ function FriendsBar() {
 
     return (
         <>
-            <div className={style.pageHead}>
+            <div className="mb-3.5 flex items-end justify-between">
                 <div>
-                    <h1>Friends</h1>
-                    <div className={style.pageMeta}>
+                    <h1 className="m-0 !text-2xl font-medium">Friends</h1>
+                    <div className="mt-1 text-sm text-text-secondary">
                         {friendsAll} total ·{" "}
-                        <span className="text-green-500">{friensOnline} online</span> ·{" "}
-                        <span className="text-red-500">1 playing</span>
+                        <span className="text-success">{friensOnline} online</span> ·{" "}
+                        <span className="text-danger">1 playing</span>
                     </div>
                 </div>
             </div>
 
-            <div className={style.filterBar}>
-                <ul className={style.chips}>
+            <div className="mb-3.5 flex items-center justify-between">
+                <ul className="flex gap-1.5">
                     {labels.map((it)=> {
                         const labelText = Object.keys(it)[0] as ActiveFilterType;
                         const friendsNum = Object.values(it)[0];
 
                         return (
-                            <SharedBtn 
+                            <SharedBtn
                                 key={`${labelText}-filter-bar`}
                                 label={labelText}
                                 friendsNumber={friendsNum}
                                 onClick={handleOnClick}
-                                active={activeFilter} 
+                                active={activeFilter}
                             />
                         );
                     })}
                 </ul>
             </div>
 
-            <div className={style.grid}>
+            <div className="grid grid-cols-[1.6fr_1fr] gap-3.5">
                 <FriendsContent
                     friends={allFriends}
                     filter={activeFilter}
@@ -151,6 +155,6 @@ function FriendsBar() {
             </div>
         </>
     )
-} 
+}
 
 export default FriendsBar;

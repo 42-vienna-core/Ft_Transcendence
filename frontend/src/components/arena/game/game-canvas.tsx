@@ -10,7 +10,7 @@ import { useGameControls } from "@/hooks/useGameControls";
 import { ControlType, Direction } from "@/types/gameTypes";
 
 const CELL = 20;
-const STEP = 100 / 1000;   
+const STEP = 150 / 1000;   
 
 interface Position {
     x: number;
@@ -89,7 +89,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const winSound = useRef<HTMLAudioElement | null>(null);
     const eatSound = useRef<HTMLAudioElement | null>(null);
 
-
     const isMuted = useRef<boolean>(false);
 
     const { id } = useProfile();
@@ -128,6 +127,8 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             bgMusicRef.current?.pause();
             gameoverSound.current?.pause();
             winSound.current?.pause();
+            eatSound.current?.pause();
+            eatSound.current = null;
             bgMusicRef.current = null;
             gameoverSound.current = null;
             winSound.current = null;
@@ -137,17 +138,13 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const playSoundEffect = (type: SoundEffectType) => {
         if (!isMuted.current) return;
         
-        if (type === 'gameover' && gameoverSound) {
+        if (type === 'eat' && eatSound) {
+            eatSound.current?.play().catch(() => {})
+        } else if (type === 'gameover' && gameoverSound) {
             gameoverSound.current?.play().catch(() => {})
-        }
-
-        if (type === 'win' && winSound) {
+        } else if (type === 'win' && winSound) {
             winSound.current?.play().catch(() => {})
-        }
-
-        if (type === 'eat' && winSound) {
-            winSound.current?.play().catch(() => {})
-        }
+        } 
     }
 
     const isEnded = () =>
@@ -194,7 +191,16 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             prevRef.current = currRef.current;  
             currRef.current = data;             
             stateTimeRef.current = performance.now();
-            stepRef.current = !stepRef.current;     
+            stepRef.current = !stepRef.current;
+
+            const prevScore = prevRef.current?.snakes.find(s => String(s.id) === String(id))?.score || 0;
+            const currScore = data.snakes.find(s => String(s.id) === String(id))?.score || 0;
+
+            if (currScore > prevScore) {
+                eatSound.current?.pause();
+                playSoundEffect('eat');
+            }
+
 
             if (data.status === 'finished') {
                 const won = String(data.winnerId) === String(id);
@@ -208,7 +214,9 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
                     playSoundEffect('win');
                 } else {
                     playSoundEffect('gameover');
-                } 
+                }
+
+                eatSound.current?.pause();
             }
         };
 
@@ -382,14 +390,35 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
                     } else if (facing === 'DOWN') {
                         eye1 = { x: renderX + 4, y: renderY + CELL - 8 };
                         eye2 = { x: renderX + CELL - 9, y: renderY + CELL - 8 };
+                    } else {
+                        eye1 = { x: renderX + 4, y: renderY + CELL - 8 };
+                        eye2 = { x: renderX + CELL - 9, y: renderY + CELL - 8 };
                     }
 
-                    ctx.fillRect(eye1.x, eye1.y, 4, 4);
-                    ctx.fillRect(eye2.x, eye2.y, 4, 4);
+                    if (snake.alive) {
+                        ctx.fillRect(eye1.x, eye1.y, 4, 4);
+                        ctx.fillRect(eye2.x, eye2.y, 4, 4);
 
-                    ctx.fillStyle = 'black';
-                    ctx.fillRect(eye1.x + 1, eye1.y + 1, 2, 2);
-                    ctx.fillRect(eye2.x + 1, eye2.y + 1, 2, 2);
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(eye1.x + 1, eye1.y + 1, 2, 2);
+                        ctx.fillRect(eye2.x + 1, eye2.y + 1, 2, 2);
+                    } else {
+                        ctx.beginPath();
+                        // left eye
+                        ctx.moveTo(eye1.x, eye1.y);
+                        ctx.lineTo(eye1.x + 4, eye1.y + 4);
+                        ctx.moveTo(eye1.x + 4, eye1.y);
+                        ctx.lineTo(eye1.x, eye1.y + 4);
+                        // right eye
+                        ctx.moveTo(eye2.x, eye2.y);
+                        ctx.lineTo(eye2.x + 4, eye2.y + 4);
+                        ctx.moveTo(eye2.x + 4, eye2.y);
+                        ctx.lineTo(eye2.x, eye2.y + 4);
+                        ctx.strokeStyle = "black";
+                        ctx.lineWidth = 2;          
+                        ctx.stroke();
+                    }
+
                 } else {
                     const isTipOfTail = index === totalSegments - 1;
 
@@ -400,7 +429,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
 
                         let p1 = { x: renderX, y: renderY };
                         let p2 = { x: renderX, y: renderY + CELL - 1 };
-                        let tip = stepRef.current
+                        let tip = stepRef.current && snake.alive
                             ? { x: renderX + CELL, y: renderY + (CELL / 2 + 5) }
                             : { x: renderX + CELL, y: renderY + (CELL / 2 - 5) };
 
@@ -408,19 +437,19 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
                             if (seg.x < prevSegBody.x) {
                                 p1 = { x: renderX + CELL, y: renderY };
                                 p2 = { x: renderX + CELL, y: renderY + CELL - 1 };
-                                tip = stepRef.current
+                                tip = stepRef.current && snake.alive
                                     ? { x: renderX, y: renderY + (CELL / 2 + 5) }
                                     : { x: renderX, y: renderY + (CELL / 2 - 5) };
                             } else if (seg.y > prevSegBody.y) {
                                 p1 = { x: renderX, y: renderY };
                                 p2 = { x: renderX + CELL - 1, y: renderY };
-                                tip = stepRef.current
+                                tip = stepRef.current && snake.alive
                                     ? { x: renderX + (CELL / 2 + 5), y: renderY + CELL }
                                     : { x: renderX + (CELL / 2 - 5), y: renderY + CELL };
                             } else if (seg.y < prevSegBody.y) {
                                 p1 = { x: renderX, y: renderY + CELL };
                                 p2 = { x: renderX + CELL - 1, y: renderY + CELL };
-                                tip = stepRef.current
+                                tip = stepRef.current && snake.alive
                                     ? { x: renderX + (CELL / 2 + 5), y: renderY }
                                     : { x: renderX + (CELL / 2 - 5), y: renderY };
                             }

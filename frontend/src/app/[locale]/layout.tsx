@@ -1,18 +1,8 @@
-import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
-import { bungee, inter } from "../../ui/font";
-import { Providers } from "@/providers/providers";
 import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
-import "./globals.css";
 
-export const metadata: Metadata = {
-    title: "Snake Multiplayer",
-    description: "Real-time multiplayer Snake game",
-};
-
-export default async function rootLayout({
+export default async function LangLayout({
     children,
     params
 }: {
@@ -27,27 +17,11 @@ export default async function rootLayout({
     const messages = await getMessages({ locale });
 
     return (
-        <html 
-            lang={locale} 
-            className={`${bungee.variable}`} 
-            suppressHydrationWarning
+        <NextIntlClientProvider 
+            messages={messages}
+            locale={locale}
         >
-            <body suppressHydrationWarning>
-                <Providers>
-                    <ThemeProvider 
-                        attribute="class"
-                        defaultTheme="system"
-                        enableSystem
-                    >
-                        <NextIntlClientProvider 
-                            messages={messages}
-                            locale={locale}
-                        >
-                            {children}
-                        </NextIntlClientProvider>
-                    </ThemeProvider>
-                </Providers> 
-            </body>
-        </html>
+            {children}
+        </NextIntlClientProvider>
     );
 }

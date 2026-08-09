@@ -39,8 +39,6 @@ export function useGameControls(
                 detectedDirection = arrowMapping[e.key] || wasdMapping[e.code];
             }        
             
-            console.log(detectedDirection);
-
             if (detectedDirection) {
                 if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.key)) {
                     e.preventDefault();

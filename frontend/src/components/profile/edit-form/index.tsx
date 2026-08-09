@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import style from './edit.module.css'
 import { apiFetch } from '@/lib/api-client';
 import { useFormStatus } from 'react-dom';
 import { useProfile } from '@/providers/ProfileContext';
@@ -21,12 +20,12 @@ function SubmitFormButton({loading, isActive }: submitProps) {
   const t = useTranslations("Profile")
 
   return (
-    <button 
-      className={`${style.pfBtn} ${style.primary} ${isActive ? 'block': 'hidden'}`} 
+    <button
+      className={`w-[100px] cursor-pointer rounded border border-transparent bg-bg-muted px-3 py-1.5 text-sm text-text-primary transition-colors duration-200 hover:bg-bg-subtle ${isActive ? 'block': 'hidden'}`}
       disabled={pending}
-        type="submit" 
+        type="submit"
       >
-      { pending ? "updating..."  : t("sub")}  
+      { pending ? "updating..."  : t("sub")}
     </button>
   )
 }
@@ -100,47 +99,47 @@ export default function EditProfileForm () {
 
   return (
     <form action={handleEditSubmit}>
-      <div className={style.pfTop}>
+      <div className="flex h-24 items-center gap-4 border-b border-border-default pb-[18px]">
         {status !== 'loading' ? (
           <>
-            <div className="relative flex items-center justify-center w-[64px] h-[64px] rounded-[var(--radius-full)] bg-[var(--color-bg-info)] text-[var(--color-text-info)] text-[22px] font-medium ">
-              <img src={avatar ? avatar : "#"} alt="avatar" className="" />
-              <label className={`${isActive ? 'block': 'hidden'} w-2 h-2 absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-colors flex items-center justify-center border-1`}>
-                <p className="text-green-400" >+</p>
-                <input 
-                  type="file" 
-                  name="avatar" 
-                  accept="image/jpeg, image/jpg, image/png, image/webp" 
-                  className="hidden" 
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-info-soft text-[22px] font-medium text-info-text">
+              <img src={avatar ? avatar : "#"} alt="avatar" className="h-full w-full rounded-full object-cover" />
+              <label className={`${isActive ? 'flex': 'hidden'} absolute bottom-0 right-0 h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-border-default bg-accent text-text-inverse shadow-lg transition-colors duration-200 hover:bg-accent-hover`}>
+                <span className="text-xs leading-none">+</span>
+                <input
+                  type="file"
+                  name="avatar"
+                  accept="image/jpeg, image/jpg, image/png, image/webp"
+                  className="hidden"
                 />
               </label>
             </div>
-            <div className={style.pfId}>
+            <div>
               <label htmlFor="username" className={`${isActive ? 'block': 'hidden'}`}>
-                <input 
+                <input
                   id="username"
                   type="text"
                   name="username"
                   value={nameOnChange || ""}
                   autoComplete="off"
                   onChange={(e) => updateNameOnChange(e.target.value)}
-                  className="w-full border-none focus:outline-none  text-[var(--color-text-primary)]] text-lg"
+                  className="w-full border-none text-lg text-text-primary outline-none transition-colors duration-200 focus:text-accent"
                 />
               </label>
-              <div className={`${style.name} ${isActive ? 'hidden': 'bock'}`}>{username}</div>
-              <div className={style.handle}>joined Apr 2024</div>
-              <div className={style.badges}>
-                <span className={`${style.badge} ${style.lvl}`}>level 12</span>
+              <div className={`text-lg font-medium text-text-primary ${isActive ? 'hidden': 'block'}`}>{username}</div>
+              <div className="mt-0.5 text-sm text-text-secondary">joined Apr 2024</div>
+              <div className="mt-2 flex gap-1.5">
+                <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] text-success-text">level 12</span>
               </div>
             </div>
-          </>    
+          </>
         ) : (
           <UserProfileSkeleton/>
         )}
-        <div className={style.pfActions}>
-          <button 
+        <div className="ml-auto flex gap-2">
+          <button
             type="button"
-            className={`${style.pfBtn} ${style.primary} ${isActive ? 'hidden': 'block'}`} 
+            className={`w-[100px] cursor-pointer rounded border border-border-default bg-bg-muted px-3 py-1.5 text-sm text-text-primary transition-colors duration-200 hover:bg-bg-subtle ${isActive ? 'hidden': 'block'}`}
             onClick={()=> setActive(true)}
           >{t("epBtn")}</button>
         <SubmitFormButton
