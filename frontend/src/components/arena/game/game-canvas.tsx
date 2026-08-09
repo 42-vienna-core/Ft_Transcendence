@@ -390,9 +390,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
                     } else if (facing === 'DOWN') {
                         eye1 = { x: renderX + 4, y: renderY + CELL - 8 };
                         eye2 = { x: renderX + CELL - 9, y: renderY + CELL - 8 };
-                    } else {
-                        eye1 = { x: renderX + 4, y: renderY + CELL - 8 };
-                        eye2 = { x: renderX + CELL - 9, y: renderY + CELL - 8 };
                     }
 
                     if (snake.alive) {
