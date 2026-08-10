@@ -1,21 +1,13 @@
+import { GameModeType, Snake } from '@/types/gameTypes';
 import { State } from 'pixi.js';
 import { create } from 'zustand'
 
-type GameModeType = 'QUICK' | 'FRIEND' | 'CPU' | null;
-
-interface OnlineUser {
-    id: number,
-    username: string,
-    role: string,
-	score: number,
-}
-
-interface UserStoreState {
-    onlineUsers: OnlineUser[];
-    gameMode: GameModeType;
-    setOnlineUsers: (OnlineUsers: OnlineUser[]) => void;
-    addOnlineUser: (user: OnlineUser) => void;
-    updateUser: (id: number, data: Partial<Omit<OnlineUser, 'id'>>) => void;
+interface PlayerStoreState {
+    players: Snake[];
+    setPlayers: (OnlineUsers: Snake[]) => void;
+    addPlayers: (user: Snake) => void;
+    updatePlayers: (id: number, data: Partial<Omit<Snake, 'id'>>) => void;
+    resetPlayers: () => void;
 }
 
 interface GameMode {
@@ -24,27 +16,27 @@ interface GameMode {
     resetMode: () => void;
 }
 
-export const  useUserStore = create<UserStoreState>((set) => ({
-    onlineUsers: [],
-    gameMode: null,
+export const  usePlayerStore = create<PlayerStoreState>((set) => ({
+    players: [],
     
-    setOnlineUsers: (onlineUsers) => {
+    setPlayers: (players) => {
         set({
-            onlineUsers,
+            players,
         })
     },
 
-    addOnlineUser : (user) => set((state) => ({
-        onlineUsers : [...state.onlineUsers, user],
+    addPlayers : (user) => set((state) => ({
+        players : [...state.players, user],
     })),
 
-    updateUser: (id, data) => 
+    updatePlayers: (id, data) => 
         set((state) => ({
-            onlineUsers : state.onlineUsers.map((user) => 
+            players : state.players.map((user) => 
                 user.id === id ? { ...user, ...data} 
             : user)
         })),
-
+    
+    resetPlayers: () => {set(() => ({players: []}))}
 }));
 
 export const  useGameMode = create<GameMode>((set) => ({

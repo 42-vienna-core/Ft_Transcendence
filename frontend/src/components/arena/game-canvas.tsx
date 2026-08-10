@@ -7,48 +7,11 @@ import { Socket } from 'socket.io-client';
 import { useRouter } from "next/navigation";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useGameControls } from "@/hooks/useGameControls";
-import { ControlType, Direction } from "@/types/gameTypes";
+import { ControlType, Direction, Game, GameState, TICK_MS } from "@/types/gameTypes";
 
 const CELL = 20;
-const STEP = 150 / 1000;   
+const STEP = TICK_MS / 1000;
 
-interface Position {
-    x: number;
-    y: number;
-}
-
-interface Snake {
-    id: number;
-	username: string;
-    body: Position[];
-    direction: Direction;
-    newDirection: Direction | null;
-    newPosition: Position | null;
-    willGrow: boolean;
-    alive: boolean;
-    score: number;
-    color: string;
-    player: 'human' | 'bot';
-}
-
-interface Food {
-    position: Position;
-    eaten: boolean;
-}
-
-export interface Game {
-    roomId: string;
-    snakes: Snake[];
-    food: Food[];
-    status: 'waiting' | 'running' | 'finished';
-    tick: number;
-    gridWidth: number;
-    gridHeight: number;
-    winnerId: number | null;
-    botPresent: boolean;
-}
-
-type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
 type SoundEffectType = 'eat' | 'gameover' | 'win';
 
 interface FitCanvasProps {
@@ -86,6 +49,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const currentDirection = useRef<Direction>('RIGHT');
     const bgMusicRef = useRef<HTMLAudioElement | null>(null);
     const gameoverSound = useRef<HTMLAudioElement | null>(null);
+    const gameoverSecondSound = useRef<HTMLAudioElement | null>(null);
     const winSound = useRef<HTMLAudioElement | null>(null);
     const eatSound = useRef<HTMLAudioElement | null>(null);
 
@@ -93,7 +57,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
 
     const { id } = useProfile();
     const router = useRouter();
-    const { gameMode, resetMode} = useGameMode();
+    const { resetMode} = useGameMode();
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
@@ -108,10 +72,10 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         const soundFlagLs = localStorage.getItem('soundtrack');
         if (soundFlagLs) {
             const parsedSoundFlag = JSON.parse(soundFlagLs)
-            console.log(parsedSoundFlag);
             isMuted.current = parsedSoundFlag;
         } else {
             isMuted.current = true;
+            localStorage.setItem('soundtrack', "true");
         }
 
         bgMusicRef.current = new Audio('/sounds/tanweraman.mp3');
@@ -119,8 +83,9 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         bgMusicRef.current.volume = 0.4;
         bgMusicRef.current.play().catch(() => {});
 
-        gameoverSound.current = new Audio('/sounds/gameover.mp3'); 
-        winSound.current = new Audio('/sounds/win.mp3');
+        gameoverSound.current = new Audio('/sounds/bone-crack.mp3'); 
+        gameoverSecondSound.current = new Audio('/sounds/game-over.mp3'); 
+        winSound.current = new Audio('/sounds/winning-in-fortnite-be-like.mp3');
         eatSound.current = new Audio('/sounds/eat.mp3');
 
         return () => {
@@ -139,31 +104,26 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         if (!isMuted.current) return;
         
         if (type === 'eat' && eatSound) {
-            eatSound.current?.play().catch(() => {})
+            eatSound.current?.play().catch(() => {});
         } else if (type === 'gameover' && gameoverSound) {
-            gameoverSound.current?.play().catch(() => {})
+            bgMusicRef.current?.pause();
+            gameoverSound.current?.play().catch(() => {});
+            gameoverSecondSound.current?.play().catch(() => {});
         } else if (type === 'win' && winSound) {
-            winSound.current?.play().catch(() => {})
-        } 
+            bgMusicRef.current?.pause();
+            winSound.current?.play().catch(() => {});
+        }
+
     }
 
     const isEnded = () =>
         gameStateRef.current === 'OVER' ||
-        gameStateRef.current === 'WIN' ||
-        gameStateRef.current === 'END';
+        gameStateRef.current === 'WIN' 
 
     const handleDirectionChange = (newDirection: Direction) => {
         const current = currentDirection.current;
 
         if (isEnded()) return; 
-
-        setGameState((current) => {
-            if (current === 'PAUSE') {
-                gameStateRef.current = 'START';
-                return 'START';
-            }
-            return current;
-        });
 
         if (newDirection === 'UP' && current === 'DOWN') return;
         if (newDirection === 'DOWN' && current === 'UP') return;
@@ -172,13 +132,19 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
 
         currentDirection.current = newDirection;
         setGameDir(newDirection);
+
+        console.log(newDirection);
     
         if (socket && isConnected) {
             advanceSnake(socket, newDirection);
         }
     };
 
-    useGameControls(control, handleDirectionChange);
+    const onEscPress = () => {
+        handleRestart('OVER');
+    }
+
+    useGameControls(control, handleDirectionChange, onEscPress);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -208,8 +174,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
                 gameStateRef.current = won ? 'WIN' : 'OVER';
                 setGameState(won ? 'WIN' : 'OVER');
 
-                bgMusicRef.current?.pause()
-
                 if (won) {
                     playSoundEffect('win');
                 } else {
@@ -231,7 +195,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const width = Math.floor(entry.contentRect.width);
-                const height = Math.floor(entry.contentRect.height - 120);
+                const height = Math.floor(entry.contentRect.height);
                 screenRef.current = { width, height };
                 fitCanvas({ canvas, ctx: context, cssWidth: width, cssHeight: height });
             }
@@ -262,13 +226,13 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         socket.emit('change-direction', { direction: dir, roomId: room, userId: id });
     }
 
-    function handleRestart() {
+    function handleRestart(state: GameState) {
         const room = currRef.current?.roomId;
         if (socket && room) {
-            socket.emit('restart-game', { roomId: room, userId: id });
+            socket.emit("leave-room", { roomId: room });
         }
-        gameStateRef.current = 'END';
-        setGameState('END');
+        gameStateRef.current = state;
+        setGameState(state);
         resetMode();
         router.push('/');
         router.refresh();
@@ -278,6 +242,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         const ctx = ctxRef.current;
         const curr = currRef.current;
         const prev = prevRef.current;
+
         if (!ctx || !curr) return;
 
         const snakes = curr.snakes;
@@ -304,14 +269,14 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         ctx.save();
         ctx.translate(-cameraX, -cameraY);
 
-        ctx.strokeStyle = '#ff3333';
+        ctx.strokeStyle = '#1e2224';
         ctx.lineWidth = 8;
-        ctx.shadowColor = '#ff3333';
+        ctx.shadowColor = '#1e2224';
         ctx.shadowBlur = 15;
         ctx.strokeRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#1e2224';
+        ctx.fillStyle = ('#1e2224');
         ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
         const tileStartX = Math.max(0, Math.floor(cameraX / CELL) * CELL);
@@ -319,13 +284,14 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         const tileStartY = Math.max(0, Math.floor(cameraY / CELL) * CELL);
         const tileEndY = Math.min(WORLD_HEIGHT, cameraY + SCREEN_HEIGHT + CELL);
 
+        // drowing floor
         for (let x = tileStartX; x < tileEndX; x += CELL) {
             for (let y = tileStartY; y < tileEndY; y += CELL) {
-                ctx.fillStyle = '#23272a';
+                ctx.fillStyle = '#0b0f19';
                 ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
 
                 ctx.fillStyle = '#2c3135';
-                ctx.fillRect(x + 1, y + 1, 1, 1);
+                ctx.fillRect(x + 1, y + 1, 2, 2);
             }
         }
 
@@ -477,7 +443,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         ctx.restore();
     }
 
-    const showOver = gameStateRef.current === 'OVER' || gameStateRef.current === 'END';
+    const showOver = gameStateRef.current === 'OVER' ;
     const showWin = gameStateRef.current === 'WIN';
 
     return (
@@ -487,14 +453,14 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             {(showOver || showWin) && (
                 <div
                     style={{ position: 'absolute', inset: 0 }}
-                    className="flex flex-col items-center justify-center bg-black/60 rounded-xl"
+                    className="flex flex-col items-center justify-center bg-bg-overlay rounded-xl"
                 >
-                    <h2 className={`text-3xl font-bold mb-4 ${showWin ? 'text-green-400' : 'text-red-500'}`}>
+                    <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
                         {showWin ? 'You Win!' : 'Game Over'}
                     </h2>
                     <button
-                        onClick={handleRestart}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                        onClick={() => handleRestart(gameStateRef.current)}
+                        className="cursor-pointer rounded-lg bg-accent px-4 py-2 font-semibold text-text-inverse transition-colors duration-200 hover:bg-accent-hover active:bg-accent-active"
                     >
                         Try Again
                     </button>

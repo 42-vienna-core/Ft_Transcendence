@@ -1,68 +1,14 @@
 'use client'
 
-import { useGameMode, useUserStore } from "@/components/store/useUserStore"
+import { useGameMode, usePlayerStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
-import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, useRef, ReactNode } from "react";
 import type { Socket } from "socket.io-client";
-import { Globe, Cpu, UserRoundPlus, Loader2, Loader } from "lucide-react";
-import style from "./arena-content.module.css"
-import GameCanvas from "./game/game-canvas";
+import { Loader, UserRound } from "lucide-react";
+import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
-import { ControlType } from "@/types/gameTypes";
-
-interface OnlineUsersType {
-    id: number;
-    username: string;
-    avatar: string | null;
-    role: string;
-	score: number;
-}
-
-type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
-
-interface RoomStateType {
-    players: number;
-    roomId: string;
-    roomStatus: string;
-}
-
-interface Position {
-    x: number;
-    y: number;
-}
-
-interface Snake {
-    id: number;
-	username: string;
-    body: Position[];
-    direction: Direction;
-    newDirection: Direction | null;
-    newPosition: Position | null;
-    willGrow: boolean;
-    alive: boolean;
-    score: number;
-    color: string;
-    player: 'human' | 'bot';
-}
-
-interface Food {
-    position: Position;
-    eaten: boolean;
-}
-
-export interface Game {
-    roomId: string;
-    snakes: Snake[];
-    food: Food[];
-    status: 'waiting' | 'running' | 'finished';
-    tick: number;
-    gridWidth: number;
-    gridHeight: number;
-    winnerId: number | null;
-    botPresent: boolean;
-}
-
-type GameState = 'START' | 'PAUSE' | 'END' | 'WIN' | 'OVER' | null;
+import { ControlType, Direction, Game, GameState, RoomStateType, TICK_MS } from "@/types/gameTypes";
+import { useProfile } from "@/providers/ProfileContext";
 
 function normalizeRoomStatus(raw: string | undefined): 'WAITING' | 'READY' | 'UNKNOWN' {
     if (!raw) return 'UNKNOWN';
@@ -72,22 +18,64 @@ function normalizeRoomStatus(raw: string | undefined): 'WAITING' | 'READY' | 'UN
     return 'UNKNOWN';
 }
 
+export function getOrdinal(num: number): string {
+  const j = num % 10;
+  const k = num % 100;
+
+  if (j === 1 && k !== 11) {
+    return num + "st";
+  }
+  if (j === 2 && k !== 12) {
+    return num + "nd";
+  }
+  if (j === 3 && k !== 13) {
+    return num + "rd";
+  }
+
+  return num + "th";
+}
+
+function formatTime(totalSeconds: number): string {
+    if (!totalSeconds) return "00:00";
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    const mStr = String(minutes).padStart(2, '0');
+    const sStr = String(seconds).padStart(2, '0');
+
+    return `${mStr}:${sStr}`;
+}
+
+
+function Kbd({ children, active, activeClass = "text-accent-text" }: { children: ReactNode; active?: boolean; activeClass?: string }) {
+    return (
+        <span className={`inline-block rounded-sm border border-border-default bg-bg-base px-1.5 py-0.5 font-mono text-xs ${active ? activeClass : ""}`}>
+            {children}
+        </span>
+    );
+}
+
 function ArenaContent() {
     const [ gameState, setGameState ] = useState<GameState | null>(null);
     const [ gameDir, setGameDir ] = useState<Direction | null>(null);
+    const [ control, setControl ] = useState<ControlType>('arrow');
+    const [ roomState, setRoomState ] = useState<RoomStateType>();
+    const [ tick, setTick ] = useState<number>(0);
+
     const { isConnected, socket } = useGameSocket();
-    const [control, setControl] = useState<ControlType>('arrow');
     const { gameMode } = useGameMode();
     const router = useRouter();
 
-    const [ roomState, setRoomState ] = useState<RoomStateType>();
 
-    const onlineUsers = useUserStore((state) => state.onlineUsers);
-    const setOnlineUsers = useUserStore((state) => state.setOnlineUsers);
+    const players = usePlayerStore((state) => state.players);
+    const setPlayers = usePlayerStore((state) => state.setPlayers);
+    const resetPlayers = usePlayerStore((state) => state.resetPlayers);
 
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
-  
+    const { id } = useProfile();
+
     useEffect(() => {
         if (!socket || !isConnected) return;
 
@@ -97,24 +85,23 @@ function ArenaContent() {
             r.current = true;
         }
 
-        const handleOnlineUsers = (data: OnlineUsersType[]) => {
-            console.log("online users", data);
-            setOnlineUsers(data);
-        };
-
         const handleRoomUpdate = (data: RoomStateType) => {
-            console.log("room data", data, "→ normalized:", normalizeRoomStatus(data.roomStatus));
             setRoomState({ ...data });
         };
 
-        socket.on("online-users", handleOnlineUsers);
+        const handleGameState = (data: Game) => {
+            setPlayers(data.snakes);
+            setTick(data.tick);
+        }
+
         socket.on("room-update", handleRoomUpdate);
+        socket.on("game-state", handleGameState);
 
         if (joinedSocketRef.current !== socket) {
             joinedSocketRef.current = socket;
             socket.emit("join-match", { mode: gameMode });
         }
-        
+
         socket.emit("get-online-users");
 
         const setUpContol = () => {
@@ -127,10 +114,11 @@ function ArenaContent() {
         setUpContol();
 
         return () => {
-            socket.off("online-users", handleOnlineUsers);
             socket.off("room-update", handleRoomUpdate);
+            socket.off("game-state", handleGameState);
+            resetPlayers();
         };
-    }, [socket, isConnected, gameMode, setOnlineUsers]);
+    }, [socket, isConnected, gameMode, setPlayers, router]);
 
     if (r.current === false) return null;
 
@@ -142,23 +130,46 @@ function ArenaContent() {
         );
     }
 
+    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+    const myScore = players.find(it => it.id === id)?.score ?? 0;
+    const myIndex = sortedPlayers.findIndex(it => it.id === id);
+    const ordinalPos = getOrdinal(myIndex + 1);
+    const elapsedSeconds = Math.floor((tick * TICK_MS) / 1000);
+
+    const maxLenRoomId = 10;
+    const roomName = roomState && roomState.roomId.length > maxLenRoomId ?
+        roomState.roomId.slice(0, maxLenRoomId):
+        roomState?.roomId;
+
     return (
         <div className="grid grid-cols-5 w-full">
-            <div id="canvas-container" className="col-span-4 mr-[15px]">
-                <div className={`${style.boardTop} py-4`}>
-                    <span className={style.boardTag}>
-                        <i className={`${style.ti} ${style.tiCircleFilled}`} aria-hidden="true"></i> live match · room {roomState?.roomId ?? '—'}
-                    </span>
-                    <div className={style.boardStats}>
-                        <div className="text-white"><p>00:42</p>time</div>
-                        <div className="text-white"><p>{roomState?.players ?? 0}</p>players</div>
-                        <div className="text-white"><p>340</p>your score</div>
+            <div className="col-span-4 mr-[15px]">
+                <div className="flex items-center justify-between py-4">
+                    <div className="mr-[10px] rounded-full bg-success-soft px-2.5 py-1 ">
+                        <p className="trancate items-center text-xs text-success-text">
+                            live match · room {roomName ?? '—'}
+                        </p>
+                    </div>
+                    
+                    <div className="flex gap-[18px] text-xs text-text-secondary">
+                        <div>
+                            <p className="text-lg font-medium text-text-primary">{formatTime(elapsedSeconds)}</p>
+                            time
+                        </div>
+                        <div>
+                            <p className="text-lg font-medium text-text-primary">{players.length}</p>
+                            players
+                        </div>
+                        <div>
+                            <p className="text-lg font-medium text-text-primary">{myScore}</p>
+                            your score
+                        </div>
                     </div>
                 </div>
 
-                <div className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center bg-gray-900 rounded-xl">
+                <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
                     {status === 'WAITING' && (
-                        <div className="flex flex-col items-center gap-3 text-gray-400">
+                        <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <Loader className="w-15 h-15 animate-spin" />
                             <span>waiting for players…</span>
                         </div>
@@ -173,67 +184,67 @@ function ArenaContent() {
                     )}
 
                     {!roomState && (
-                        <div className="flex flex-col items-center gap-3 text-gray-400">
+                        <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <Loader className="w-15 h-15 animate-spin" />
                             <span>joining match…</span>
                         </div>
                     )}
 
                     {status === 'UNKNOWN' && roomState && (
-                        <div className="text-red-400 text-sm text-center px-4">
+                        <div className="text-danger text-sm text-center px-4">
                             Unexpected room status: <code>{roomState.roomStatus}</code>
                             <br />Add it to <code>normalizeRoomStatus()</code>.
                         </div>
                     )}
                 </div>
 
-                <div className={`${style.boardBottom} py-4`}>
-                    <div>
-                        <span className={`${style.kbd} ${gameState === 'START' ? "text-[var(--color-accent-text)]" : ""}`}>move</span>
-                        <span className={`${style.kbd} ${gameDir === 'LEFT' ? "text-[var(--color-warning-text)]" : ""}`}>←</span>
-                        <span className={`${style.kbd} ${gameDir === 'UP' ? "text-[var(--color-warning-text)]" : ""}`}>↑</span>
-                        <span className={`${style.kbd} ${gameDir === 'DOWN' ? "text-[var(--color-warning-text)]" : ""}`}>↓</span>
-                        <span className={`${style.kbd} ${gameDir === 'RIGHT' ? "text-[var(--color-warning-text)]" : ""}`}>→</span>
-                        <span className={`${style.kbd} ${gameState === 'PAUSE' ? "text-[var(--color-accent-text)]" : ""}`}>pause</span>
+                <div className="flex items-center justify-between py-4">
+                    <div className="flex gap-1.5">
+                        <Kbd active={gameState === 'START'}>move</Kbd>
+                        <Kbd active={gameDir === 'LEFT'} activeClass="text-warning-text">←</Kbd>
+                        <Kbd active={gameDir === 'UP'} activeClass="text-warning-text">↑</Kbd>
+                        <Kbd active={gameDir === 'DOWN'} activeClass="text-warning-text">↓</Kbd>
+                        <Kbd active={gameDir === 'RIGHT'} activeClass="text-warning-text">→</Kbd>
                     </div>
-                    <div>tick 60 fps · ping 24 ms</div>
                 </div>
             </div>
 
-            <aside className="col-span-1 h-[calc(100vh-150px)] border-l border-gray-700 p-4 text-white">
-                <div className={style.youCard}>
-                    <div className={style.row1}><i className={`${style.ti} ${style.tiUser}`} aria-hidden="true"></i> your position</div>
-                    <div className={style.row2}>
-                        <span className={style.score}>3<span>rd</span></span>
-                        <span className={style.rank}>of 12</span>
+            <aside className="col-span-1 h-[calc(100vh-150px)] border-l border-border-default p-4 text-text-primary">
+                <div className="rounded-[10px] bg-info-soft px-3 py-2.5">
+                    <div className="flex items-center gap-2 text-xs text-info-text">
+                        <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> your position
+                    </div>
+                    <div className="mt-1 flex items-baseline gap-1.5">
+                        <span className="text-xl font-medium text-info-text">{ordinalPos}</span>
+                        <span className="text-xs text-info-text">of {players.length}</span>
                     </div>
                 </div>
 
-                <div>
-                    <div className={style.sideHead}>
-                        <span className={style.sideTitle}>players</span>
-                        <span className={style.sideCount}>12 live</span>
+                <div className="mt-3.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium lowercase tracking-wide text-text-secondary">players</span>
+                        <span className="text-xs text-text-tertiary">{players.length}</span>
                     </div>
-                    <div className={style.playerRow}><span className={style.pos}>1</span><span className={`${style.swatch} bg-blue-500`}></span><span className={style.name}>Mira</span><span className={style.pts}>920</span></div>
-                    <div className={style.playerRow}><span className={style.pos}>2</span><span className={`${style.swatch} bg-red-500`}></span><span className={style.name}>Kostia</span><span className={style.pts}>615</span></div>
-                    <div className={`${style.playerRow} ${style.me}`}><span className={style.pos}>3</span><span className={`${style.swatch} bg-orange-500`}></span><span className={style.name}>you</span><span className={style.pts}>340</span></div>
-                    <div className={style.playerRow}><span className={style.pos}>4</span><span className={`${style.swatch} bg-yellow-500`}></span><span className={style.name}>Lila</span><span className={style.pts}>298</span></div>
-                    <div className={style.playerRow}><span className={style.pos}>5</span><span className={`${style.swatch} bg-pink-500`}></span><span className={style.name}>Jonas</span><span className={style.pts}>214</span></div>
-                    <div className={style.playerRow}><span className={style.pos}>6</span><span className={`${style.swatch} bg-green-500`}></span><span className={style.name}>noor_27</span><span className={style.pts}>180</span></div>
-                    <div className={style.playerRow}><span className={style.pos}>7</span><span className={`${style.swatch} bg-gray-500`}></span><span className={style.name}>tomato</span><span className={style.pts}>155</span></div>
+                    <ul>
+                        {sortedPlayers.map((it, idx) => {
+                            const me = it.id === id;
+
+                            return (
+                                <li
+                                    key={it.id}
+                                    className={`flex items-center gap-2 rounded-[10px] px-1 py-1.5 text-xs ${me ? "bg-bg-muted font-medium text-text-primary" : ""}`}
+                                >
+                                    <span className="w-[18px] text-right tabular-nums text-text-tertiary">{idx + 1}</span>
+                                    <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: it.color }}></span>
+                                    <span className="min-w-0 flex-1 truncate">{it.username}</span>
+                                    <span className="tabular-nums text-text-secondary">{it.score}</span>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 </div>
 
-                <div className={style.divider}></div>
-
-                <div className={style.ratingCard}>
-                    <div className={style.label}>your rating</div>
-                    <div className={style.value}><span className={style.v}>1 482</span><span className="delta">+14 today</span></div>
-                </div>
-
-                <div className={style.ratingCard}>
-                    <div className={style.value}>best score</div>
-                    <div className={style.value}><span className={style.v}>1 207</span><span>last week</span></div>
-                </div>
+                <div className="my-0.5 h-px bg-border-default"></div>
             </aside>
         </div>
     );

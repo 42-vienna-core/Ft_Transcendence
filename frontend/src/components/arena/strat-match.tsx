@@ -33,14 +33,14 @@ function MatchItem({
     const isAnyLoadingMode = loadingMode !== null;
 
     return (
-        <li className="flex flex-col gap-2 rounded-md border border-border-default bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
+        <li className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
             <div className="text-info">
                 {children}
             </div>
             <p className="text-sm font-medium text-text-primary">{title}</p>
             <p className="mb-auto text-xs leading-snug text-text-tertiary">{expl}</p>
 
-            <p className="mt-1 flex items-center gap-1 text-[11px] text-success">
+            <p className="mt-1 flex items-center gap-1 text-xs text-success">
                 avg. wait ~8 s
             </p>
 
@@ -129,7 +129,6 @@ function StartMatch () {
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        console.log("Event:", mode);
         setGameMode(mode)
 
         // setLoading(false);

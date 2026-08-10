@@ -243,6 +243,15 @@ export default function ProfileSettingsContent() {
         setSnakeColor(color);
         togleSnakeColorMenu(); 
         localStorage.setItem('snakeColor', color);
+
+        try {
+            apiFetch('user/me/color', {
+                method: 'PATCH',
+                body: JSON.stringify({color: color}),
+            })
+        } catch (error) {
+            console.log("Change snake color error.");
+        }
     };
 
     const selectControl = (key: string) => {

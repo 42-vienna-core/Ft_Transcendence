@@ -1,4 +1,4 @@
-import FriendsBar from "@/components/friends/friends-bar";
+import FriendsBar from "@/components/friends/friends-filter";
 
 
 export default async function Friends() {
