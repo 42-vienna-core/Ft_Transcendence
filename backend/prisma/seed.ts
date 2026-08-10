@@ -6,9 +6,9 @@ const prisma = new PrismaClient()
 
 async function main() {
 	const bots = [
-		{email: 'bot1@ai.com', name: "AI Bot 1"},
-		{email: 'bot2@ai.com', name: "AI Bot 2"},
-		{email: 'bot3@ai.com', name: "AI Bot 3"},
+		{email: 'bot1@ai.com', name: "AI Bot 1", color: '#FF5E00'},
+		{email: 'bot2@ai.com', name: "AI Bot 2", color: '#FF007F'},
+		{email: 'bot3@ai.com', name: "AI Bot 3", color: '#9D00FF'},
 	]
 	const botPass = process.env.BOT_PASS;
 	if (!botPass)
@@ -24,6 +24,7 @@ async function main() {
 				password,
 				isBot: true,
 				role: "BOT",
+				color: bot.color
 			},
 			create:{
 				email: bot.email,
@@ -31,6 +32,7 @@ async function main() {
 				password: password,
 				role: "BOT",
 				isBot: true,
+				color: bot.color
 			},
 		});
 	}
