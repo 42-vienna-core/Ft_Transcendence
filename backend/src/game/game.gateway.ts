@@ -3,6 +3,7 @@ import { Server} from 'socket.io';
 import type { changeDirectionPayload } from "./interfaces/events";
 import { RedisService } from "src/redis/redis.service";
 import { GameState } from './interfaces/game-state';
+import { RoomStatus } from 'prisma/generated';
 
 
 @WebSocketGateway()
@@ -33,5 +34,11 @@ export class GameGateway {
 	async broadcastOnlineUsers(){
 		const onlineUsers = await this.redisService.getOnlineUsers();
 		this.server.emit('online-users', onlineUsers);
+	}
+
+	async broadcastRoomUpdate(roomId: string, roomStatus: RoomStatus, players: number){
+		this.server.to(roomId).emit('room-update', {
+			roomId, roomStatus, players
+		});
 	}
 }

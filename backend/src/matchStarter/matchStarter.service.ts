@@ -7,7 +7,7 @@ import { GameService } from "src/game/game.service";
 import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
 
-const EXP_TIME = 60_000;
+const EXP_TIME = 15_000;
 
 export interface Match{
 	roomId: string;
@@ -60,6 +60,7 @@ export class MatchStarter {
 	}
 
 	async prepareQuickMatch(userId: number, socketId: string) : Promise<Match>{
+		//const user = await this.prismaService.users.findUnique({where: {id: userId}});
 		for (let retry = 0; retry < 3; retry++){
 			let room = await this.prismaService.gameRoom.findFirst({
 				where: {
@@ -68,11 +69,19 @@ export class MatchStarter {
 				},
 			})
 			if (!room){
-				room = await this.gameRoom.createRoom({
-					name: 'Quick Match',
-					maxUsers: 4,
-					type: RoomType.PUBLIC,
-				})
+				const waitTimeout = new Date(Date.now() + EXP_TIME);
+				room = await this.prismaService.gameRoom.create({
+					data: {
+						name: 'Quick Match',
+						type: RoomType.PUBLIC,
+						status: RoomStatus.WAITING,
+						waitTimeout,
+					},
+				});
+				const roomId = room.id;
+				setTimeout(() => {void this.finishWaitingTime(roomId)}, EXP_TIME);
+				//if (user)
+				//	console.log(user.name, ' has created a room');
 			}
 			let players = await this.gameRoom.getPlayerCount(room.id);
 			if (players >= room.maxUsers){
@@ -82,7 +91,11 @@ export class MatchStarter {
 				})
 				continue ;
 			}
+			if (room.waitTimeout === null || room.waitTimeout <= new Date())
+				continue ;
 			await this.gameRoom.addUserToRoom(room.id, userId, socketId);
+			//if (user)
+			//	console.log(user.name, ' has joined a room');
 			players = await this.gameRoom.getPlayerCount(room.id);
 			let status = room.status;
 			if (players >= room.maxUsers){
@@ -205,7 +218,7 @@ export class MatchStarter {
 		const room = await this.prismaService.gameRoom.findUnique({
 			where: {id: roomId},
 		})
-		if (!room || room.type !== RoomType.FRIEND || room.status !== RoomStatus.WAITING)
+		if (!room || room.status !== RoomStatus.WAITING)
 			return ;
 		if (room.waitTimeout === null || room.waitTimeout > new Date())
 			return ;
@@ -217,6 +230,7 @@ export class MatchStarter {
 					status: RoomStatus.WAITING,
 				},
 			});
+		//	console.log ('Room has been deleted as nobody joined')
 			return;
 		}
 		const ready = await this.prismaService.gameRoom.updateMany({
@@ -228,6 +242,8 @@ export class MatchStarter {
 					status: RoomStatus.READY,
 				},
 		});
+		//console.log ('Room status: ', ready.status)
+
 		if (ready.count > 0)
 			await this.startMatch(roomId);
 	}
@@ -255,6 +271,7 @@ export class MatchStarter {
 		const activeRoom = await this.gameRoom.findActiveRoomWithUser(userId);
 		if (activeRoom)
 			throw new BadRequestException('You are already active in another game, retry later');
+		
 
 		switch (request.mode){
 
