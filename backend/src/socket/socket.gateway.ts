@@ -4,7 +4,7 @@ import { AddUserGameRoomDto } from '../gameRoom/dto/addUser-gameRoom.dto';
 import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { MatchStarter } from '../matchStarter/matchStarter.service';
-import { StartMatchDto } from '../matchStarter/dto/match.dto';
+import { MatchRequestDto } from '../matchStarter/dto/match.dto';
 import { RoomStatus } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 
@@ -45,6 +45,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.sessionId = payload.sessionId;
       client.data.user = user;
 
+	  await client.join(`user:${payload.userId}`);
+
       await this.redisService.addOnline(user, session.id);
     } catch (e) {
       console.log(e);
@@ -65,7 +67,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const players = await this.roomService.getPlayerCount(roomUser.roomId);
     this.server.to(client.data.roomId).emit('room-update', {
       roomId: roomUser.roomId,
-      roomStatus: client.data.roomSatus,
+      roomStatus: client.data.roomStatus,
       players,
     });
    } catch (error) {
@@ -81,7 +83,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join-match')
-	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: StartMatchDto){
+	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
 		
 		console.log(" >>>> start match was called");
 		console.log("data: ", data);
@@ -94,11 +96,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		const match = await this.matchStarter.prepareMatch(
 			client.data.user.id, 
-			client.id, data.mode
+			client.id, data
 		);
 		console.log("MATCH: ",match);
+
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
+
+		if (match.invitation){
+			this.server.to(`user:${match.invitation.friendId}`).emit('friend-match-invite',{
+				roomId: match.roomId,
+				inviter: {
+					id: client.data.user.id,
+					name: client.data.user.name,
+					avatar: client.data.user.avatar,
+				},
+				expiresAt: match.invitation.expiresAt,
+			});
+		}
 		
 		this.server.to(client.data.roomId).emit('room-update', {
 			roomId: match.roomId,
@@ -107,7 +122,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		});
 		if (match.roomStatus === RoomStatus.READY)
 			await this.matchStarter.startMatch(match.roomId);
-    console.log("ROOM STATUS: ", match.roomStatus);
+    	console.log("ROOM STATUS: ", match.roomStatus);
 		return match;
 	}
 

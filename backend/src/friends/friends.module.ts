@@ -5,11 +5,9 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
-    imports: [
-        PrismaModule,
-        RedisModule,
-    ],
+    imports: [PrismaModule, RedisModule],
     controllers: [FriendsController],
     providers: [FriendsService],
+	exports: [FriendsService]
 })
 export class FriendsModule { }

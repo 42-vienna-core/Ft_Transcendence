@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
+import { RequestStatus } from "@prisma/client";
 
 @Injectable()
 export class FriendsService {
@@ -13,9 +14,8 @@ export class FriendsService {
 	) { }
 
 	async sendRequest(senderId: number, receiverId: number) {
-		if (senderId === receiverId) {
+		if (senderId === receiverId)
 			throw new BadRequestException('You cannot send a request to yourself');
-		}
 		const check = await this.prismaService.friendsRequest.findUnique({
 			where: {
 				senderId_receiverId: { senderId, receiverId, }
@@ -35,12 +35,10 @@ export class FriendsService {
 		const reverse = await this.prismaService.friendsRequest.findUnique({
 			where: { senderId_receiverId: { senderId: receiverId, receiverId: senderId } },
 		});
-		if (reverse?.status === 'PENDING') {
+		if (reverse?.status === 'PENDING')
 			throw new BadRequestException('The user already sent you a request');
-		}
-		if (reverse?.status === 'ACCEPTED') {
+		if (reverse?.status === 'ACCEPTED')
 			throw new BadRequestException('You are friends already');
-		}
 		if (reverse?.status === 'REJECTED') {
 			await this.prismaService.friendsRequest.delete({
 				where: { id: reverse.id },
@@ -62,12 +60,10 @@ export class FriendsService {
 		const request = await this.prismaService.friendsRequest.findUniqueOrThrow({
 			where: { id: requestId, },
 		})
-		if (request.receiverId !== userId) {
+		if (request.receiverId !== userId)
 			throw new BadRequestException('You are not the receiver of this request');
-		}
-		if (request.status !== 'PENDING') {
+		if (request.status !== 'PENDING')
 			throw new BadRequestException('Request is not pending');
-		}
 		await this.prismaService.friendsRequest.update({
 			where: {
 				id: requestId,
@@ -83,12 +79,10 @@ export class FriendsService {
 		const request = await this.prismaService.friendsRequest.findUniqueOrThrow({
 			where: { id: requestId, },
 		})
-		if (request.receiverId !== userId) {
+		if (request.receiverId !== userId)
 			throw new BadRequestException('You are not the receiver of this request');
-		}
-		if (request.status !== 'PENDING') {
+		if (request.status !== 'PENDING')
 			throw new BadRequestException('Request is not pending');
-		}
 		await this.prismaService.friendsRequest.update({
 			where: {
 				id: requestId,
@@ -209,5 +203,23 @@ export class FriendsService {
 			},
 		});
 		return { success: true };
+	}
+
+	async areFriends(userId: number, friendId: number) : Promise<boolean>{
+		const friendship = await this.prismaService.friendsRequest.findFirst({
+			where: {
+				status: RequestStatus.ACCEPTED,
+				OR: [{
+					senderId: userId,
+					receiverId: friendId,
+				},{
+					senderId: friendId,
+					receiverId: userId,
+				},],
+			},
+		});
+		if (!friendship)
+			return false;
+		return true;
 	}
 }
