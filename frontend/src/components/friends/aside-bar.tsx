@@ -1,5 +1,4 @@
-import FriendsContent from './friends-list';
-import RequestsContent from './requests';
+import FriendRequests from './friend-requests';
 import FindFriends from './search';
 
 interface Request {
@@ -24,12 +23,12 @@ export default function AsideBar({
     removeRequestCard,
     getListOfFriends,
 
-}:AsideBarProps) {
+}:AsideBarProps) {    
     return (
         <aside className="flex min-w-0 flex-col gap-2.5">
             <FindFriends/>
 
-            <RequestsContent
+            <FriendRequests
                 requests={requests}
                 removeRequestCard={removeRequestCard}
                 getListOfFriends={getListOfFriends}

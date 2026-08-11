@@ -8,7 +8,7 @@ import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
-const EXP_TIME = 10_000;
+const EXP_TIME = 15_000;
 
 export interface Match{
 	roomId: string;

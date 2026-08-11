@@ -5,6 +5,7 @@ import { apiFetch } from '@/lib/api-client';
 import AsideBar from './aside-bar';
 import FriendsContent from './friends-list';
 import { Friend } from '@/types/gameTypes';
+import { useNotificationListener } from '../store/notification';
 
 interface Requests {
     id: string;

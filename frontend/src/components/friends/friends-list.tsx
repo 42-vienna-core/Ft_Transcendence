@@ -126,7 +126,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const [ user, setUser ] = useState<Friend | null>(null);
     const { socket, isConnected } = useGameSocket();
     const { setGameMode } = useGameMode();
-    const {setFriendId} = useFriendAndRoomID();
+    const { setFriendId } = useFriendAndRoomID();
     const router = useRouter();
     
     let newFriends: Friend[] = [];

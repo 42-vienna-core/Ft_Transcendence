@@ -76,7 +76,7 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const {friendId} = useFriendAndRoomID();
+    const {friendId, roomId} = useFriendAndRoomID();
 
     useEffect(() => {
         if (!socket || !isConnected) return;
@@ -109,7 +109,7 @@ function ArenaContent() {
             } 
 
             if (gameMode === 'FRIEND_JOIN') {
-                socket.emit("join-match", {...payload, roomId: id});
+                socket.emit("join-match", {...payload, roomId});
                 return;
             }
 

@@ -58,3 +58,24 @@ export interface Friend {
     score: number;
 }
 
+export interface GameRequestData{
+    roomId: string;
+    inviter: {
+      id: number;
+      name: string;
+      avatar: string | null;
+    };
+    expiresAt: number;
+}
+
+export interface FriendRequestData {
+    id: string;
+    sender: {
+        id: number;
+        name: string;
+        avatar?: string | null;
+        isOnline: boolean;
+        score: number;
+    };
+}
+
