@@ -5,12 +5,14 @@ import { RedisService } from 'src/redis/redis.service';
 import { GameGateway } from './game.gateway';
 import { AiBotService } from 'src/aiOpponent/ai.service';
 import { RoomStatus } from "@prisma/client";
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RoomType } from "@prisma/client";
 
 
 const GRID_WIDTH = 30;
 const GRID_HEIGHT = 30;
 const TICK_MS = 160;
-const DIFFICULTY = 15; //the higher the harder it gets
+//const DIFFICULTY = 15; //the higher the harder it gets
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -250,10 +252,10 @@ function initGame(id: string, users: Player[]) : GameState{
 	return game;
 }
 
-function randomDirection() : Direction{
-	const dir: Direction[] = ['DOWN', 'LEFT', 'RIGHT', 'UP'];	
-	return dir[Math.floor(Math.random()* dir.length)];
-}
+// function randomDirection() : Direction{
+// 	const dir: Direction[] = ['DOWN', 'LEFT', 'RIGHT', 'UP'];	
+// 	return dir[Math.floor(Math.random()* dir.length)];
+// }
 
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
@@ -291,6 +293,8 @@ export class GameService {
 		private readonly prismaService: PrismaService,
 		private readonly redisService: RedisService,
 		private readonly aiBotService: AiBotService,
+		private readonly eventEmitter: EventEmitter2,
+		
 		@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway,
 	) { };
 
@@ -309,14 +313,22 @@ export class GameService {
 				}
 			}
 		})
-		await this.prismaService.gameRoom.update({
+		const room = await this.prismaService.gameRoom.update({
 			where: {
 				id: game.roomId
 			},
 			data: {
 				status: RoomStatus.FINISHED
 			},
+			select: {
+				type: true,
+				ownerId: true,
+			}
 		});
+		
+		if (room && room.type === RoomType.FRIEND && room.ownerId !== null)
+			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')
 				continue;
@@ -377,10 +389,10 @@ export class GameService {
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY != 0)
+					if (snake.alive && snake.player === 'bot' /*&& game.tick % DIFFICULTY != 0*/)
 						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
-					else if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY == 0)
-						snake.newDirection = randomDirection();
+					// else if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY == 0)
+					// 	snake.newDirection = randomDirection();
 				}
 			}
 			newHeadPosition(game);

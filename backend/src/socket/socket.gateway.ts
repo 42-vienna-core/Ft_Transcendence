@@ -11,6 +11,8 @@ import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { TokenService } from 'src/token/token.service';
 import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
+import { FriendsService } from 'src/friends/friends.service';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -22,6 +24,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly matchStarter: MatchStarter,
     private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
+    private readonly friendsService: FriendsService,
   ) { }
 
   async handleConnection(client: Socket) {
@@ -141,6 +144,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       players,
     });
     return { success: true, players };
+  }
+
+  @OnEvent('playing-friends.changed')
+  async handlePlayingFrendsChanged(event: {ownerId: number}){
+	const friends = await this.friendsService.getFriends(event.ownerId);
+	for (const friend of friends)
+		this.server.to(`user:${friend.id}`).emit('playing-friends-changed');
+  }
+
+  @SubscribeMessage('get-playing-friends')
+  async getPlayingFriends(@ConnectedSocket() client: Socket){
+	return this.friendsService.getPlayingFriends(client.data.user.id);
   }
 
 }

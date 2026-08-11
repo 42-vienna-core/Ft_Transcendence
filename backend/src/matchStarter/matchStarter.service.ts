@@ -6,6 +6,7 @@ import { MatchMode, MatchRequestDto } from "./dto/match.dto";
 import { GameService } from "src/game/game.service";
 import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 const EXP_TIME = 10_000;
 
@@ -29,6 +30,7 @@ export class MatchStarter {
 		private readonly gameService: GameService,
 		private readonly redisService: RedisService,
 		private readonly friendsService: FriendsService,
+		private readonly eventEmitter: EventEmitter2,
 	){}
 
 	async prepareCpuMatch(userId: number, socketId: string) : Promise<Match>{
@@ -65,7 +67,10 @@ export class MatchStarter {
 			let room = await this.prismaService.gameRoom.findFirst({
 				where: {
 					status: RoomStatus.WAITING,
-					type: RoomType.PUBLIC
+					type: RoomType.PUBLIC,
+					waitTimeout:{
+						gz: new Date(),
+					}
 				},
 			})
 			if (!room){
@@ -116,8 +121,6 @@ export class MatchStarter {
 	}
 	
 	async createFriendsMatch(userId: number, socketId: string, friendId: number): Promise<Match> {
-		console.log("+++++++++++++11111+++++++++++++");
-
 		if (userId === friendId)
 			throw new BadRequestException('You cannot send a request to yourself');
 
@@ -127,14 +130,12 @@ export class MatchStarter {
 		const isOnline = await this.redisService.isOnline(friendId);
 		if (!isOnline)
 			throw new BadRequestException('Your firend isn`t online anymore');
-		console.log("+++++++++++++222222+++++++++++++");
 
 		const activeRoom = await this.gameRoom.findActiveRoomWithUser(friendId);
 		if (activeRoom)
 			throw new BadRequestException('Your friend is already active in another game, retry later');
 		
 		const waitTimeout = new Date(Date.now() + EXP_TIME);
-		console.log("+++++++++++++333333+++++++++++++");
 
 		const room = await this.prismaService.gameRoom.create({
 			data: {
@@ -151,7 +152,7 @@ export class MatchStarter {
 				}
 			}
 		});
-		console.log("++++++++++++++++++++++++++");
+		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 
 		//send request to friend (60 sec expiry)
 		await this.redisService.setEx(`match-invite:${room.id}:${friendId}`, 60, JSON.stringify({
@@ -211,6 +212,7 @@ export class MatchStarter {
 			})
 			status = RoomStatus.READY;
 		};
+		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 
 		return {
 			roomId: room.id,
@@ -229,12 +231,16 @@ export class MatchStarter {
 			return ;
 		const players = await this.gameRoom.getPlayerCount(room.id);
 		if (players <= 1){
-			await this.prismaService.gameRoom.deleteMany({
+			const owner = room.ownerId;
+			const type = room.type;
+			const deleted = await this.prismaService.gameRoom.deleteMany({
 				where: {
 					id: roomId,
 					status: RoomStatus.WAITING,
 				},
 			});
+			if (deleted.count > 0 && owner !== null && type === RoomType.FRIEND)
+				this.eventEmitter.emit('playing-friends.changed', {ownerId: owner});
 		//	console.log ('Room has been deleted as nobody joined')
 			return;
 		}
@@ -248,13 +254,16 @@ export class MatchStarter {
 				},
 		});
 		//console.log ('Room status: ', ready.status)
-
-		if (ready.count > 0)
+		
+		if (ready.count > 0){
+			if (room.ownerId !== null && room.type === RoomType.FRIEND)
+				this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 			await this.startMatch(roomId);
+		}
 	}
 
 	async startMatch(roomId: string){
-		const room = await this.prismaService.gameRoom.updateMany({
+		const updated = await this.prismaService.gameRoom.updateMany({
 			where: {
 				id: roomId,
 				status: RoomStatus.READY,
@@ -263,8 +272,14 @@ export class MatchStarter {
 				status: RoomStatus.PLAYING,
 			},
 		})
-		if (room.count === 0)
+		 
+		if (updated.count === 0)
 			return;
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id: roomId }
+		});
+		if (room && room.ownerId && room.type === RoomType.FRIEND)
+			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 		await this.gameService.startGame(roomId);
 	}
 

@@ -17,11 +17,13 @@ import { GameRoomModule } from './gameRoom/gameRoom.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { GameModule } from './game/game.module';
 import { AdminModule } from './admin/admin.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     PrismaModule,
     UserModule,
+	EventEmitterModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, }),
     ThrottlerModule.forRoot([{
       name: 'short',
@@ -42,7 +44,7 @@ import { AdminModule } from './admin/admin.module';
     AvatarModule,
     GameRoomModule,
     FriendsModule,
-	  GameModule,
+	GameModule,
     AdminModule
   ],
   controllers: [AppController],

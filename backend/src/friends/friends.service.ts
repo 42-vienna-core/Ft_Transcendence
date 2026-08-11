@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { RequestStatus } from "@prisma/client";
+import { RoomStatus, RoomType } from "@prisma/client";
 
 @Injectable()
 export class FriendsService {
@@ -221,5 +222,56 @@ export class FriendsService {
 		if (!friendship)
 			return false;
 		return true;
+	}
+
+	async getPlayingFriends(userId: number){
+		const friends = await this.getFriends(userId);
+		const friendIds = friends.filter((friend) => friend.isOnline).map((friend) => friend.id);
+		if(friendIds.length === 0)
+			return [];
+		const rooms = await this.prismaService.gameRoom.findMany({
+			where: {
+				ownerId: {
+					in: friendIds,
+				},
+				type: RoomType.FRIEND,
+				OR: [
+					{
+						status: {
+							in: [
+								RoomStatus.PLAYING,
+								RoomStatus.READY,
+							],
+						},
+					},
+					{
+						status: RoomStatus.WAITING,
+						waitTimeout: {
+							gt: new Date(),
+						}
+					}
+				],
+			},
+			select: {
+				id: true,
+				status: true,
+				type: true,
+				maxUsers: true,
+				waitTimeout: true,
+				owner: {
+					select: {
+						id: true,
+						name: true,
+						avatar: true,
+					},
+				},
+				_count: {
+					select: {
+						roomUsers: true,
+					},
+				},
+			},
+		});
+		return rooms;
 	}
 }
