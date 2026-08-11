@@ -1,28 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react';
-import style from './friends.module.css'
+import { useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
 import { UserRoundX } from 'lucide-react';
 import DialogModal from '../modal/dialog-modal';
 import { OnlineStateItem } from '@/ui/online-tracker';
-
-interface Friend {
-  id: number;
-  name: string;
-  avatar?: string | null;
-  isOnline: boolean;
-  score: number;
-}
+import { useGameSocket } from '@/providers/SocketProvider';
+import { Friend, GameModeType } from '@/types/gameTypes';
+import { useFriendAndRoomID, useGameMode } from '../store/useUserStore';
+import { useRouter } from "next/navigation";
 
 interface FriendCardProps {
     friend: Friend;
+    filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
+    handleGameAction: (action: GameModeType, id: number) => void;
 }
 
 interface ListOfFriendsProps {
     friends: Friend[];
+    filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
+    handleGameAction: (action: GameModeType, id: number) => void;
 }
 
 type ActiveFilterType = 'All' | 'Online' | 'Playing';
@@ -34,58 +33,87 @@ interface FriendsContentProps {
     removeFriendCard: (id: number)=> void
 }
 
-function FriendCard({friend, removeFriend}: FriendCardProps) {
-    const {name, avatar, isOnline, score} = friend;
+const rowActionBtn =
+    "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium text-text-secondary transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
+
+function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
+    const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
     const isAvatar =  !!avatar;
 
     return (
-        <li className={`${style.fRow}`}>
+        <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
             <div>
                 { isAvatar ? (
-                    <img  className={style.av} src={avatar ? avatar : ""} alt="avatar" />
+                    <img className="size-8 shrink-0 rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
                 ) : (
-                    <div className={`${style.av} bg-[var(--color-snake-1)] text-[var(--color-text-primary)] capitalize`}
-                        style={{ color: "var(--color-info-text)" }}
-                    >
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-snake-1 text-sm font-medium capitalize text-info-text">
                         {av}
                     </div>
                 )}
             </div>
-            
-            <div className={style.main}>
-                <div className={style.who}>
-                    <span className={style.nm}>{name}</span>
+
+            <div className="min-w-0 pt-px">
+                <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="text-sm font-medium">{name}</span>
                 </div>
-                <div className={style.statusLine}>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-text-secondary">
                     <OnlineStateItem
                         isOnline={isOnline}
                     />
                     <span>In public match · Room 47 · 3rd of 8</span>
-                    <span className={style.sep}>·</span>
-                    <span className={style.rating}>{score}</span>
-                    <span className={`${style.delta} ${style.up}`}>▲42 wk</span>
+                    <span className="text-text-disabled">·</span>
+                    <span className="font-medium text-text-primary">{score}</span>
+                    {/* <span className="text-xs text-success">▲42 wk</span> */}
                 </div>
             </div>
-            <button 
-                className="flex items-center ml-auto  px-2 py-1 bg-[var(--color-bg-muted)] text-red-600 rounded-full hover:bg-[var(--color-warning)] transition-colors"
-                onClick={() => removeFriend(friend)}    
-            >
-                <UserRoundX className="w-4 h-4" />
-            </button>
+            <div className="ml-auto flex min-w-[76px] flex-col items-stretch gap-1">
+                {
+                    filter === 'All' &&
+                        <button
+                            className={`${rowActionBtn} hover:border-danger hover:text-danger active:text-danger-hover`}
+                            onClick={() => removeFriend(friend)}
+                        >
+                            <UserRoundX className="h-4 w-4" />
+                        </button>
+                }
+
+                {
+                    filter === 'Online' &&
+                        <button
+                            className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
+                            onClick={() => handleGameAction('FRIEND_INV', id)}
+                        >
+                            invite
+                        </button>
+                }
+
+               {
+                    filter === 'Playing' &&
+                        <button
+                            className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
+                            onClick={() => handleGameAction('FRIEND_JOIN', id)}
+                        >
+                            join
+                        </button>
+                }
+            </div>
+
         </li>
     )
 }
 
-function ListOfFriends({friends, removeFriend}: ListOfFriendsProps ) {
+function ListOfFriends({friends, filter, removeFriend, handleGameAction}: ListOfFriendsProps ) {
     return (
         <ul className="flex flex-col gap-2">
             {friends.length > 0 &&
-                (friends.map(friend => 
+                (friends.map(friend =>
                     <FriendCard
                         key={`friend-${friend.id}`}
+                        filter={filter}
                         friend={friend}
-                        removeFriend={removeFriend}    
+                        removeFriend={removeFriend}
+                        handleGameAction={handleGameAction}
                     />
                 ))
             }
@@ -94,15 +122,20 @@ function ListOfFriends({friends, removeFriend}: ListOfFriendsProps ) {
 }
 
 function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProps) {
-    const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [user, setUser] = useState<Friend | null>(null);
+    const [ isOpen, setIsOpen ] = useState<boolean>(false);
+    const [ user, setUser ] = useState<Friend | null>(null);
+    const { socket, isConnected } = useGameSocket();
+    const { setGameMode } = useGameMode();
+    const {setFriendId} = useFriendAndRoomID();
+    const router = useRouter();
+    
     let newFriends: Friend[] = [];
 
     if (filter === 'All') {
         newFriends = friends;
     } else if (filter === 'Online') {
         newFriends  = friends.filter(it => it.isOnline);
-    } 
+    }
 
 
     async function handeleFriendRemoving(friend: Friend) {
@@ -118,8 +151,6 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
         }
 
         try {
-            // await new Promise((resolve) => setTimeout(resolve, 4000));
-
             const url = `friends/${user?.id}`
             await apiFetch(url, {method: 'DELETE'});
 
@@ -129,23 +160,38 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
         }
     }
 
-    if (newFriends.length === 0 && filter === 'All') 
+    const handleGameAction = async (action: GameModeType, id: number) => {
+        console.log(action);
+        if (!socket || !isConnected || !action) return;
+
+        setGameMode(action);
+        setFriendId(id);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        router.push("/arena");
+        router.refresh();
+    }
+
+    if (newFriends.length === 0 && filter === 'All')
         return  (
-            <div className={style.col}>
-                <p className="text-[15px] text-[var(--color-warning)]">No friends yet</p>
+            <div className="flex min-w-0 flex-col gap-2.5">
+                <p className="text-sm text-warning-text">No friends yet</p>
             </div>)
-    
-    if (newFriends.length === 0 && filter === 'Online') 
+
+    if (newFriends.length === 0 && filter === 'Online')
         return  (
-            <div className={style.col}>
-                <p className="text-[15px] text-[var(--color-warning)]">No friends online</p>
+            <div className="flex min-w-0 flex-col gap-2.5">
+                <p className="text-sm text-warning-text">No friends online</p>
             </div>)
 
     return (
-        <div className={style.col}>
-            <ListOfFriends 
+        <div className="flex min-w-0 flex-col gap-2.5">
+            <ListOfFriends
+                filter={filter}
                 friends={newFriends}
                 removeFriend={handeleFriendRemoving}
+                handleGameAction={handleGameAction}
         />
         <DialogModal
             isOpen={isOpen}

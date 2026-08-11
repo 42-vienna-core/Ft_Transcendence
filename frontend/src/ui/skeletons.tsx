@@ -33,6 +33,7 @@ export function UserProfileSkeleton() {
         <div className="flex items-center justify-between gap-[16px] aria-hidden={true}">
             <SkeletonBlock className="w-[64px] h-[64px] rounded-full bg-[#c4c4d0]" />
             <div className="">
+                
                 <SkeletonBlock className="mb-1 h-[16px] w-[98px] rounded-sm bg-[#c4c4d0]" />
                 <SkeletonBlock className="mb-1 h-[16px] w-[98px] rounded-sm bg-[#c4c4d0]" />
                 <SkeletonBlock className="mb-1 h-[16px] w-[57px] rounded-sm bg-[#c4c4d0]" />

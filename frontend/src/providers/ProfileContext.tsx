@@ -11,6 +11,7 @@ interface ProfileContextType {
     nameOnChange: string;
     avatar: string | null;
     status: 'loading' | 'authenticated' | 'unauthenticated';
+    role: "ADMIN" | "PLAYER";
     updateNameOnChange: Dispatch<SetStateAction<string>>;
     updateSessionUsername: () => void;
     updateAvatar: (newUrl: string) => void;
@@ -26,7 +27,7 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
     const [avatar, setAvatar] = useState<string | null>(null);
     const [email, setEmail] = useState<string>("");
     const [id, setId] = useState<number>(0);
-
+    const [role, setRole] = useState<"ADMIN" | "PLAYER">("PLAYER");
     console.log("PROFILEPROVIDER useSession");
 
     useEffect(() => {
@@ -37,8 +38,9 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
             setEmail(session.user.email);
             setnameOnChange(session.user.username);
             setAvatar(ava ? ava : "/png/default_avatar.png");
+            setRole(session.user.role);
         }
-    },[session])
+    },[session]);
 
     
     const updateSessionUsername = async () => {
@@ -68,6 +70,7 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
             avatar,
             nameOnChange,
             status,
+            role,
             updateSession,
             updateSessionUsername, 
             updateAvatar,

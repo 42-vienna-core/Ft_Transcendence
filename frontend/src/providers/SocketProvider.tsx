@@ -1,5 +1,6 @@
 'use client'
 
+import { useNotificationListener } from "@/components/store/notification";
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -20,6 +21,7 @@ export const SocketProvider = ({
 }) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
+    const openNotificationListener = useNotificationListener((state) => state.openNotificationListener);
     const {data: session} = useSession();
     const token = session?.accessToken;
 
@@ -52,6 +54,7 @@ export const SocketProvider = ({
             socketInstance.on("disconnect", onDisconnect);
 
             setSocket(socketInstance);
+            openNotificationListener(socketInstance);
 
         } catch (error: any) {
             console.error("🚨 Failed to initialize socket connection:", error.message || error);

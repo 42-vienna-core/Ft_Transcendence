@@ -1,10 +1,9 @@
-import FriendsBar from "@/components/friends/friends-bar";
-import style from "./friends.module.css";
+import FriendsBar from "@/components/friends/friends-filter";
 
 
 export default async function Friends() {
     return (
-        <div className={style.body}>
+        <div className="relative font-sans text-sm text-text-primary">
             <FriendsBar/>
         </div>
     );

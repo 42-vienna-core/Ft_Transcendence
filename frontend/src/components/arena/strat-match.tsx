@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useTranslations } from "next-intl";
+import { GameModeType } from "@/types/gameTypes";
 
-type GameMode = 'QUICK' | 'FRIEND' | 'CPU';
+
 
 interface MachCard {
-    id: GameMode;
+    id: GameModeType;
     title: string;
     expl: string;
     btnLabel: string,
@@ -26,21 +27,21 @@ function MatchItem({
     loading: boolean;
     children: React.ReactNode;
     card: MachCard;
-    loadingMode: GameMode | null;
-    handleStartMatch: (mode: GameMode) => void;
+    loadingMode: GameModeType | null;
+    handleStartMatch: (mode: GameModeType) => void;
 }) {
     const {title, expl, btnLabel, id} = card;
     const isAnyLoadingMode = loadingMode !== null;
 
     return (
-        <li className="flex flex-col gap-2 rounded-md border border-border-default bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
+        <li className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
             <div className="text-info">
                 {children}
             </div>
             <p className="text-sm font-medium text-text-primary">{title}</p>
             <p className="mb-auto text-xs leading-snug text-text-tertiary">{expl}</p>
 
-            <p className="mt-1 flex items-center gap-1 text-[11px] text-success">
+            <p className="mt-1 flex items-center gap-1 text-xs text-success">
                 avg. wait ~8 s
             </p>
 
@@ -68,33 +69,26 @@ function MatchList({
     loading,
 }: {
     loading: boolean;
-    loadingMode: GameMode | null;
-    handleStartMatch: (mode: GameMode) => void;
+    loadingMode: GameModeType | null;
+    handleStartMatch: (mode: GameModeType) => void;
 }) {
     const cpu_t = useTranslations("Start_game.cards.cpu");
     const quick_t = useTranslations("Start_game.cards.quick");
 
     const cards =  [{
-            id: 'CPU' as GameMode,
+            id: 'CPU' as GameModeType,
             title: cpu_t("title"),
             expl: cpu_t("expl"),
             btnLabel: cpu_t("label"),
             child: <Cpu />
         },
         {
-            id: 'QUICK' as GameMode,
+            id: 'QUICK' as GameModeType,
             title: quick_t("title"),
             expl: quick_t("expl"),
             btnLabel: quick_t("label"),
             child: <Globe/>
         },
-        // {
-        //     id: 'FRIEND' as GameMode,
-        //     title: "With a friend",
-        //     expl: "Private room. Send invitations to friens who are online.",
-        //     btnLabel: "Start match",
-        //     child: <UserRoundPlus />
-        // }
     ];
 
     return (
@@ -116,24 +110,20 @@ function MatchList({
 
 function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
-    const [loadingMode, setLoadingMode] = useState<GameMode | null>(null);
+    const [loadingMode, setLoadingMode] = useState<GameModeType | null>(null);
     const {setGameMode} = useGameMode();
     const t = useTranslations("Start_game");
 
     const router = useRouter();
 
 
-    const handleStartMatch = async (mode: GameMode) => {
+    const handleStartMatch = async (mode: GameModeType) => {
         setLoading(true);
         setLoadingMode(mode);
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        console.log("Event:", mode);
         setGameMode(mode)
-
-        // setLoading(false);
-        // setLoadingMode(null)
 
         router.push("/arena");
         router.refresh();
