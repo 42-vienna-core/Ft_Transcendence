@@ -17,18 +17,27 @@ const wasdMapping: Record<string, Direction> = {
 
 export function useGameControls(
     controlType: ControlType,
-    onDirectionChange: (newDirection: Direction) => void
+    onDirectionChange: (newDirection: Direction) => void,
+    onEscPress: () => void,
 ) {
     const callbackRef = useRef(onDirectionChange);
+    const escCallbackRef = useRef(onEscPress);
 
     console.log(controlType);
 
     useEffect(() => {
         callbackRef.current = onDirectionChange;
-    },[onDirectionChange]);
+        escCallbackRef.current = onEscPress;
+    },[onDirectionChange, onEscPress]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                escCallbackRef.current();
+                return;
+            }
+
             let detectedDirection: Direction | undefined = undefined;
 
             if (controlType === 'arrow') {
@@ -39,13 +48,11 @@ export function useGameControls(
                 detectedDirection = arrowMapping[e.key] || wasdMapping[e.code];
             }        
             
-            console.log(detectedDirection);
-
             if (detectedDirection) {
-                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.key)) {
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                     e.preventDefault();
                 }
-        
+                
                 callbackRef.current(detectedDirection);
             }
         };

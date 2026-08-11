@@ -44,6 +44,10 @@ init_modules:
 	cd ./backend && npm ci
 
 ## Build and start all services
+
+admin:
+	docker compose exec backend npm run seed:admin
+
 up: env
 	docker compose up --build
 

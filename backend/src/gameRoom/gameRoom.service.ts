@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGameRoomDto } from './dto/create-gameRoom.dto';
 import { CreatePrivateGameRoom } from './dto/create-private-gameRoom.dto';
+import { RoomStatus } from "@prisma/client";
 
 @Injectable()
 export class GameRoomService {
@@ -108,5 +109,24 @@ export class GameRoomService {
     return this.db.roomUser.findFirst({
       where: { socketId },
     });
+  }
+
+  async findActiveRoomWithUser(userId: number){
+	return this.db.gameRoom.findFirst({
+		where: {
+			status: {
+				in: [
+					RoomStatus.PLAYING,
+					RoomStatus.WAITING,
+					RoomStatus.READY,
+				],
+			},
+			roomUsers: {
+				some: {
+					userId,
+				},
+			},
+		},
+	});
   }
 }

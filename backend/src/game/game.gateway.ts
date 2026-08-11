@@ -29,4 +29,9 @@ export class GameGateway {
 	async broadcastGameState(roomId: string, state: GameState){
 		this.server.to(roomId).emit('game-state', state);
 	}
+
+	async broadcastOnlineUsers(){
+		const onlineUsers = await this.redisService.getOnlineUsers();
+		this.server.emit('online-users', onlineUsers);
+	}
 }

@@ -22,6 +22,7 @@ model Users {
   role      Role   @default(PLAYER)
   isBot     Boolean @default(false)
   score     Int @default(0)
+  color		String @default("#39FF14")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -70,12 +71,13 @@ model Sessions {
 model GameRoom {
 	id			    String @id @default(uuid())
 	name		    String
-	maxUsers	  Int @default(4)
-	ownerId		  Int?
-	createdAt	  DateTime @default(now())
-	updatedAt	  DateTime @updatedAt
+	maxUsers		Int @default(4)
+	ownerId			Int?
+	createdAt		DateTime @default(now())
+	updatedAt		DateTime @updatedAt
 	
-  status      RoomStatus @default(WAITING)
+	waitTimeout		DateTime?
+	status			RoomStatus @default(WAITING)
 	type		    RoomType @default(PUBLIC)
 	roomUsers		RoomUser[]
 	gameResults		GameResults[]
@@ -99,6 +101,7 @@ model RoomUser {
 enum RoomType {
   PUBLIC
   PRIVATE
+  FRIEND
 }
 
 model FriendsRequest {

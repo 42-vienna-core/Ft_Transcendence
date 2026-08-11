@@ -1,11 +1,10 @@
 'use client'
 
-import style from './search.module.css'
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
 import { useProfile } from '@/providers/ProfileContext';
-import { Check, Loader } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
 
 
@@ -32,33 +31,31 @@ interface FriendsListProps {
 }
 
 function FriendCard ({friend, addFriend, loading}: FriendCardProps) {
-    const { id, name, avatar, isOnline, score} = friend;
+    const { id, name, avatar, isOnline} = friend;
     const av = (name && typeof name === 'string' )? name.slice(0,2): "";
     const isAvatar = !!avatar;
 
     return (
-        <li className={style.sugRow}>
+        <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
             <div>
                 { isAvatar ? (
-                    <img  className={style.av} src={avatar ? avatar : ""} alt="avatar" />
+                    <img className="size-[26px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
                 ) : (
-                    <div className={`${style.av} bg-[var(--color-snake-1)] text-[var(--color-text-primary)] capitalize`}
-                        style={{ color: "var(--color-info-text)" }}
-                    >
+                    <div className="flex size-[26px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
                         {av}
                     </div>
                 )}
             </div>
 
-            <div>
-                <p className={style.name}>{name}</p>
+            <div className="min-w-0">
+                <p className="text-base font-medium">{name}</p>
 
                 <OnlineStateItem
                     isOnline={isOnline}
                 />
-            
-            </div>           
-                {            
+
+            </div>
+                {
                     loading && (
                         <Loader className="h-5 w-5 animate-spin text-center text-accent" />
                     )
@@ -66,8 +63,8 @@ function FriendCard ({friend, addFriend, loading}: FriendCardProps) {
 
                 {
                     !loading && (
-                        <button 
-                            className={`text-info transition-colors duration-200 hover:text-accent`}
+                        <button
+                            className="cursor-pointer text-sm text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
                             onClick={() => addFriend(id)}
                         >
                             + Add
@@ -80,10 +77,10 @@ function FriendCard ({friend, addFriend, loading}: FriendCardProps) {
 
 function FriendsList({friends, message,loading, isSuccess, addFriend}: FriendsListProps) {
     return (
-        <ul >
+        <ul>
             {friends.length > 0 &&
-                (friends.map((item) => 
-                    <FriendCard 
+                (friends.map((item) =>
+                    <FriendCard
                         key={`friend-${item.id}`}
                         friend={item}
                         loading={loading}
@@ -92,7 +89,7 @@ function FriendsList({friends, message,loading, isSuccess, addFriend}: FriendsLi
                 ))
             }
             { message.length != 0 &&
-                <li key='msg' className={`py-[5px] text-sm ${isSuccess ? "text-success": "text-warning-text"}`}>
+                <li key='msg' className={`py-1 text-sm ${isSuccess ? "text-success": "text-warning-text"}`}>
                     {message}
                 </li>
             }
@@ -130,7 +127,7 @@ export default function FindFriends() {
 
             setResult([]);
             setMessage("User not found");
-            
+
         } catch (error) {
             setResult([]);
             setMessage("Server error");
@@ -141,7 +138,7 @@ export default function FindFriends() {
         const senderId = userContext.id;
         const receiverId = id;
 
-        if (!senderId || !receiverId) return 
+        if (!senderId || !receiverId) return
 
         setLoading(true);
 
@@ -160,9 +157,9 @@ export default function FindFriends() {
             setIsSuccess(false);
 
             if (error instanceof Error) {
-                setMessage(error.message); 
+                setMessage(error.message);
             } else {
-                setMessage("An unknown error occurred"); 
+                setMessage("An unknown error occurred");
             }
         } finally {
             setLoading(false);
@@ -176,15 +173,15 @@ export default function FindFriends() {
     }
 
     return (
-        <div className={style.card}>
-            <h3>Find friends</h3>
-            <div className={style.searchInput}>
-                <label className={`${style.ti} ${style.tiSearch}`} aria-hidden="true"></label>
+        <div className="rounded-md bg-bg-subtle px-3.5 py-3">
+            <h3 className="mb-2 !text-sm font-medium lowercase tracking-wide text-text-secondary">Find friends</h3>
+            <div className="mb-2 flex items-center gap-2 rounded-md border border-border-default bg-bg-surface px-2.5 py-1.5 transition-colors duration-200 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-soft">
                 <input
                     type="text"
-                    placeholder="username or invite code"
+                    placeholder="username"
                     value={query}
                     onChange={(e) => handleInputChange(e.target.value)}
+                    className="w-full border-none bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
                 />
             </div>
             <FriendsList

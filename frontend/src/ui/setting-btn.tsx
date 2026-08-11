@@ -17,12 +17,12 @@ export function SettingBatton({labelF, labelS, onClick, disabled, children}: Set
             type="button"
             onClick={onClick}
             disabled={disabled}
-            className="flex w-full items-center justify-between px-[10px] py-[10px] bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-muted)]"
+            className="flex w-full items-center justify-between bg-bg-surface px-2.5 py-2.5 text-left transition-colors duration-150 hover:bg-bg-muted disabled:cursor-not-allowed disabled:opacity-50"
         >
-            <span className="text-[13px] text-[var(--color-text-primary)] ">
+            <span className="text-sm text-text-primary">
                 {labelF}
             </span>
-            <span className="text-[13px] text-[var(--color-text-primary)] ">
+            <span className="text-sm text-text-secondary">
                 {labelS}
             </span>
             {children}

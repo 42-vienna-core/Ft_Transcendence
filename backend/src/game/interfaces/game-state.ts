@@ -9,11 +9,14 @@ export interface Position {
 
 export interface Player{
 	id: number;
+	username: string;
 	isBot: boolean;
+	color: string;
 }
 
 export interface Snake {
 	id: number; //user id
+	username: string;
 	body: Position[]; //first position 
 	direction: Direction;
 	newDirection: Direction | null;

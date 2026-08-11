@@ -10,6 +10,7 @@ declare module 'next-auth' {
             email: string;
             username: string;
             avatar: string | null;
+            role: "ADMIN" | "PLAYER";
         };
     }
     interface User {
@@ -17,6 +18,7 @@ declare module 'next-auth' {
         accessToken: string;
         refreshToken: string;
         accessTokenExpiry: number;
+        role: "ADMIN" | "PLAYER" ;
     }
 }
 
@@ -25,6 +27,7 @@ declare module 'next-auth/jwt' {
         accessToken: string;
         refreshToken: string;
         accessTokenExpiry: number;
+        role: "ADMIN" | "PLAYER";
         error?: string;
     }
 }

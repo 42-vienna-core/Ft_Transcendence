@@ -28,6 +28,7 @@ const PromiseError:JWT = {
     accessToken: "",
     refreshToken: "",
     accessTokenExpiry: 0,
+    role: "PLAYER",
     error: ""
 }
 
@@ -155,7 +156,7 @@ const authMiddleware = withAuth(
 export default function middleware(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
-    if (path.startsWith('/api/auth')) {
+    if (path.startsWith('/api/auth') || path.startsWith('/api/admin')) {
         return NextResponse.next();
     }
 

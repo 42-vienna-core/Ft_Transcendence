@@ -6,7 +6,8 @@ import { randomUUID } from 'crypto';
 interface OnlineUsersData {
   id: number;
   name: string;
-  avatar: string | null
+  avatar: string | null;
+  score: number;
 }
 
 @Injectable()
@@ -83,6 +84,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return values
       .filter((val): val is string => val !== null)
       .map((val) => JSON.parse(val) as OnlineUsersData);
+  }
+
+  async updateScore(userId: number, score: number) : Promise<void>{
+	const keys = await this.client.keys(`user:online:${userId}:*`);
+	for (const key of keys){
+		const value = await this.client.get(key);
+		if (!value)
+			continue;
+		const user = JSON.parse(value) as OnlineUsersData;
+		user.score = score;
+		await this.client.set(key, JSON.stringify(user));
+	}
   }
 
   async updatePlayerPosition(

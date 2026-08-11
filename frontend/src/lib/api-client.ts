@@ -5,7 +5,6 @@ import { authOptions } from './auth';
 
 interface CustomApiOptions extends RequestInit {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-    isRetry?: boolean; 
 }
 
 export async function apiFetch(endpoint: string, options: CustomApiOptions = {}): Promise<any> {

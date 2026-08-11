@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/updata-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { avatarMulterOptions } from '../common/multer/avatar.multer';
 import { SearchUserDto } from './dto/search-user.dto';
+import { UpdateColorDto } from './dto/update-color.dto';
 
 @Controller('user')
 export class UserController {
@@ -74,5 +75,12 @@ export class UserController {
     @Authorized('userId') userId: number,
   ) {
     return this.userService.deleteUser(userId);
+  }
+
+  @Authorization()
+  @HttpCode(HttpStatus.OK)
+  @Patch('me/color')
+  public async UpdateColor(@Authorized('userId') userId: number, @Body() dto: UpdateColorDto){
+	return this.userService.updateColor(userId, dto.color);
   }
 }

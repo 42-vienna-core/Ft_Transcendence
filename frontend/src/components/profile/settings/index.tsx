@@ -1,6 +1,5 @@
 'use client'
 
-import style from "@/app/[locale]/(home)/(dashboard)/profile/profile.module.css"
 import DialogModal from "@/components/modal/dialog-modal";
 import ChangePasswordModal from "@/components/modal/secure-modal";
 import { SettingBatton } from "@/ui/setting-btn";
@@ -61,7 +60,7 @@ const snakeColors: ArrValue[]  = [
 
 function SettingBtnContainer({ children }: { children: React.ReactNode }) {
     return (
-        <div className="relative border-b border-[var(--color-border-default)]">
+        <div className="relative border-b border-border-default">
             {children}
         </div>
     );
@@ -71,14 +70,14 @@ function ToggleSwitch({ title, label, checked, onToggle }: {title: string; label
     const switchId = useId();
 
     return (
-        <div className="flex w-full items-center justify-between px-[10px] py-[10px] bg-[var(--color-bg-surface)] hover:bg-[var(--color-bg-muted)]">
-            <span className="text-[13px] text-[var(--color-text-primary)]">
+        <div className="flex w-full items-center justify-between px-2.5 py-2.5 bg-bg-surface transition-colors duration-150 hover:bg-bg-muted">
+            <span className="text-sm text-text-primary">
                 {title}
             </span>
-            
-            <label htmlFor={switchId} className="relative inline-flex items-center cursor-pointer select-none gap-2 text-sm text-[var(--color-text-primary)]">
-                <input 
-                    id={switchId} 
+
+            <label htmlFor={switchId} className="relative inline-flex items-center cursor-pointer select-none gap-2 text-sm text-text-primary">
+                <input
+                    id={switchId}
                     type="checkbox"
                     onChange={() => onToggle(!checked)}
                     checked={checked}
@@ -87,9 +86,9 @@ function ToggleSwitch({ title, label, checked, onToggle }: {title: string; label
 
                 <span>{label}</span>
 
-                <div className={`w-[32px] h-[18px] rounded-full transition-colors duration-300 relative ${
-                    checked ? 'bg-[#8bbaf8]' : 'bg-slate-600'}`}>
-                    <div className={`absolute top-[1px] left-[2px] bg-white w-4 h-4 rounded-full transition-transform duration-300 ${
+                <div className={`relative h-[18px] w-8 rounded-full transition-colors duration-300 ${
+                    checked ? 'bg-accent' : 'bg-bg-overlay'}`}>
+                    <div className={`absolute top-[1px] left-[2px] h-4 w-4 rounded-full bg-white transition-transform duration-300 ${
                         checked ? 'translate-x-3' : 'translate-x-0'}`} />
                 </div>
             </label>
@@ -112,7 +111,7 @@ function SharedButtonItem({
         <li>
             <button
                 onClick={() => handleOnClick(value)}
-                className="flex items-center justify-between w-full text-left px-4 py-2 text-sm hover:bg-[var(--color-bg-muted)]"
+                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm text-text-primary transition-colors duration-150 hover:bg-bg-muted hover:text-accent-hover"
             >
                 {children}
             </button>
@@ -135,8 +134,8 @@ export function ModalList({
     if (!isOpen) return null; 
 
     return (
-        <div ref={modalRef} className="absolute right-0 mt-0 w-40 rounded-md bg-[var(--color-bg-base)] z-10">
-            <ul className="py-1 text-[var(--color-text-primary)]">
+        <div ref={modalRef} className="absolute right-0 z-10 mt-0 w-40 rounded-md bg-bg-base border border-border-default shadow-md">
+            <ul className="py-1 text-text-primary">
                 {listArr.map(({ id, value }) => {
 
                     const isColor = value.startsWith('#');
@@ -148,15 +147,15 @@ export function ModalList({
                             value={value}
                             handleOnClick={handleOnClick}
                         >
-                            <div className="flex justify-between items-center gap-2 w-full">
-                                {!isDigit && 
-                                    <span className={`text-[var(--color-text-primary)]`}>
+                            <div className="flex w-full items-center justify-between gap-2">
+                                {!isDigit &&
+                                    <span className="text-text-primary">
                                         {id}
                                     </span>
                                 }
 
                                 {value && !isColor && (
-                                    <span className={`${!isColor && !isDigit ? "uppercase" : ""} text-[var(--color-text-primary)]`}>{value}</span>
+                                    <span className={`${!isColor && !isDigit ? "uppercase" : ""} text-text-primary`}>{value}</span>
                                 )}
 
                                 {value && isColor && (
@@ -244,6 +243,15 @@ export default function ProfileSettingsContent() {
         setSnakeColor(color);
         togleSnakeColorMenu(); 
         localStorage.setItem('snakeColor', color);
+
+        try {
+            apiFetch('user/me/color', {
+                method: 'PATCH',
+                body: JSON.stringify({color: color}),
+            })
+        } catch (error) {
+            console.log("Change snake color error.");
+        }
     };
 
     const selectControl = (key: string) => {
@@ -322,9 +330,9 @@ export default function ProfileSettingsContent() {
 
     return (
         <>
-            <div className={style.pfGrid}>
-                <div className={style.panel} aria-label="Settings">
-                <h3>preferences</h3>
+            <div className="grid grid-cols-[1.3fr_1fr] gap-[18px]">
+                <div className="rounded-md border border-border-default bg-bg-surface px-4 py-3.5" aria-label="Settings">
+                <h3 className="mb-3 !text-sm font-medium lowercase tracking-wide text-text-secondary">preferences</h3>
 
                 {/* Languages */}
                 <SettingBtnContainer>
@@ -394,20 +402,12 @@ export default function ProfileSettingsContent() {
                 </SettingBtnContainer>
 
                 {/* Notifications */}
-                <div className={style.row}>
-                    <div className={style.lbl}>
-                        <i
-                            className={`${style.ti} ${style.tiBell}`}
-                            aria-hidden="true"
-                        ></i>{" "}
+                <div className="flex items-center justify-between border-b border-border-default py-2.5 last:border-b-0">
+                    <div className="flex items-center gap-2.5 text-sm text-text-primary">
                         notifications
                     </div>
-                    <div className={style.val}>
-                        friend requests, match results{" "}
-                        <i
-                            className={`${style.ti} ${style.tiChevronRight}`}
-                            aria-hidden="true"
-                        ></i>
+                    <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                        friend requests, match results
                     </div>
                 </div>
 
@@ -447,107 +447,20 @@ export default function ProfileSettingsContent() {
                 </SettingBtnContainer>
             </div>
 
-        <div className="flex flex-col gap-4">
-          <div className={style.panel} aria-label="Friends">
-            <h3 className="flex justify-between m-1">
-              <span>friends</span>
-              <span>
-                42 · <span className="text-blue-500">+ add</span>
-              </span>
-            </h3>
-            <div className={style.friendRow}>
-              <div className={style.av}>MR</div>
-              <div className={style.nm}>
-                <div className={style.n}>Mira</div>
-                <div className={style.s}>
-                  <span className={style.dot}></span> in match · room 47
+            <div className="flex flex-col ">
+                <div className="rounded-md border border-border-default bg-bg-surface px-4 py-3.5" aria-label="Friends">
+                    <p className="mb-13 text-sm text-text-secondary">
+                        Cobras are famous venomous snakes known for their dramatic neck hoods. The king cobra is the longest venomous snake on Earth, growing up to 18 feet, and a single bite can kill an elephant or 20 people. Some cobras can even spit venom at a target's eyes.
+                    </p>
+                    <img className="object-contain" 
+                        alt="Magnific Snake" 
+                        style={{
+                            filter: `drop-shadow(0px 0px 12px ${snakeColor})`
+                        }} src="/png/magnific_snake.png"
+                    />
                 </div>
-              </div>
-              <div className={style.rk}>1 920</div>
             </div>
-            <div className={style.friendRow}>
-              <div
-                className={style.av}
-                style={{ background: "var(--color-warning-soft)", color: "var(--color-warning)" }}
-              >
-                KO
-              </div>
-              <div className={style.nm}>
-                <div className={style.n}>Kostia</div>
-                <div className={style.s}>
-                  <span className={style.dot}></span> online
-                </div>
-              </div>
-              <div className={style.rk}>1 760</div>
             </div>
-            <div className={style.friendRow}>
-              <div
-                className={style.av}
-                style={{ background: "var(--color-danger-soft)", color: "var(--color-danger)" }}
-              >
-                LI
-              </div>
-              <div className={style.nm}>
-                <div className={style.n}>Lila</div>
-                <div className={style.s}>
-                  <span className={`${style.dot} ${style.off}`}></span> 2 h ago
-                </div>
-              </div>
-              <div className={style.rk}>1 480</div>
-            </div>
-            <div className={style.friendRow}>
-              <div
-                className={style.av}
-                style={{ background: "#EEEDFE", color: "#3C3489" }}
-              >
-                JO
-              </div>
-              <div className={style.nm}>
-                <div className={style.n}>Jonas</div>
-                <div className={style.s}>
-                  <span className={`${style.dot} ${style.off}`}></span>{" "}
-                  yesterday
-                </div>
-              </div>
-              <div className={style.rk}>1 210</div>
-            </div>
-          </div>
-
-          <div className={style.panel} aria-label="Recent achievements">
-            <h3>recent achievements</h3>
-            <div className={style.row}>
-              <div className={style.lbl}>
-                <i
-                  className={`${style.ti} ${style.iconWarning}`}
-                  aria-hidden="true"
-                ></i>{" "}
-                first to 1 000
-              </div>
-              <div className={style.val}>2 days ago</div>
-            </div>
-            <div className={style.row}>
-              <div className={style.lbl}>
-                <i
-                  className={`${style.ti} ${style.iconInfo}`}
-                  aria-hidden="true"
-                ></i>{" "}
-                10-match win streak
-              </div>
-              <div className={style.val}>last week</div>
-            </div>
-            <div className={style.row}>
-              <div className={style.lbl}>
-                <i
-                  className={`${style.ti} ${style.iconSuccess}`}
-                  aria-hidden="true"
-                ></i>{" "}
-                invited 5 friends
-              </div>
-              <div className={style.val}>apr 12</div>
-            </div>
-          </div>
-        </div>
-        </div>
 
             {/* Modal Windows */}
             <ChangePasswordModal

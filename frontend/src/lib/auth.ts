@@ -42,6 +42,7 @@ export const authOptions: NextAuthOptions = {
                     name: data.user.name,
                     email: payload.email,
                     avatar: data.user.avatar,
+                    role: data.user.role,
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
                     accessTokenExpiry: createExpiredTime()
@@ -62,6 +63,9 @@ export const authOptions: NextAuthOptions = {
                 token.accessToken = user.accessToken;
                 token.refreshToken = user.refreshToken;
                 token.accessTokenExpiry = user.accessTokenExpiry;
+                token.role = user.role;
+            } else if (!token.role) {
+                token.role = "PLAYER";
             }
 
             if (trigger === "update" && session) {
@@ -83,6 +87,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = Number(token.sub);
                 session.user.username = token.name as string;
                 session.user.avatar = token.picture as string | null;
+                session.user.role = token.role;
             }
 
             session.accessToken = token.accessToken as string;
