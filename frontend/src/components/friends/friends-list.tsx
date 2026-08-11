@@ -6,28 +6,22 @@ import { UserRoundX } from 'lucide-react';
 import DialogModal from '../modal/dialog-modal';
 import { OnlineStateItem } from '@/ui/online-tracker';
 import { useGameSocket } from '@/providers/SocketProvider';
-import style  from "./friends.module.css"
-
-interface Friend {
-  id: number;
-  name: string;
-  avatar?: string | null;
-  isOnline: boolean;
-  score: number;
-}
+import { Friend, GameModeType } from '@/types/gameTypes';
+import { useFriendAndRoomID, useGameMode } from '../store/useUserStore';
+import { useRouter } from "next/navigation";
 
 interface FriendCardProps {
     friend: Friend;
     filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
-    handleGameAction: (action: string) => void;
+    handleGameAction: (action: GameModeType, id: number) => void;
 }
 
 interface ListOfFriendsProps {
     friends: Friend[];
     filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
-    handleGameAction: (action: string) => void;
+    handleGameAction: (action: GameModeType, id: number) => void;
 }
 
 type ActiveFilterType = 'All' | 'Online' | 'Playing';
@@ -43,7 +37,7 @@ const rowActionBtn =
     "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium text-text-secondary transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
-    const {name, avatar, isOnline, score} = friend;
+    const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
     const isAvatar =  !!avatar;
 
@@ -88,7 +82,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     filter === 'Online' &&
                         <button
                             className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
-                            onClick={() => handleGameAction("invite")}
+                            onClick={() => handleGameAction('FRIEND_INV', id)}
                         >
                             invite
                         </button>
@@ -98,7 +92,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     filter === 'Playing' &&
                         <button
                             className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
-                            onClick={() => handleGameAction("join")}
+                            onClick={() => handleGameAction('FRIEND_JOIN', id)}
                         >
                             join
                         </button>
@@ -128,9 +122,13 @@ function ListOfFriends({friends, filter, removeFriend, handleGameAction}: ListOf
 }
 
 function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProps) {
-    const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [user, setUser] = useState<Friend | null>(null);
-    const {socket, isConnected} = useGameSocket();
+    const [ isOpen, setIsOpen ] = useState<boolean>(false);
+    const [ user, setUser ] = useState<Friend | null>(null);
+    const { socket, isConnected } = useGameSocket();
+    const { setGameMode } = useGameMode();
+    const {setFriendId} = useFriendAndRoomID();
+    const router = useRouter();
+    
     let newFriends: Friend[] = [];
 
     if (filter === 'All') {
@@ -162,15 +160,17 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
         }
     }
 
-    const handleGameAction = (action: string) => {
+    const handleGameAction = async (action: GameModeType, id: number) => {
         console.log(action);
-        if (!socket || !isConnected) return;
+        if (!socket || !isConnected || !action) return;
 
-        if (action === "invite") {
-            socket.emit("invite-playing");
-        } else if (action === "join") {
-            socket.emit("join-playing");
-        }
+        setGameMode(action);
+        setFriendId(id);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        router.push("/arena");
+        router.refresh();
     }
 
     if (newFriends.length === 0 && filter === 'All')

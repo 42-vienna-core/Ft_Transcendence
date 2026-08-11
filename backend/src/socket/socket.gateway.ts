@@ -103,7 +103,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
 
+    console.log(match.invitation);
+
 		if (match.invitation){
+      console.log("=================before========================");
+
 			this.server.to(`user:${match.invitation.friendId}`).emit('friend-match-invite',{
 				roomId: match.roomId,
 				inviter: {
@@ -113,6 +117,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				},
 				expiresAt: match.invitation.expiresAt,
 			});
+      console.log("=================after========================");
 		}
 		
 		this.server.to(client.data.roomId).emit('room-update', {

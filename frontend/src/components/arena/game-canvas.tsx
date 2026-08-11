@@ -113,7 +113,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             bgMusicRef.current?.pause();
             winSound.current?.play().catch(() => {});
         }
-
     }
 
     const isEnded = () =>

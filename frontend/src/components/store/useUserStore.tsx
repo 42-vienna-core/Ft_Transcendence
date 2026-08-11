@@ -1,5 +1,4 @@
 import { GameModeType, Snake } from '@/types/gameTypes';
-import { State } from 'pixi.js';
 import { create } from 'zustand'
 
 interface PlayerStoreState {
@@ -14,6 +13,14 @@ interface GameMode {
     gameMode: GameModeType;
     setGameMode: (mode: GameModeType) => void;
     resetMode: () => void;
+}
+
+interface IdState {
+    friendId: number;
+    roomId: string;
+    setFriendId: (id: number) => void;
+    setRoomId: (id: string) => void;
+    resetIds: () => void;
 }
 
 export const  usePlayerStore = create<PlayerStoreState>((set) => ({
@@ -43,12 +50,21 @@ export const  useGameMode = create<GameMode>((set) => ({
     gameMode: null,
 
     setGameMode: (mode) => {
-        set((state) => ({
+        set(() => ({
             gameMode: mode
         }))
     },
 
     resetMode: () => {set(() => ({gameMode: null}))}
+}));
+
+export const  useFriendAndRoomID = create<IdState>((set) => ({
+    friendId: 0,
+    roomId: '',
+
+    setFriendId: (id) => { set(() => ({ friendId: id }))},
+    setRoomId: (id) => { set(() => ({ roomId: id })) },
+    resetIds: () => { set(() => ({ friendId: 0, roomId: '' }))}
 }));
 
 

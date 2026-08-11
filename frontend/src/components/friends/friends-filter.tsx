@@ -4,14 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
 import AsideBar from './aside-bar';
 import FriendsContent from './friends-list';
-
-interface Friend {
-    id: number;
-    name: string;
-    avatar?: string | null;
-    isOnline: boolean;
-    score: number;
-}
+import { Friend } from '@/types/gameTypes';
 
 interface Requests {
     id: string;

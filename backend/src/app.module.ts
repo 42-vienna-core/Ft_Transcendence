@@ -16,6 +16,7 @@ import { SocketModule } from './socket/socket.module';
 import { GameRoomModule } from './gameRoom/gameRoom.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { GameModule } from './game/game.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { GameModule } from './game/game.module';
     AvatarModule,
     GameRoomModule,
     FriendsModule,
-	GameModule,
+	  GameModule,
+    AdminModule
   ],
   controllers: [AppController],
   providers: [AppService, {

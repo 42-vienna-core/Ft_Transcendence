@@ -7,7 +7,7 @@ import { GameService } from "src/game/game.service";
 import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
 
-const EXP_TIME = 60_000;
+const EXP_TIME = 10_000;
 
 export interface Match{
 	roomId: string;
@@ -103,6 +103,8 @@ export class MatchStarter {
 	}
 	
 	async createFriendsMatch(userId: number, socketId: string, friendId: number): Promise<Match> {
+		console.log("+++++++++++++11111+++++++++++++");
+
 		if (userId === friendId)
 			throw new BadRequestException('You cannot send a request to yourself');
 
@@ -112,12 +114,14 @@ export class MatchStarter {
 		const isOnline = await this.redisService.isOnline(friendId);
 		if (!isOnline)
 			throw new BadRequestException('Your firend isn`t online anymore');
+		console.log("+++++++++++++222222+++++++++++++");
 
 		const activeRoom = await this.gameRoom.findActiveRoomWithUser(friendId);
 		if (activeRoom)
 			throw new BadRequestException('Your friend is already active in another game, retry later');
 		
 		const waitTimeout = new Date(Date.now() + EXP_TIME);
+		console.log("+++++++++++++333333+++++++++++++");
 
 		const room = await this.prismaService.gameRoom.create({
 			data: {
@@ -134,6 +138,7 @@ export class MatchStarter {
 				}
 			}
 		});
+		console.log("++++++++++++++++++++++++++");
 
 		//send request to friend (60 sec expiry)
 		await this.redisService.setEx(`match-invite:${room.id}:${friendId}`, 60, JSON.stringify({
@@ -146,7 +151,7 @@ export class MatchStarter {
 		setTimeout(() => {void this.finishWaitingTime(room.id)}, EXP_TIME);
 		
 		const players = await this.gameRoom.getPlayerCount(room.id);
-
+		console.log("ROOM.IN");
 		return {
 			roomId: room.id,
 			roomStatus: room.status,
@@ -251,6 +256,7 @@ export class MatchStarter {
 		console.log("mode: ", request.mode);
 		console.log("socketId: ", socketId);
 		console.log("userId: ", userId);
+		console.log("requests: ", request);
 
 		const activeRoom = await this.gameRoom.findActiveRoomWithUser(userId);
 		if (activeRoom)

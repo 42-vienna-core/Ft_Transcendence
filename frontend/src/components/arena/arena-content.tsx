@@ -1,6 +1,6 @@
 'use client'
 
-import { useGameMode, usePlayerStore } from "@/components/store/useUserStore"
+import { useFriendAndRoomID, useGameMode, usePlayerStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useState, useEffect, useRef, ReactNode } from "react";
 import type { Socket } from "socket.io-client";
@@ -9,6 +9,7 @@ import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
 import { ControlType, Direction, Game, GameState, RoomStateType, TICK_MS } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
+import { useNotificationListener } from "../store/notification";
 
 function normalizeRoomStatus(raw: string | undefined): 'WAITING' | 'READY' | 'UNKNOWN' {
     if (!raw) return 'UNKNOWN';
@@ -75,6 +76,7 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
+    const {friendId} = useFriendAndRoomID();
 
     useEffect(() => {
         if (!socket || !isConnected) return;
@@ -99,10 +101,20 @@ function ArenaContent() {
 
         if (joinedSocketRef.current !== socket) {
             joinedSocketRef.current = socket;
-            socket.emit("join-match", { mode: gameMode });
-        }
+            const payload = { mode: gameMode};
 
-        socket.emit("get-online-users");
+            if (gameMode === 'FRIEND_INV') {
+                socket.emit("join-match", {...payload, friendId});
+                return;
+            } 
+
+            if (gameMode === 'FRIEND_JOIN') {
+                socket.emit("join-match", {...payload, roomId: id});
+                return;
+            }
+
+            socket.emit("join-match", payload);
+        }
 
         const setUpContol = () => {
             const controlLS = localStorage.getItem('controls') as ControlType;

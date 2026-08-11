@@ -59,6 +59,7 @@ export class AuthService {
                 name: user.name,
                 avatar: user.avatar ? avatarsUrl + user.avatar : null,
                 score: user.score,
+                role: user.role,
             }
         };
     }
