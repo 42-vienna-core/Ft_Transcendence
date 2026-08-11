@@ -63,6 +63,25 @@ services:
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
       AVATARS_URL: ${AVATARS_URL}
+
+      # ///// Admin env variables /////
+
+      ADMIN_1_USERNAME: ${ADMIN_1_USERNAME}
+      ADMIN_1_EMAIL:    ${ADMIN_1_EMAIL}
+      ADMIN_1_PASSWORD: ${ADMIN_1_PASSWORD}
+
+      ADMIN_2_USERNAME: ${ADMIN_2_USERNAME}
+      ADMIN_2_EMAIL: ${ADMIN_2_EMAIL}
+      ADMIN_2_PASSWORD: ${ADMIN_2_PASSWORD}
+
+      ADMIN_3_USERNAME: ${ADMIN_3_USERNAME}
+      ADMIN_3_EMAIL: ${ADMIN_3_EMAIL}
+      ADMIN_3_PASSWORD: ${ADMIN_3_PASSWORD}
+  
+      ADMIN_4_USERNAME: ${ADMIN_4_USERNAME}
+      ADMIN_4_EMAIL: ${ADMIN_4_EMAIL}
+      ADMIN_4_PASSWORD: ${ADMIN_4_PASSWORD}
+
     command: |
       sh -c "
       npx prisma db push --schema=/app/prisma/schema.prisma && \

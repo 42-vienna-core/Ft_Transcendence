@@ -33,6 +33,7 @@ export class UserService {
 		return user;
 	}
 
+
 	public async getUser(id: number) {
 		console.log("~~~~~~~~~~~~~~~~~~~~ getUser me");
 		const user = await this.prismaService.users.findUnique({
@@ -42,6 +43,7 @@ export class UserService {
 				name: true,
 				avatar: true,
 				score: true,
+				role: true,
 				// isBot: true,
 				// createdAt: true,
 				// updatedAt: true,
@@ -180,5 +182,42 @@ export class UserService {
 		});
 		console.log('User deleted successfully');
 		return { success: true };
+	}
+
+	// Admin routes // 
+
+	async findOneForAdmin(id: number) {
+		return this.prismaService.users.findUnique({
+			where: { id },
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				role: true,
+			},
+		});
+	}
+
+	async searchUsers(query: string) {
+		const users = await this.prismaService.users.findMany({
+			where: {
+				OR: [
+					{ name: { contains: query, mode: 'insensitive' } },
+					{ email: { contains: query, mode: 'insensitive' } },
+				],
+			},
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				role: true,
+				createdAt: true,
+			},
+		});
+		if (users.length > 10) {
+			const shuffled = users.sort(() => 0.5 - Math.random());
+			return shuffled.slice(0, 10);
+		}
+		return users;
 	}
 }
