@@ -14,7 +14,17 @@ export class AdminService {
   async searchUsers(query: string) {
 
     if (query === '')
-      return this.usersService.searchUsers(query ?? '');
+    {
+      const users = await this.usersService.searchUsers(query ?? '');
+      if (users.length > 20)
+      {
+        const players = users.filter((user) => user.role != "BOT" && user.role != "ADMIN");
+        if (players.length > 20)
+          return players.slice(0, 10);
+        return players;
+      }
+    }
+      
     const users = await this.prismaService.users.findMany();
     return users.filter((item) => item.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   }
