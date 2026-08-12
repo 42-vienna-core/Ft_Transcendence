@@ -74,7 +74,7 @@ export default function AdminUserForm({ user, onCancel }: { user: AdminUser; onC
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className={fieldLabelClass}>Password</label>
+          <label className={fieldLabelClass}>{adminFormData("password")}</label>
           <input className={inputClass} type="password" value={userData.password}
             onChange={(e) => setUserData({...userData, password: e.currentTarget.value.trim()})}
           />

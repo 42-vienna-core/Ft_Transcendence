@@ -91,6 +91,7 @@
             "email": "Email",
             "newPassword": "New password (leave blank to keep unchanged)",
             "role": "Role",
+            "password" : "Password",
             "cannotChangeOwnRole": "You cannot change your own role",
             "save": "Save",
             "saving": "Saving...",

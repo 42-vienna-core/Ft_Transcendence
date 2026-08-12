@@ -91,6 +91,7 @@
                     "email": "E-Mail",
                     "newPassword": "Neues Passwort (leer lassen, um es beizubehalten)",
                     "role": "Rolle",
+                    "password" : "Das Passwort",
                     "cannotChangeOwnRole": "Sie können Ihre eigene Rolle nicht ändern",
                     "save": "Speichern",
                     "saving": "Speichern...",
