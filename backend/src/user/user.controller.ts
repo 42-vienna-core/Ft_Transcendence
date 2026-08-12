@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, MaxFileSizeValidator, Query, ParseFilePipe, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, HttpCode, HttpStatus, MaxFileSizeValidator, Query, ParseFilePipe, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
@@ -7,6 +7,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { avatarMulterOptions } from '../common/multer/avatar.multer';
 import { SearchUserDto } from './dto/search-user.dto';
 import { UpdateColorDto } from './dto/update-color.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResetCodeDto } from './dto/reset-code.dto';
 
 @Controller('user')
 export class UserController {
@@ -82,5 +84,17 @@ export class UserController {
   @Patch('me/color')
   public async UpdateColor(@Authorized('userId') userId: number, @Body() dto: UpdateColorDto){
 	return this.userService.updateColor(userId, dto.color);
+  }
+
+  @Post("resetCode")
+  async resetCode(@Body() body: ResetCodeDto)
+  {
+    return this.userService.resetCode(body);
+  }
+    
+  @Post("reset")
+  async reset(@Body() body: ResetPasswordDto)
+  {
+    return await this.userService.reset(body);
   }
 }

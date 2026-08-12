@@ -49,6 +49,25 @@
         "have_account": "Bereits ein Konto?",
         "login_link": "Anmelden"
     },
+    "Reset": {
+        "title": "Reset Password",
+        "expla": "Change password to continue playing",
+        "email": "Email",
+        "newPassword": "New Password",
+        "confirm_password": "Passwort bestätigen",
+        "loading": "Loading",
+        "no_account": "No Account",
+        "submit": "Submit",
+        "login": "Back to login",
+        "message": "Success",
+        "errorForm": "Failed to Submit",
+        "errorCode": "Failed to Send",
+          "resetCode" :{
+            "Reset Code": "Code zurücksetzen",
+            "placeholder": "6-stelligen Code eingeben",
+            "errorForm": "Überprüfung fehlgeschlagen"
+          }
+    },
     "Validation": {
         "required": "Dieses Feld ist ein Pflichtfeld",
         "invalid_email": "Ungültige E-Mail-Adresse",

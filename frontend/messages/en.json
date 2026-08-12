@@ -49,6 +49,25 @@
         "have_account": "Already have an account?",
         "login_link": "Log In"
     },
+    "Reset": {
+        "title": "Reset Password",
+        "expla": "Change password to continue playing",
+        "email": "Email",
+        "newPassword": "New Password",
+        "confirm_password": "Confirm Password",
+        "loading": "Loading",
+        "no_account": "No Account",
+        "submit": "Submit",
+        "login": "Back to login",
+        "message": "Success",
+        "errorForm": "Failed to Submit",
+        "errorCode": "Failed to Send",
+        "resetCode" : {
+            "Reset Code": "Reset Code",
+            "placeholder": "Enter 6-digit code",
+            "errorForm": "Failed to verify"
+        }
+    },
     "Validation": {
         "required": "This field is required",
         "invalid_email": "Invalid email address",

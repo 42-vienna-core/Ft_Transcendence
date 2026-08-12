@@ -15,29 +15,32 @@ datasource db {
 }
 
 model Users {
-  id        Int    @id @default(autoincrement())
-  email     String @unique
-  password  String @map("password_hash")
-  name      String
-  role      Role   @default(PLAYER)
-  isBot     Boolean @default(false)
-  score     Int @default(0)
-  color		String @default("#39FF14")
+  id          Int    @id @default(autoincrement())
+  email       String @unique
+  password    String @map("password_hash")
+  name        String
+  role        Role   @default(PLAYER)
+  isBot       Boolean @default(false)
+  score       Int @default(0)
+  color		    String @default("#39FF14")
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  resetCode   String?
+  codeExpire  DateTime?
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   //isVerified Boolean @default(false) @map("is_verified")
   //isBlocked  Boolean @default(false) @map("is_blocked")
 
-  sessions Sessions[]
+  sessions          Sessions[]
 	gameParticipants	GameParticipants[]
-	gamesWon			GameResults[] @relation("Winner")
+	gamesWon			    GameResults[] @relation("Winner")
 
   avatar String?
 
-  gameRoom		GameRoom []
-  roomUser		RoomUser []
+  gameRoom		      GameRoom []
+  roomUser		      RoomUser []
 
   sentRequests  FriendsRequest [] @relation("SentRequests")
   receivedRequests  FriendsRequest [] @relation("ReceivedRequests")

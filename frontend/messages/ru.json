@@ -49,6 +49,25 @@
         "have_account": "Уже есть аккаунт?",
         "login_link": "Войти"
     },
+    "Reset": {
+        "title": "Сброс пароля",
+        "expla": "Смените пароль, чтобы продолжить игру",
+        "email": "Email",
+        "newPassword": "Новый пароль",
+        "confirm_password": "Подтвердите пароль",
+        "loading": "Загрузка",
+        "no_account": "Нет аккаунта",
+        "submit": "Отправить",
+        "login": "Назад ко входу",
+        "message": "Успешно",
+        "errorForm": "Не удалось отправить",
+        "errorCode": "Не удалось отправить код",
+        "resetCode" : {
+            "Reset Code": "Сброс кода",
+            "placeholder": "Введите 6-значный код",
+            "errorForm": "Не удалось подтвердить"
+        }
+    },
     "Validation": {
         "required": "Это поле обязательно для заполнения",
         "invalid_email": "Неверный формат email",
