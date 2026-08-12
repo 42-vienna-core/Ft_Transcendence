@@ -71,6 +71,42 @@
                 "wait_time": "attesa media ~8 s"
             }
         }
+    },
+    "Admin": {
+        "title": "Pannello Admin",
+        "searchPlaceholder": "Cerca per nome o email",
+        "searching": "Ricerca in corso...",
+        "search": "Cerca",
+        "noUsersFound": "Nessun utente trovato.",
+        "viewEdit": "Visualizza/Modifica",
+        "loadingUser": "Caricamento utente...",
+        "edit": "Modifica",
+        "errors": {
+            "forbidden": "Accesso negato",
+            "loadUsersFailed": "Impossibile caricare gli utenti",
+            "loadUserFailed": "Impossibile caricare l'utente"
+        },
+        "form": {
+            "username": "Nome utente",
+            "email": "Email",
+            "newPassword": "Nuova password (lascia vuoto per non modificarla)",
+            "role": "Ruolo",
+            "cannotChangeOwnRole": "Non puoi modificare il tuo ruolo",
+            "save": "Salva",
+            "saving": "Salvataggio...",
+            "cancel": "Annulla",
+            "delete": "Elimina",
+            "deleteConfirmText": "Eliminare definitivamente questo utente? Questa azione non può essere annullata.",
+            "yesDelete": "Sì, elimina",
+            "deleting": "Eliminazione...",
+            "no": "No",
+            "errors": {
+                "forbidden": "Accesso negato",
+                "saveFailed": "Impossibile salvare le modifiche",
+                "deleteFailed": "Impossibile eliminare l'utente"
+            }
+        }
     }
+
 
 }
