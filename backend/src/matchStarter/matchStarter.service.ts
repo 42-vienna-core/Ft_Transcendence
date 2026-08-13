@@ -69,7 +69,7 @@ export class MatchStarter {
 					status: RoomStatus.WAITING,
 					type: RoomType.PUBLIC,
 					waitTimeout:{
-						gz: new Date(),
+						gt: new Date(),
 					}
 				},
 			})
