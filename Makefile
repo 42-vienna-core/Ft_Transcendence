@@ -102,4 +102,14 @@ studio:
 shell:
 	docker compose exec $(s) sh
 
+update-backend:
+	docker compose build --no-cache backend
+	docker compose up -d --force-recreate backend
+	docker container prune -f
+
+update-frontend:
+	docker compose build --no-cache frontend
+	docker compose up -d --force-recreate frontend
+	docker container prune -f
+
 .PHONY: all up down logs certs migrate prisma-reset studio clean re

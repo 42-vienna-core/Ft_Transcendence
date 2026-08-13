@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import { Erica_One } from "next/font/google";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -25,10 +26,6 @@ export async function DELETE (request: NextRequest) {
                 Authorization: `Bearer ${accessToken}`,
             },
     });
-    // if (res.ok && path.startsWith("/auth/")) {
-    //     cookieStore.delete("accessToken");
-    //     cookieStore.delete("refreshToken");
-    // }
     return Response.json(res.ok);
 }
 
@@ -56,6 +53,27 @@ export async function PUT (request: NextRequest) {
     return Response.json(result, { status: res.status });
 }
 
+
+export async function POST (request: NextRequest) {
+
+    try {
+        const body = await request.json();
+        const path = request.nextUrl.searchParams.get("path") ?? "";
+        const res = await fetch(backendUrl + path, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        return Response.json(data, { status: res.status });
+    } catch {
+        throw new Error()
+    }
+}
+
+
 export async function PATCH (request: NextRequest) {
 
     const body = await request.json();
@@ -64,7 +82,6 @@ export async function PATCH (request: NextRequest) {
 
    if(!accessToken)
         return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
 
     const res = await fetch(backendUrl + path, {
         method: "PATCH",

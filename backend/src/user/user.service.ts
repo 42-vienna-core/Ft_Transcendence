@@ -6,6 +6,12 @@ import { AvatarService } from '../avatar/avatar.service';
 import { SessionService } from '../session/session.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailService } from 'src/mail/mail.service';
+import { ResetCodeDto } from './dto/reset-code.dto';
+import { hash } from 'argon2';
+import { BadRequestException } from '@nestjs/common';
+
 
 @Injectable()
 export class UserService {
@@ -16,6 +22,7 @@ export class UserService {
 		private readonly sessionService: SessionService,
 		private readonly redis: RedisService,
 		private readonly configService: ConfigService,
+		private readonly mailService : MailService
 
 	) { }
 
@@ -28,7 +35,7 @@ export class UserService {
 
 	public async findById(id: number) {
 		const user = await this.prismaService.users.findUnique({
-			where: { id }
+			where: { id },
 		});
 		return user;
 	}
@@ -228,5 +235,49 @@ export class UserService {
 			return shuffled.slice(0, 10);
 		}
 		return users;
+	}
+
+	async reset(body: ResetPasswordDto)
+	{
+		
+		const user = await this.findByEmail(body.email);
+		if (!user)
+			throw new NotFoundException(`User with email ${body.email} not found`);
+		if (body.ConfirmPassword !== body.password)
+    		throw new BadRequestException("Passwords do not match");
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+		await this.prismaService.users.update({ 
+			where: { id: user.id }, 
+			data: { resetCode : code, codeExpire: new Date(Date.now() + 5 * 60 * 100), } 
+		});
+		await this.mailService.sendResetCode(user.email, code);
+		return  { email: user.email, password: body.password };
+	}
+
+	async resetCode (body : ResetCodeDto)
+	{
+		const user = await this.findByEmail(body.email);
+		if (!user)
+			throw new NotFoundException(`User with Email ${body.email} not found`);
+		if(user.resetCode !== body.code)
+            throw new Error('Wrong code');
+
+        if (!user.codeExpire || user.codeExpire < new Date())
+            throw new Error('Code expired');
+
+		const hashedPassword = await hash(body.password);
+
+		await this.prismaService.users.update({
+			where: {id: user.id},
+			data: {
+				password: hashedPassword,
+				resetCode: null,
+            	codeExpire: null,
+			}
+		});
+		 
+		return {message: "Password changed"}
 	}
 }
