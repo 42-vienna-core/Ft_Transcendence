@@ -1,7 +1,8 @@
 export type ControlType = 'arrow' | 'WASD' | 'arrow + WASD';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 export type GameState = 'START' | 'WIN' | 'OVER' | null;
-export type GameModeType = 'QUICK' | 'FRIEND_INV' | 'FRIEND_JOIN' | 'CPU' | null;
+export type GameModeType = 'QUICK' | 'FRIENDS' | 'FRIENDS_JOIN' | 'CPU' | null;
+export type RoomStatusType = 'WAITING' | 'READY' | 'PLAYING' | 'FINISHED' | 'ABANDONED' | null;
 
 // Server tick duration in milliseconds — shared so the match clock (arena-content)
 // stays in sync with the animation interpolation step (game-canvas).
@@ -58,14 +59,15 @@ export interface Friend {
     score: number;
 }
 
-export interface GameRequestData{
+export interface RoomData{
     roomId: string;
-    inviter: {
+    roomStatus: RoomStatusType;
+    timer: Date;
+    players: {
       id: number;
       name: string;
       avatar: string | null;
     };
-    expiresAt: number;
 }
 
 export interface FriendRequestData {

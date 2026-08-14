@@ -2,12 +2,13 @@
 
 import { Globe, Cpu, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useTranslations } from "next-intl";
 import { GameModeType } from "@/types/gameTypes";
-
-
+import LobbyModal from "../modal/lobby-modal";
+import { useGameSocket } from "@/providers/SocketProvider";
+import { useRoomDataBySocket } from "../store/useRoomData";
 
 interface MachCard {
     id: GameModeType;
@@ -15,7 +16,6 @@ interface MachCard {
     expl: string;
     btnLabel: string,
 }
-
 
 function MatchItem({
     children,
@@ -89,10 +89,17 @@ function MatchList({
             btnLabel: quick_t("label"),
             child: <Globe/>
         },
+        {
+            id: 'FRIEND_LOBBY' as GameModeType,
+            title: "Match with friends",
+            expl: "A room for playing with friends.",
+            btnLabel: "Create match",
+            child: <Globe/>
+        },
     ];
 
     return (
-        <ul className="grid grid-cols-2 gap-2.5 p-5 pt-4 text-text-secondary">
+        <ul className="grid grid-cols-3 gap-2.5 p-5 pt-4 text-text-secondary">
             {cards.map((card) =>
                 <MatchItem
                     key={card.id}
@@ -111,35 +118,64 @@ function MatchList({
 function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingMode, setLoadingMode] = useState<GameModeType | null>(null);
+    const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(false);
+    const {socket} = useGameSocket();
+    const {roomData} = useRoomDataBySocket();
     const {setGameMode} = useGameMode();
     const t = useTranslations("Start_game");
 
     const router = useRouter();
 
+    const handleModalClose = () => {
+        setLoadingMode(null);
+        setLoading(false);
+        setIsLobbyOpen(false);
+    }
 
-    const handleStartMatch = async (mode: GameModeType) => {
+    const handleLobby = async (mode: GameModeType) => {
+        if (!socket) return;
+        
         setLoading(true);
         setLoadingMode(mode);
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        setGameMode(mode)
+        socket.emit('join-match', {mode});
+
+        setIsLobbyOpen(true);
+        setLoading(false);
+    }
+
+    const handleStartMatch = () => {
+        console.log("Start match");
+        console.log("Send 'LOBBY' status");
+
+        // setGameMode('RUNNING')
+        //star the game and go into the arena page
 
         router.push("/arena");
         router.refresh();
     }
 
     return (
-        <div className="relative px-8 pt-20 text-center">
-            <div className="mono mb-8 inline-block rounded-full border border-accent bg-accent/5 px-3.5 py-1.5 text-xs uppercase tracking-[0.2em] text-accent">
-                // {t("title")}
+        <>
+            <div className="relative px-8 pt-20 text-center">
+               <div className="mono mb-8 inline-block rounded-full border border-accent bg-accent/5 px-3.5 py-1.5 text-xs uppercase tracking-[0.2em] text-accent">
+                   // {t("title")}
+               </div>
+               <MatchList
+                   loading={loading}
+                   loadingMode={loadingMode}
+                   handleStartMatch={handleLobby}
+               />
             </div>
-            <MatchList
-                loading={loading}
-                loadingMode={loadingMode}
-                handleStartMatch={handleStartMatch}
+            <LobbyModal
+                isOpen={isLobbyOpen}
+                onClose={handleModalClose}
+                onStartmatch={handleStartMatch}
             />
-        </div>
+        </>
+       
     );
 }
 

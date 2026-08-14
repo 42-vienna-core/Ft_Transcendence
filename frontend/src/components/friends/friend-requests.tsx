@@ -148,7 +148,6 @@ function FriendRequests({
 ) {
     const { gameRequests } = useNotificationListener();
     const { setRoomId, resetIds } = useFriendAndRoomID();
-    const { setGameMode } = useGameMode();
     const router = useRouter();
 
     async function makeDecision(id: string, isProv: boolean, isGameReq: boolean) {
@@ -157,7 +156,6 @@ function FriendRequests({
         const url = `friends/request/${String(id)}`
 
         if (isGameReq) {
-            setGameMode('FRIEND_JOIN');
             isProv ? setRoomId(id) : resetIds();
 
             await new Promise((resolve) => setTimeout(resolve, 1000));

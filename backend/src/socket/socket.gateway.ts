@@ -7,12 +7,14 @@ import { MatchStarter } from '../matchStarter/matchStarter.service';
 import { MatchRequestDto } from '../matchStarter/dto/match.dto';
 import { RoomStatus } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
-
+import { setTimeout as wait } from 'node:timers/promises';
 import { TokenService } from 'src/token/token.service';
 import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent } from '@nestjs/event-emitter';
+
+const COUNTDOWN = 3; // seconds
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -48,7 +50,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.sessionId = payload.sessionId;
       client.data.user = user;
 
-	  await client.join(`user:${payload.userId}`);
+	  //await client.join(`user:${payload.userId}`);
 
       await this.redisService.addOnline(user, session.id);
     } catch (e) {
@@ -106,30 +108,33 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
 
-    console.log(match.invitation);
+    // console.log(match.invitation);
 
-		if (match.invitation){
-      console.log("=================before========================");
+	// 	if (match.invitation){
+    //   console.log("=================before========================");
 
-			this.server.to(`user:${match.invitation.friendId}`).emit('friend-match-invite',{
-				roomId: match.roomId,
-				inviter: {
-					id: client.data.user.id,
-					name: client.data.user.name,
-					avatar: client.data.user.avatar,
-				},
-				expiresAt: match.invitation.expiresAt,
-			});
-      console.log("=================after========================");
-		}
+	// 		this.server.to(`user:${match.invitation.friendId}`).emit('friend-match-invite',{
+	// 			roomId: match.roomId,
+	// 			inviter: {
+	// 				id: client.data.user.id,
+	// 				name: client.data.user.name,
+	// 				avatar: client.data.user.avatar,
+	// 			},
+	// 			expiresAt: match.invitation.expiresAt,
+	// 		});
+    //   console.log("=================after========================");
+	// 	}
 		
 		this.server.to(client.data.roomId).emit('room-update', {
 			roomId: match.roomId,
 			roomStatus: match.roomStatus,
 			players: match.players,
 		});
-		if (match.roomStatus === RoomStatus.READY)
+		if (match.roomStatus === RoomStatus.READY){
+			this.server.to(client.data.roomId).emit('countdown', {roomId: match.roomId, countdown: COUNTDOWN});
+			await wait(COUNTDOWN * 1000);
 			await this.matchStarter.startMatch(match.roomId);
+		}
     	console.log("ROOM STATUS: ", match.roomStatus);
 		return match;
 	}
