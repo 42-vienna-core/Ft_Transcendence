@@ -113,7 +113,7 @@ function checkCollision(state: GameState){
 			if (snake.alive === false)
 				break;
 			if (other !== snake){
-				if (other.newPosition != null && comparePosition(other.newPosition, snake.newPosition)){
+				if (other.newPosition != null && other.alive && comparePosition(other.newPosition, snake.newPosition)){
 					other.alive = false;
 					snake.alive = false;
 					break;
@@ -386,6 +386,10 @@ export class GameService {
 		if (!game)
 			return ;
 		if (game.status !== 'finished'){
+			for (const snake of game.snakes){
+				if (snake.player === 'human' && !await this.redisService.isOnline(snake.id))
+					snake.alive = false;
+			}
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
