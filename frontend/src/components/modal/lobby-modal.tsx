@@ -3,36 +3,40 @@
 import { useEffect, useState } from "react";
 import { Bot, Plus, Users, X, LoaderCircle } from "lucide-react";
 import ModalLayout from "./modal-layout";
+import { RoomData } from "@/types/gameTypes";
 
 interface LobbyModalProps {
     isOpen: boolean;
+    roomData: RoomData | null;
     onStartmatch: () => void;
     onClose: () => void;
 }
 
-interface LobbyPlayer {
-    id: number;
-    name: string;
-    initials: string;
-    isHost: boolean;
-    avatarClass: string;
-}
+// interface LobbyPlayer {
+//     id: number;
+//     name: string;
+//     initials: string;
+//     isHost: boolean;
+//     avatarClass: string;
+// }
 
 const MAX_PLAYERS = 4;
 const COUNTDOWN_SECONDS = 30;
 const RADIUS = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-const players: LobbyPlayer[] = [
-    { id: 1, name: "you", initials: "IV", isHost: true, avatarClass: "bg-accent text-text-inverse" },
-    { id: 2, name: "Milan", initials: "ML", isHost: false, avatarClass: "bg-snake-1 text-info-text" },
-];
+interface Player {
+    id: number; 
+    name: string; 
+    avatar: string | null;
+    isHost: boolean;
+}
 
-function FilledSlot({ player }: { player: LobbyPlayer }) {
+function FilledSlot({ player }: { player: Player }) {
     return (
         <div className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-xl border border-border-default bg-bg-subtle p-3">
-            <div className={`grid size-9 place-items-center rounded-full text-sm font-medium capitalize ${player.avatarClass}`}>
-                {player.initials}
+            <div className={`grid size-9 place-items-center rounded-full text-sm font-medium capitalize ${player.avatar}`}>
+                {player.name}
             </div>
             <span className="text-xs font-medium capitalize text-text-primary">{player.name}</span>
             {player.isHost ? (
@@ -60,20 +64,21 @@ function EmptySlot() {
 export default function LobbyModal({
     isOpen,
     onClose,
+    roomData,
     onStartmatch,
 }: LobbyModalProps) {
-    const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
+    const [secondsLeft, setSecondsLeft] = useState<number>(0);
 
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || !roomData) return;
 
-        setSecondsLeft(COUNTDOWN_SECONDS);
+        setSecondsLeft(roomData.timer);
         const interval = setInterval(() => {
             setSecondsLeft(prev => (prev <= 1 ? 0 : prev - 1));
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [isOpen]);
+    }, [isOpen, roomData]);
 
     useEffect(() => {
         if (isOpen && secondsLeft === 0) {
@@ -81,8 +86,9 @@ export default function LobbyModal({
         }
     }, [isOpen, secondsLeft, onStartmatch]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !roomData) return null;
 
+    const players = roomData.players;
     const emptySlots = Array.from({ length: Math.max(MAX_PLAYERS - players.length, 0) });
     const progress = secondsLeft / COUNTDOWN_SECONDS;
     const dashoffset = CIRCUMFERENCE * (1 - progress);

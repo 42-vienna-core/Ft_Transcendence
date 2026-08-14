@@ -62,12 +62,13 @@ export interface Friend {
 export interface RoomData{
     roomId: string;
     roomStatus: RoomStatusType;
-    timer: Date;
-    players: {
+    timer: number; //in seconds
+    players: [{
       id: number;
       name: string;
       avatar: string | null;
-    };
+      isHost: boolean;
+    }];
 }
 
 export interface FriendRequestData {

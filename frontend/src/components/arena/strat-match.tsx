@@ -21,14 +21,14 @@ function MatchItem({
     children,
     card,
     loading,
-    handleStartMatch,
+    handleRoomLobby,
     loadingMode,
 }: {
     loading: boolean;
     children: React.ReactNode;
     card: MachCard;
     loadingMode: GameModeType | null;
-    handleStartMatch: (mode: GameModeType) => void;
+    handleRoomLobby: (mode: GameModeType) => void;
 }) {
     const {title, expl, btnLabel, id} = card;
     const isAnyLoadingMode = loadingMode !== null;
@@ -54,7 +54,7 @@ function MatchItem({
                     type="button"
                     disabled={isAnyLoadingMode}
                     className="flex h-[36px] cursor-pointer items-center justify-center gap-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary transition-colors duration-150 hover:border-accent hover:text-accent-hover active:text-accent-active disabled:cursor-not-allowed disabled:opacity-40"
-                    onClick={() => handleStartMatch(id)}
+                    onClick={() => handleRoomLobby(id)}
                 >
                     {btnLabel ? btnLabel: ""}
                 </button>
@@ -64,13 +64,13 @@ function MatchItem({
 }
 
 function MatchList({
-    handleStartMatch,
+    handleRoomLobby,
     loadingMode,
     loading,
 }: {
     loading: boolean;
     loadingMode: GameModeType | null;
-    handleStartMatch: (mode: GameModeType) => void;
+    handleRoomLobby: (mode: GameModeType) => void;
 }) {
     const cpu_t = useTranslations("Start_game.cards.cpu");
     const quick_t = useTranslations("Start_game.cards.quick");
@@ -90,7 +90,7 @@ function MatchList({
             child: <Globe/>
         },
         {
-            id: 'FRIEND_LOBBY' as GameModeType,
+            id: 'FRIENDS' as GameModeType,
             title: "Match with friends",
             expl: "A room for playing with friends.",
             btnLabel: "Create match",
@@ -106,7 +106,7 @@ function MatchList({
                     card={card}
                     loading={loading}
                     loadingMode={loadingMode}
-                    handleStartMatch={handleStartMatch}
+                    handleRoomLobby={handleRoomLobby}
                 >
                     {card.child}
                 </MatchItem>
@@ -132,19 +132,23 @@ function StartMatch () {
         setIsLobbyOpen(false);
     }
 
-    const handleLobby = async (mode: GameModeType) => {
+    const handleRoomLobby = async (mode: GameModeType) => {
         if (!socket) return;
         
         setLoading(true);
         setLoadingMode(mode);
+        console.log("MODE: ", mode);
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         socket.emit('join-match', {mode});
+        // setGameMode(mode)
 
         setIsLobbyOpen(true);
         setLoading(false);
     }
+
+    console.log(roomData);
 
     const handleStartMatch = () => {
         console.log("Start match");
@@ -166,13 +170,14 @@ function StartMatch () {
                <MatchList
                    loading={loading}
                    loadingMode={loadingMode}
-                   handleStartMatch={handleLobby}
+                   handleRoomLobby={handleRoomLobby}
                />
             </div>
             <LobbyModal
                 isOpen={isLobbyOpen}
                 onClose={handleModalClose}
                 onStartmatch={handleStartMatch}
+                roomData={roomData}
             />
         </>
        

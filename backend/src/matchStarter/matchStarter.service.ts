@@ -124,7 +124,7 @@ export class MatchStarter {
 			});
 
 			const res = participants.map(({user}) => user);
-		
+			console.log("ROOM_ID: ", room.id);
 			return {
 				roomId: room.id,
 				roomStatus: status,
