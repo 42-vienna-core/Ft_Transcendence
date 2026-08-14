@@ -12,14 +12,6 @@ interface LobbyModalProps {
     onClose: () => void;
 }
 
-// interface LobbyPlayer {
-//     id: number;
-//     name: string;
-//     initials: string;
-//     isHost: boolean;
-//     avatarClass: string;
-// }
-
 const MAX_PLAYERS = 4;
 const COUNTDOWN_SECONDS = 30;
 const RADIUS = 16;
@@ -29,7 +21,7 @@ interface Player {
     id: number; 
     name: string; 
     avatar: string | null;
-    isHost: boolean;
+    isOwner: boolean;
 }
 
 function FilledSlot({ player }: { player: Player }) {
@@ -39,7 +31,7 @@ function FilledSlot({ player }: { player: Player }) {
                 {player.name}
             </div>
             <span className="text-xs font-medium capitalize text-text-primary">{player.name}</span>
-            {player.isHost ? (
+            {player.isOwner ? (
                 <span className="rounded-full bg-accent-soft px-2 py-px text-[10px] font-medium text-accent-text">
                     host
                 </span>
@@ -67,12 +59,21 @@ export default function LobbyModal({
     roomData,
     onStartmatch,
 }: LobbyModalProps) {
-    const [secondsLeft, setSecondsLeft] = useState<number>(0);
-
+    const current_time: number = Date.now();
+    if (roomData) {
+        // console.log(current_time);
+        // console.log((roomData.timer - current_time) / 1000);
+   
+        const timer  =  Math.floor((roomData.timer - current_time) / 1000)
+        console.log(timer);
+       
+    }
+    
+    const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
     useEffect(() => {
         if (!isOpen || !roomData) return;
 
-        setSecondsLeft(roomData.timer);
+        setSecondsLeft(COUNTDOWN_SECONDS);
         const interval = setInterval(() => {
             setSecondsLeft(prev => (prev <= 1 ? 0 : prev - 1));
         }, 1000);

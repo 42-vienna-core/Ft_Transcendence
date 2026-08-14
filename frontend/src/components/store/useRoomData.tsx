@@ -16,10 +16,10 @@ export const useRoomDataBySocket = create<GameDataState>((set) => ({
     openRoomListener: (socket) => {
         if (!socket) return;
 
-        socket.off('room-update');
+        socket.off('lobby-update');
         socket.off('countdown');
 
-        socket.on('room-update', (data: RoomData) => {
+        socket.on('lobby-update', (data: RoomData) => {
             console.log("UPDATING LOBBY: ", data);
             set((state) => ({
                 roomData: state.roomData ? { ...state.roomData, ...data } : data

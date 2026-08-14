@@ -13,6 +13,7 @@ import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent } from '@nestjs/event-emitter';
+//import { time } from 'node:console';
 
 const COUNTDOWN = 3; // seconds
 
@@ -50,7 +51,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.sessionId = payload.sessionId;
       client.data.user = user;
 
-	  //await client.join(`user:${payload.userId}`);
+	  await client.join(`user:${payload.userId}`);
 
       await this.redisService.addOnline(user, session.id);
     } catch (e) {
@@ -124,11 +125,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// 		});
     //   console.log("=================after========================");
 	// 	}
+
+		this.server.to(client.data.roomId).emit('lobby-update', {
+			roomId: match.roomId,
+			roomStatus: match.roomStatus,
+			players: match.players,
+			timer: match.timer,
+		})
 		
 		this.server.to(client.data.roomId).emit('room-update', {
 			roomId: match.roomId,
 			roomStatus: match.roomStatus,
-			players: match.players,
+			players: match.players?.length,
 		});
 		if (match.roomStatus === RoomStatus.READY){
 			this.server.to(client.data.roomId).emit('countdown', {roomId: match.roomId, countdown: COUNTDOWN});
@@ -156,6 +164,22 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	const friends = await this.friendsService.getFriends(event.ownerId);
 	for (const friend of friends)
 		this.server.to(`user:${friend.id}`).emit('playing-friends-changed');
+  }
+
+  @OnEvent('friend-match.created')
+  async handleNewfriendMatch(event: { ownerId: number, roomId: string }){
+	const owner = await this.userService.getUser(event.ownerId);
+	const friends = await this.friendsService.getFriends(event.ownerId);
+	for (const friend of friends){
+		this.server.to(`user:${friend.id}`).emit('friend-match-invite', {
+			roomId: event.roomId,
+			inviter: {
+				id: owner.id,
+				name: owner.name,
+				avatar: owner.avatar, 
+			}
+		});
+	}
   }
 
   @SubscribeMessage('get-playing-friends')

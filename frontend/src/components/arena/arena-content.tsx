@@ -101,19 +101,19 @@ function ArenaContent() {
 
         if (joinedSocketRef.current !== socket) {
             joinedSocketRef.current = socket;
-            const payload = { mode: gameMode};
+            // const payload = { mode: gameMode};
 
-            if (gameMode === 'FRIEND_INV') {
-                socket.emit("join-match", {...payload, friendId});
-                return;
-            } 
+            // if (gameMode === 'FRIEND_INV') {
+            //     socket.emit("join-match", {...payload, friendId});
+            //     return;
+            // } 
 
-            if (gameMode === 'FRIEND_JOIN') {
-                socket.emit("join-match", {...payload, roomId});
-                return;
-            }
+            // if (gameMode === 'FRIEND_JOIN') {
+            //     socket.emit("join-match", {...payload, roomId});
+            //     return;
+            // }
 
-            socket.emit("join-match", payload);
+            // socket.emit("join-match", payload);
         }
 
         const setUpContol = () => {

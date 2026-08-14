@@ -67,7 +67,7 @@ export interface RoomData{
       id: number;
       name: string;
       avatar: string | null;
-      isHost: boolean;
+      isOwner: boolean;
     }];
 }
 

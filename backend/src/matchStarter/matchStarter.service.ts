@@ -13,15 +13,15 @@ const EXP_TIME = 15_000;
 export interface Match{
 	roomId: string;
 	roomStatus: RoomStatus;
-	timer: Date | null;
+	timer: number | null;
 	players: {
 		id: number;
 		name: string;
 		avatar: string | null;
+		isOwner: boolean;
 	}[] | null;
 }
 
-//function 
 
 @Injectable()
 export class MatchStarter {
@@ -34,6 +34,31 @@ export class MatchStarter {
 		private readonly friendsService: FriendsService,
 		private readonly eventEmitter: EventEmitter2,
 	){}
+
+	async returnPlayers(roomId: string) {
+		const participants = await this.prismaService.roomUser.findMany({
+			where: {roomId: roomId},
+			select: {
+				user: {
+					select: {
+						id: true, 
+						avatar: true,
+						name: true,
+					},
+				},
+				room: {
+					select: {
+						ownerId: true,
+					},
+				},
+			},
+		});
+		const res = participants.map(({user, room}) => ({
+			...user,
+			isOwner: user.id === room.ownerId,
+		}));
+		return res;
+	}
 
 	async prepareCpuMatch(userId: number, socketId: string) : Promise<Match>{
 		const room = await this.prismaService.gameRoom.create({
@@ -83,13 +108,14 @@ export class MatchStarter {
 						type: RoomType.PUBLIC,
 						status: RoomStatus.WAITING,
 						waitTimeout,
+						ownerId: userId,
 					},
 				});
 				const roomId = room.id;
 				setTimeout(() => {void this.finishWaitingTime(roomId)}, EXP_TIME);
 			}
 			let players = await this.gameRoom.getPlayerCount(room.id);
-			if (players >= 2){
+			if (players >= room.maxUsers){
 				await this.prismaService.gameRoom.update({
 					where: {id:room.id},
 					data: { status: RoomStatus.READY}
@@ -102,7 +128,7 @@ export class MatchStarter {
 
 			players = await this.gameRoom.getPlayerCount(room.id);
 			let status = room.status;
-			if (players >= 2){
+			if (players >= room.maxUsers){
 				await this.prismaService.gameRoom.update({
 					where: {id:room.id},
 					data: { status: RoomStatus.READY}
@@ -110,27 +136,17 @@ export class MatchStarter {
 				status = RoomStatus.READY;
 			}
 
-			const participants = await this.prismaService.roomUser.findMany({
-				where: {roomId: room.id},
-				select: {
-					user: {
-						select: {
-							id: true, 
-							avatar: true,
-							name: true,
-						},
-					},
-				},
-			});
+			const participants = await this.returnPlayers(room.id);
 
-			const res = participants.map(({user}) => user);
-			console.log("ROOM_ID: ", room.id);
+			let timer = null;
+			if (room.waitTimeout != null)
+				timer = room.waitTimeout.getTime();
 			return {
 				roomId: room.id,
 				roomStatus: status,
-				timer: room.waitTimeout,
-				players: res,
-			}
+				players: participants,
+				timer,
+			};
 		}
 		throw new ServiceUnavailableException('Could not find room, try again');
 	}
@@ -154,39 +170,20 @@ export class MatchStarter {
 				}
 			}
 		});
-		//SEND NOTIFICATION TO ALL FRIENDS
 		setTimeout(() => {void this.finishWaitingTime(room.id)}, EXP_TIME);
+		this.eventEmitter.emit('friend-match.created', {ownerId: userId, roomId: room.id});
 		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 
-		//send request to friend (60 sec expiry)
-		// await this.redisService.setEx(`match-invite:${room.id}:${friendId}`, 60, JSON.stringify({
-		// 		roomId: room.id,
-		// 		inviterId:userId,
-		// 		friendId,
-		// 		expiresAt: waitTimeout.getTime(),
-		// 	}),
-		// );
-		
-		const participants = await this.prismaService.roomUser.findMany({
-			where: {roomId: room.id},
-			select: {
-				user: {
-					select: {
-						id: true, 
-						avatar: true,
-						name: true,
-					},
-				},
-			},
-		});
+		const players = await this.returnPlayers(room.id);
 
-		const res = participants.map(({user}) => user);
-		
+		let timer = null;
+		if (room.waitTimeout != null)
+			timer = room.waitTimeout.getTime();
 		return {
 			roomId: room.id,
 			roomStatus: room.status,
-			players: res,
-			timer: room.waitTimeout,
+			players,
+			timer,
 		};
 	}
 	
@@ -227,25 +224,16 @@ export class MatchStarter {
 		};
 		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 		
-		const participants = await this.prismaService.roomUser.findMany({
-			where: {roomId: room.id},
-			select: {
-				user: {
-					select: {
-						id: true, 
-						avatar: true,
-						name: true,
-					},
-				},
-			},
-		});
-		const res = participants.map(({user}) => user);
+		const participants = await this.returnPlayers(room.id);
 
+		let timer = null;
+		if (room.waitTimeout != null)
+			timer = room.waitTimeout.getTime();
 		return {
 			roomId: room.id,
 			roomStatus: status,
-			players: res,
-			timer: room.waitTimeout,
+			players: participants,
+			timer,
 		};
 	}
 

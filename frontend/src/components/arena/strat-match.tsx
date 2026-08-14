@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useTranslations } from "next-intl";
-import { GameModeType } from "@/types/gameTypes";
+import { GameModeType, RoomData } from "@/types/gameTypes";
 import LobbyModal from "../modal/lobby-modal";
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useRoomDataBySocket } from "../store/useRoomData";
