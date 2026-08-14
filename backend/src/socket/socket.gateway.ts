@@ -13,6 +13,7 @@ import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent } from '@nestjs/event-emitter';
+//import { time } from 'node:console';
 
 const COUNTDOWN = 3; // seconds
 
@@ -124,12 +125,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	// 		});
     //   console.log("=================after========================");
 	// 	}
-		
-		this.server.to(client.data.roomId).emit('room-update', {
+
+		this.server.to(client.data.roomId).emit('lobby-update', {
 			roomId: match.roomId,
 			roomStatus: match.roomStatus,
 			players: match.players,
 			timer: match.timer,
+		})
+		
+		this.server.to(client.data.roomId).emit('room-update', {
+			roomId: match.roomId,
+			roomStatus: match.roomStatus,
+			players: match.players?.length,
 		});
 		if (match.roomStatus === RoomStatus.READY){
 			this.server.to(client.data.roomId).emit('countdown', {roomId: match.roomId, countdown: COUNTDOWN});
