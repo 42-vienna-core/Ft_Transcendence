@@ -109,23 +109,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
 
-    // console.log(match.invitation);
-
-	// 	if (match.invitation){
-    //   console.log("=================before========================");
-
-	// 		this.server.to(`user:${match.invitation.friendId}`).emit('friend-match-invite',{
-	// 			roomId: match.roomId,
-	// 			inviter: {
-	// 				id: client.data.user.id,
-	// 				name: client.data.user.name,
-	// 				avatar: client.data.user.avatar,
-	// 			},
-	// 			expiresAt: match.invitation.expiresAt,
-	// 		});
-    //   console.log("=================after========================");
-	// 	}
-
 		this.server.to(client.data.roomId).emit('lobby-update', {
 			roomId: match.roomId,
 			roomStatus: match.roomStatus,
@@ -180,6 +163,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 		});
 	}
+  }
+
+  @OnEvent('match.countdown')
+  handleMatchCountdown(event: {roomId: string, countdown: number}){
+	this.server.to(event.roomId).emit('countdown', event);
   }
 
   @SubscribeMessage('get-playing-friends')

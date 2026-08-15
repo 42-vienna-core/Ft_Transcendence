@@ -120,7 +120,7 @@ function StartMatch () {
     const [loadingMode, setLoadingMode] = useState<GameModeType | null>(null);
     const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(false);
     const {socket} = useGameSocket();
-    const {roomData} = useRoomDataBySocket();
+    const {roomData, clearGameData} = useRoomDataBySocket();
     const {setGameMode} = useGameMode();
     const t = useTranslations("Start_game");
 
@@ -139,18 +139,27 @@ function StartMatch () {
         setLoadingMode(mode);
         console.log("MODE: ", mode);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
 
         socket.emit('join-match', {mode});
         // setGameMode(mode)
+        if (mode === 'CPU') {
+            // setGameMode(mode);
+            router.push("/arena");
+            router.refresh();
+            return;
+        }
 
         setIsLobbyOpen(true);
         setLoading(false);
     }
 
-    console.log(roomData);
-
     const handleStartMatch = () => {
+        if (!roomData ||roomData.roomStatus === 'ABANDONED') {
+            handleModalClose();
+            return;
+        }
+
         console.log("Start match");
         console.log("Send 'LOBBY' status");
 

@@ -2,7 +2,7 @@ export type ControlType = 'arrow' | 'WASD' | 'arrow + WASD';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 export type GameState = 'START' | 'WIN' | 'OVER' | null;
 export type GameModeType = 'QUICK' | 'FRIENDS' | 'FRIENDS_JOIN' | 'CPU' | null;
-export type RoomStatusType = 'WAITING' | 'READY' | 'PLAYING' | 'FINISHED' | 'ABANDONED' | null;
+export type RoomStatusType = 'WAITING' | 'READY' | 'COUNTDOWN' | 'RUNNING' | 'FINISHED' | 'ABANDONED' | null;
 
 // Server tick duration in milliseconds — shared so the match clock (arena-content)
 // stays in sync with the animation interpolation step (game-canvas).
@@ -68,7 +68,7 @@ export interface RoomData{
       name: string;
       avatar: string | null;
       isOwner: boolean;
-    }];
+    }] | null;
 }
 
 export interface FriendRequestData {

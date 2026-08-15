@@ -7,8 +7,10 @@ import { GameService } from "src/game/game.service";
 //import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { setTimeout as wait } from 'node:timers/promises';
 
-const EXP_TIME = 15_000;
+const EXP_TIME = 20_000;
+const COUNTDOWN = 3; // seconds
 
 export interface Match{
 	roomId: string;
@@ -269,6 +271,9 @@ export class MatchStarter {
 					status: RoomStatus.READY,
 				},
 		});
+		this.eventEmitter.emit('match.countdown', {roomId: roomId, countdown: COUNTDOWN});
+		await wait(COUNTDOWN * 1000);
+		
 		//console.log ('Room status: ', ready.status)
 		
 		if (ready.count > 0){

@@ -13,7 +13,7 @@ interface LobbyModalProps {
 }
 
 const MAX_PLAYERS = 4;
-const COUNTDOWN_SECONDS = 30;
+const COUNTDOWN_SECONDS = 20;
 const RADIUS = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -59,21 +59,17 @@ export default function LobbyModal({
     roomData,
     onStartmatch,
 }: LobbyModalProps) {
-    const current_time: number = Date.now();
-    if (roomData) {
-        // console.log(current_time);
-        // console.log((roomData.timer - current_time) / 1000);
-   
-        const timer  =  Math.floor((roomData.timer - current_time) / 1000)
-        console.log(timer);
-       
-    }
     
     const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
     useEffect(() => {
         if (!isOpen || !roomData) return;
 
-        setSecondsLeft(COUNTDOWN_SECONDS);
+        const current_time: number = Date.now();
+   
+        const timer  =  Math.floor((roomData.timer - current_time) / 1000)
+        console.log(timer);
+       
+        setSecondsLeft(timer);
         const interval = setInterval(() => {
             setSecondsLeft(prev => (prev <= 1 ? 0 : prev - 1));
         }, 1000);
@@ -89,7 +85,7 @@ export default function LobbyModal({
 
     if (!isOpen || !roomData) return null;
 
-    const players = roomData.players;
+    const players = roomData.players ? roomData.players: [];
     const emptySlots = Array.from({ length: Math.max(MAX_PLAYERS - players.length, 0) });
     const progress = secondsLeft / COUNTDOWN_SECONDS;
     const dashoffset = CIRCUMFERENCE * (1 - progress);
