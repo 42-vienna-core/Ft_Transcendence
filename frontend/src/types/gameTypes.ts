@@ -1,7 +1,8 @@
 export type ControlType = 'arrow' | 'WASD' | 'arrow + WASD';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 export type GameState = 'START' | 'WIN' | 'OVER' | null;
-export type GameModeType = 'QUICK' | 'FRIEND_INV' | 'FRIEND_JOIN' | 'CPU' | null;
+export type GameModeType = 'QUICK' | 'FRIENDS' | 'FRIENDS_JOIN' | 'CPU' | null;
+export type RoomStatusType = 'WAITING' | 'READY' | 'PLAYING' | 'FINISHED' | 'ABANDONED' | null;
 
 // Server tick duration in milliseconds — shared so the match clock (arena-content)
 // stays in sync with the animation interpolation step (game-canvas).
@@ -42,7 +43,7 @@ export interface Game {
     roomId: string;
     snakes: Snake[];
     food: Food[];
-    status: 'waiting' | 'running' | 'finished';
+    status: RoomStatusType;
     tick: number;
     gridWidth: number;
     gridHeight: number;
@@ -56,5 +57,37 @@ export interface Friend {
     avatar?: string | null;
     isOnline: boolean;
     score: number;
+}
+
+export interface RoomData {
+    roomId: string;
+    roomStatus: RoomStatusType;
+    timer: number;
+    players: [{
+      id: number;
+      name: string;
+      avatar: string | null;
+      isOwner: boolean;
+    }];
+}
+
+export interface FriendRequestData {
+    id: string;
+    sender: {
+        id: number;
+        name: string;
+        avatar?: string | null;
+        isOnline: boolean;
+        score: number;
+    };
+}
+
+export interface GameRequestData {
+    roomId: string;
+    inviter: {
+        id: number;
+        name: string;
+        avatar?: string | null;
+    };
 }
 

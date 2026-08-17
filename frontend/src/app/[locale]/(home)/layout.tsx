@@ -12,10 +12,11 @@ async function HomeLayout({ children }: { children: ReactNode }) {
         <>
             <header className="bg-[var(--color-bg-base)]">
                 <Nav>
-                    {isAuthorized ? (
-                        <NavLinks/>
+                    {
+                        isAuthorized ? (
+                            <NavLinks/>
                         ):(
-                        <NavAuthLinks/>
+                            <NavAuthLinks/>
                         )
                     }
                 </Nav>

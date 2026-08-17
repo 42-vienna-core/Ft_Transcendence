@@ -1,26 +1,7 @@
+import { FriendRequestData, GameRequestData } from '@/types/gameTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand'
 
-interface GameRequestData{
-    roomId: string;
-    inviter: {
-      id: number;
-      name: string;
-      avatar: string | null;
-    };
-    expiresAt: number; 
-}
-
-interface FriendRequestData {
-    id: string;
-    sender: {
-        id: number;
-        name: string;
-        avatar?: string | null;
-        isOnline: boolean;
-        score: number;
-    };
-}
 interface NotificationState {
     notificationNumber: number;
     gameRequests: GameRequestData[];

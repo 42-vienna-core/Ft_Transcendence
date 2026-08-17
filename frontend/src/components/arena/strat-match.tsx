@@ -2,12 +2,14 @@
 
 import { Globe, Cpu, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useTranslations } from "next-intl";
-import { GameModeType } from "@/types/gameTypes";
-
-
+import { GameModeType, RoomData } from "@/types/gameTypes";
+import LobbyModal from "../modal/lobby-modal";
+import { useGameSocket } from "@/providers/SocketProvider";
+import { useRoomDataBySocket } from "../store/useRoomData";
+import { useProfile } from "@/providers/ProfileContext";
 
 interface MachCard {
     id: GameModeType;
@@ -16,19 +18,18 @@ interface MachCard {
     btnLabel: string,
 }
 
-
 function MatchItem({
     children,
     card,
     loading,
-    handleStartMatch,
+    handleRoomLobby,
     loadingMode,
 }: {
     loading: boolean;
     children: React.ReactNode;
     card: MachCard;
     loadingMode: GameModeType | null;
-    handleStartMatch: (mode: GameModeType) => void;
+    handleRoomLobby: (mode: GameModeType) => void;
 }) {
     const {title, expl, btnLabel, id} = card;
     const isAnyLoadingMode = loadingMode !== null;
@@ -54,7 +55,7 @@ function MatchItem({
                     type="button"
                     disabled={isAnyLoadingMode}
                     className="flex h-[36px] cursor-pointer items-center justify-center gap-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary transition-colors duration-150 hover:border-accent hover:text-accent-hover active:text-accent-active disabled:cursor-not-allowed disabled:opacity-40"
-                    onClick={() => handleStartMatch(id)}
+                    onClick={() => handleRoomLobby(id)}
                 >
                     {btnLabel ? btnLabel: ""}
                 </button>
@@ -64,13 +65,13 @@ function MatchItem({
 }
 
 function MatchList({
-    handleStartMatch,
+    handleRoomLobby,
     loadingMode,
     loading,
 }: {
     loading: boolean;
     loadingMode: GameModeType | null;
-    handleStartMatch: (mode: GameModeType) => void;
+    handleRoomLobby: (mode: GameModeType) => void;
 }) {
     const cpu_t = useTranslations("Start_game.cards.cpu");
     const quick_t = useTranslations("Start_game.cards.quick");
@@ -89,17 +90,24 @@ function MatchList({
             btnLabel: quick_t("label"),
             child: <Globe/>
         },
+        {
+            id: 'FRIENDS' as GameModeType,
+            title: "Match with friends",
+            expl: "A room for playing with friends.",
+            btnLabel: "Create match",
+            child: <Globe/>
+        },
     ];
 
     return (
-        <ul className="grid grid-cols-2 gap-2.5 p-5 pt-4 text-text-secondary">
+        <ul className="grid grid-cols-3 gap-2.5 p-5 pt-4 text-text-secondary">
             {cards.map((card) =>
                 <MatchItem
                     key={card.id}
                     card={card}
                     loading={loading}
                     loadingMode={loadingMode}
-                    handleStartMatch={handleStartMatch}
+                    handleRoomLobby={handleRoomLobby}
                 >
                     {card.child}
                 </MatchItem>
@@ -110,36 +118,69 @@ function MatchList({
 
 function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
-    const [loadingMode, setLoadingMode] = useState<GameModeType | null>(null);
-    const {setGameMode} = useGameMode();
+    const [gameMode, setGameMode] = useState<GameModeType | null>(null);
+    const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(false);
+    const {socket} = useGameSocket();
+    const {room, clearGameData} = useRoomDataBySocket();
     const t = useTranslations("Start_game");
 
     const router = useRouter();
 
+    const handleModalClose = () => {
+        setGameMode(null);
+        setLoading(false);
+        setIsLobbyOpen(false);
+        // clearGameData();
+    }
 
-    const handleStartMatch = async (mode: GameModeType) => {
+    const handleRoomLobby = async (mode: GameModeType) => {
+        if (!socket) return;
+        
         setLoading(true);
-        setLoadingMode(mode);
+        setGameMode(mode);
+        console.log("MODE: ", mode);
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        setGameMode(mode)
+        socket.emit('join-match', {mode});
+        if (mode === 'CPU') {
+            router.push("/arena");
+            router.refresh();
+            return;
+        }
+
+        setIsLobbyOpen(true);
+        setLoading(false);
+    }
+
+    const handleStartMatch = () => {
+        console.log("Start match");
 
         router.push("/arena");
         router.refresh();
     }
 
     return (
-        <div className="relative px-8 pt-20 text-center">
-            <div className="mono mb-8 inline-block rounded-full border border-accent bg-accent/5 px-3.5 py-1.5 text-xs uppercase tracking-[0.2em] text-accent">
-                // {t("title")}
+        <>
+            <div className="relative px-8 pt-20 text-center">
+               <div className="mono mb-8 inline-block rounded-full border border-accent bg-accent/5 px-3.5 py-1.5 text-xs uppercase tracking-[0.2em] text-accent">
+                   // {t("title")}
+               </div>
+               <MatchList
+                   loading={loading}
+                   loadingMode={gameMode}
+                   handleRoomLobby={handleRoomLobby}
+               />
             </div>
-            <MatchList
-                loading={loading}
-                loadingMode={loadingMode}
-                handleStartMatch={handleStartMatch}
+            <LobbyModal
+                isOpen={isLobbyOpen}
+                onClose={handleModalClose}
+                onStartmatch={handleStartMatch}
+                room={room}
+                gameMode={gameMode}
             />
-        </div>
+        </>
+       
     );
 }
 

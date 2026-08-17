@@ -70,4 +70,11 @@ export class FriendsController {
 		@Authorized('userId') userId: number) {
 		return this.friendsService.incomingRequest(userId);
 	}
+
+	@Authorization()
+	@HttpCode(HttpStatus.OK)
+	@Get('playing')
+	async getPlayingFriends(@Authorized('userId') userId: number){
+		return this.friendsService.getPlayingFriends(userId);
+	}
 }

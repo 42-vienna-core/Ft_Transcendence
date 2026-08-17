@@ -1,15 +1,18 @@
 'use client'
+import { Bell } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 interface CustomLinkProps{
     url: string;
     label: string;
+    notification?: number; 
 }
 
-function CustomLink ({label, url}: CustomLinkProps) {
+function CustomLink ({label, url, notification}: CustomLinkProps) {
     const pathname = usePathname();
     const isActive = pathname === url;
+    const notif = notification ? notification : "";
 
     return (
         <Link
@@ -20,7 +23,14 @@ function CustomLink ({label, url}: CustomLinkProps) {
                     : 'text-text-primary'
             }`}
         >
-            {label}
+            {label}{" "}
+            {
+                notif && 
+                    <span className="absolute top-2 -left-6 bg-red-500 text-white text-sm w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                        {notif}
+                    </span>
+            }
+             
         </Link>
     )
 }

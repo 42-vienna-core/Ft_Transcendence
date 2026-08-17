@@ -3,13 +3,17 @@ import { Server} from 'socket.io';
 import type { changeDirectionPayload } from "./interfaces/events";
 import { RedisService } from "src/redis/redis.service";
 import { GameState } from './interfaces/game-state';
+import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 
 
 @WebSocketGateway()
 export class GameGateway {
 	@WebSocketServer() server!: Server;
 	
-	constructor(private readonly redisService: RedisService){}
+	constructor(
+		private readonly redisService: RedisService,
+		private readonly gameRoom: GameRoomService,
+	){}
 
 	@SubscribeMessage('change-direction')
 	async handleChangeDirection(@MessageBody() data: changeDirectionPayload,){
@@ -33,5 +37,10 @@ export class GameGateway {
 	async broadcastOnlineUsers(){
 		const onlineUsers = await this.redisService.getOnlineUsers();
 		this.server.emit('online-users', onlineUsers);
+	}
+
+	async broadcastRoomUpdate(roomId: string){
+		const match = await this.gameRoom.getRoomUpdate(roomId);
+		this.server.to(roomId).emit('room-update', match);
 	}
 }

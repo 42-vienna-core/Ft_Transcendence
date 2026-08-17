@@ -4,21 +4,14 @@ import { GameRoomService } from "src/gameRoom/gameRoom.service";
 import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { MatchMode, MatchRequestDto } from "./dto/match.dto";
 import { GameService } from "src/game/game.service";
-import { RedisService } from "src/redis/redis.service";
+//import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { setTimeout as wait } from 'node:timers/promises';
+import { Match } from "src/gameRoom/interfaces/room-update.interface";
 
-const EXP_TIME = 10_000;
-
-export interface Match{
-	roomId: string;
-	roomStatus: RoomStatus;
-	players: number;
-
-	invitation?: {
-		friendId: number;
-		expiresAt: number;
-	};
-}
+const EXP_TIME = 20_000;
+const COUNTDOWN = 3; // seconds
 
 @Injectable()
 export class MatchStarter {
@@ -27,9 +20,35 @@ export class MatchStarter {
 		private readonly prismaService: PrismaService,
 		private readonly gameRoom: GameRoomService,
 		private readonly gameService: GameService,
-		private readonly redisService: RedisService,
+		//private readonly redisService: RedisService,
 		private readonly friendsService: FriendsService,
+		private readonly eventEmitter: EventEmitter2,
 	){}
+
+	async returnPlayers(roomId: string) {
+		const participants = await this.prismaService.roomUser.findMany({
+			where: {roomId: roomId},
+			select: {
+				user: {
+					select: {
+						id: true, 
+						avatar: true,
+						name: true,
+					},
+				},
+				room: {
+					select: {
+						ownerId: true,
+					},
+				},
+			},
+		});
+		const res = participants.map(({user, room}) => ({
+			...user,
+			isOwner: user.id === room.ownerId,
+		}));
+		return res;
+	}
 
 	async prepareCpuMatch(userId: number, socketId: string) : Promise<Match>{
 		const room = await this.prismaService.gameRoom.create({
@@ -51,11 +70,14 @@ export class MatchStarter {
 			where: {id:room.id},
 			data: { status: RoomStatus.READY}
 		})
-		const players = await this.gameRoom.getPlayerCount(room.id);
+
+		const players = await this.returnPlayers(room.id);
+
 		return {
 			roomId: room.id,
 			roomStatus: ready.status,
-			players:  players,
+			players,
+			timer: null
 		};
 	}
 
@@ -64,15 +86,25 @@ export class MatchStarter {
 			let room = await this.prismaService.gameRoom.findFirst({
 				where: {
 					status: RoomStatus.WAITING,
-					type: RoomType.PUBLIC
+					type: RoomType.PUBLIC,
+					waitTimeout:{
+						gt: new Date(),
+					}
 				},
 			})
 			if (!room){
-				room = await this.gameRoom.createRoom({
-					name: 'Quick Match',
-					maxUsers: 4,
-					type: RoomType.PUBLIC,
-				})
+				const waitTimeout = new Date(Date.now() + EXP_TIME);
+				room = await this.prismaService.gameRoom.create({
+					data: {
+						name: 'Quick Match',
+						type: RoomType.PUBLIC,
+						status: RoomStatus.WAITING,
+						waitTimeout,
+						ownerId: userId,
+					},
+				});
+				const roomId = room.id;
+				setTimeout(() => {void this.finishWaitingTime(roomId)}, EXP_TIME);
 			}
 			let players = await this.gameRoom.getPlayerCount(room.id);
 			if (players >= room.maxUsers){
@@ -82,7 +114,10 @@ export class MatchStarter {
 				})
 				continue ;
 			}
+			if (room.waitTimeout === null || room.waitTimeout <= new Date())
+				continue ;
 			await this.gameRoom.addUserToRoom(room.id, userId, socketId);
+
 			players = await this.gameRoom.getPlayerCount(room.id);
 			let status = room.status;
 			if (players >= room.maxUsers){
@@ -92,36 +127,25 @@ export class MatchStarter {
 				})
 				status = RoomStatus.READY;
 			}
-			
+
+			const participants = await this.returnPlayers(room.id);
+
+			let timer = null;
+			if (room.waitTimeout != null)
+				timer = room.waitTimeout.getTime();
 			return {
 				roomId: room.id,
 				roomStatus: status,
-				players:  players,
-			}
+				players: participants,
+				timer,
+			};
 		}
 		throw new ServiceUnavailableException('Could not find room, try again');
 	}
 	
-	async createFriendsMatch(userId: number, socketId: string, friendId: number): Promise<Match> {
-		console.log("+++++++++++++11111+++++++++++++");
-
-		if (userId === friendId)
-			throw new BadRequestException('You cannot send a request to yourself');
-
-		if (!await this.friendsService.areFriends(userId, friendId))
-			throw new BadRequestException('You can only invite friends');
-		
-		const isOnline = await this.redisService.isOnline(friendId);
-		if (!isOnline)
-			throw new BadRequestException('Your firend isn`t online anymore');
-		console.log("+++++++++++++222222+++++++++++++");
-
-		const activeRoom = await this.gameRoom.findActiveRoomWithUser(friendId);
-		if (activeRoom)
-			throw new BadRequestException('Your friend is already active in another game, retry later');
+	async createFriendsMatch(userId: number, socketId: string): Promise<Match> {
 		
 		const waitTimeout = new Date(Date.now() + EXP_TIME);
-		console.log("+++++++++++++333333+++++++++++++");
 
 		const room = await this.prismaService.gameRoom.create({
 			data: {
@@ -138,28 +162,20 @@ export class MatchStarter {
 				}
 			}
 		});
-		console.log("++++++++++++++++++++++++++");
-
-		//send request to friend (60 sec expiry)
-		await this.redisService.setEx(`match-invite:${room.id}:${friendId}`, 60, JSON.stringify({
-				roomId: room.id,
-				inviterId:userId,
-				friendId,
-				expiresAt: waitTimeout.getTime(),
-			}),
-		);
 		setTimeout(() => {void this.finishWaitingTime(room.id)}, EXP_TIME);
-		
-		const players = await this.gameRoom.getPlayerCount(room.id);
-		console.log("ROOM.IN");
+		this.eventEmitter.emit('friend-match.created', {ownerId: userId, roomId: room.id});
+		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+
+		const players = await this.returnPlayers(room.id);
+
+		let timer = null;
+		if (room.waitTimeout != null)
+			timer = room.waitTimeout.getTime();
 		return {
 			roomId: room.id,
 			roomStatus: room.status,
-			players: players,
-			invitation: {
-				friendId,
-				expiresAt: waitTimeout.getTime(),
-			},
+			players,
+			timer,
 		};
 	}
 	
@@ -198,11 +214,18 @@ export class MatchStarter {
 			})
 			status = RoomStatus.READY;
 		};
+		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		
+		const participants = await this.returnPlayers(room.id);
 
+		let timer = null;
+		if (room.waitTimeout != null)
+			timer = room.waitTimeout.getTime();
 		return {
 			roomId: room.id,
 			roomStatus: status,
-			players: players,
+			players: participants,
+			timer,
 		};
 	}
 
@@ -210,18 +233,23 @@ export class MatchStarter {
 		const room = await this.prismaService.gameRoom.findUnique({
 			where: {id: roomId},
 		})
-		if (!room || room.type !== RoomType.FRIEND || room.status !== RoomStatus.WAITING)
+		if (!room || room.status !== RoomStatus.WAITING)
 			return ;
 		if (room.waitTimeout === null || room.waitTimeout > new Date())
 			return ;
 		const players = await this.gameRoom.getPlayerCount(room.id);
 		if (players <= 1){
-			await this.prismaService.gameRoom.deleteMany({
+			const owner = room.ownerId;
+			const type = room.type;
+			const deleted = await this.prismaService.gameRoom.deleteMany({
 				where: {
 					id: roomId,
 					status: RoomStatus.WAITING,
 				},
 			});
+			if (deleted.count > 0 && owner !== null && type === RoomType.FRIEND)
+				this.eventEmitter.emit('playing-friends.changed', {ownerId: owner});
+		//	console.log ('Room has been deleted as nobody joined')
 			return;
 		}
 		const ready = await this.prismaService.gameRoom.updateMany({
@@ -233,12 +261,29 @@ export class MatchStarter {
 					status: RoomStatus.READY,
 				},
 		});
-		if (ready.count > 0)
+		const participants = await this.returnPlayers(roomId);
+		if (!participants)
+			return;
+		const match: Match = {
+			roomId,
+			timer: null,
+			roomStatus: RoomStatus.READY,
+			players: participants,
+		}
+		this.eventEmitter.emit('match.countdown', {countdown: COUNTDOWN, match: match});
+		await wait(COUNTDOWN * 1000);
+		
+		//console.log ('Room status: ', ready.status)
+		
+		if (ready.count > 0){
+			if (room.ownerId !== null && room.type === RoomType.FRIEND)
+				this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 			await this.startMatch(roomId);
+		}
 	}
 
 	async startMatch(roomId: string){
-		const room = await this.prismaService.gameRoom.updateMany({
+		const updated = await this.prismaService.gameRoom.updateMany({
 			where: {
 				id: roomId,
 				status: RoomStatus.READY,
@@ -247,8 +292,14 @@ export class MatchStarter {
 				status: RoomStatus.PLAYING,
 			},
 		})
-		if (room.count === 0)
+		 
+		if (updated.count === 0)
 			return;
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id: roomId }
+		});
+		if (room && room.ownerId && room.type === RoomType.FRIEND)
+			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 		await this.gameService.startGame(roomId);
 	}
 
@@ -256,11 +307,11 @@ export class MatchStarter {
 		console.log("mode: ", request.mode);
 		console.log("socketId: ", socketId);
 		console.log("userId: ", userId);
-		console.log("requests: ", request);
 
 		const activeRoom = await this.gameRoom.findActiveRoomWithUser(userId);
 		if (activeRoom)
 			throw new BadRequestException('You are already active in another game, retry later');
+		
 
 		switch (request.mode){
 
@@ -270,12 +321,10 @@ export class MatchStarter {
 			case MatchMode.CPU:
 				return (this.prepareCpuMatch(userId, socketId));
 			
-			case MatchMode.FRIEND_INV:
-				if (request.friendId === undefined)
-					throw new BadRequestException('friendId is required')
-				return (this.createFriendsMatch(userId, socketId, request.friendId));
+			case MatchMode.FRIENDS:
+				return (this.createFriendsMatch(userId, socketId));
 	
-			case MatchMode.FRIEND_JOIN:
+			case MatchMode.FRIENDS_JOIN:
 				if (request.roomId === undefined)
 					throw new BadRequestException('roomId is required')
 				return (this.joinFriendsMatch(userId, socketId, request.roomId));

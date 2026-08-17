@@ -9,6 +9,7 @@ import { RedisModule } from 'src/redis/redis.module';
 import { MatchModule } from 'src/matchStarter/matchStarter.module';
 import { TokenModule } from 'src/token/token.module';
 import { SessionModule } from 'src/session/session.module';
+import { FriendsModule } from 'src/friends/friends.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { SessionModule } from 'src/session/session.module';
     RedisModule, 
     MatchModule, 
     TokenModule, 
-    SessionModule
+    SessionModule,
+	FriendsModule
   ],
   providers: [
     SocketGateway, 
