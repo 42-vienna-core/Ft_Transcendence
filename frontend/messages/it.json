@@ -49,6 +49,25 @@
         "have_account": "Hai già un account?",
         "login_link": "Accedi"
     },
+   "Reset": {
+        "title": "Reimposta Password",
+        "expla": "Cambia la password per continuare a giocare",
+        "email": "Email",
+        "newPassword": "Nuova Password",
+        "confirm_password": "Conferma password",
+        "loading": "Caricamento",
+        "no_account": "Nessun Account",
+        "submit": "Invia",
+        "login": "Torna al login",
+        "message": "Successo",
+        "errorForm": "Invio non riuscito",
+        "errorCode": "Invio non riuscito",
+        "resetCode" : {
+            "Reset Code": "Reimposta codice",
+            "placeholder": "Inserisci il codice a 6 cifre",
+            "errorForm": "Verifica non riuscita"
+        }
+    },
     "Validation": {
         "required": "Questo campo è obbligatorio",
         "invalid_email": "Indirizzo e-mail non valido",
@@ -71,6 +90,43 @@
                 "wait_time": "attesa media ~8 s"
             }
         }
+    },
+    "Admin": {
+        "title": "Pannello Admin",
+        "searchPlaceholder": "Cerca per nome o email",
+        "searching": "Ricerca in corso...",
+        "search": "Cerca",
+        "noUsersFound": "Nessun utente trovato.",
+        "viewEdit": "Visualizza/Modifica",
+        "loadingUser": "Caricamento utente...",
+        "edit": "Modifica",
+        "errors": {
+            "forbidden": "Accesso negato",
+            "loadUsersFailed": "Impossibile caricare gli utenti",
+            "loadUserFailed": "Impossibile caricare l'utente"
+        },
+        "form": {
+            "username": "Nome utente",
+            "email": "Email",
+            "newPassword": "Nuova password (lascia vuoto per non modificarla)",
+            "role": "Ruolo",
+            "password" : "La password",
+            "cannotChangeOwnRole": "Non puoi modificare il tuo ruolo",
+            "save": "Salva",
+            "saving": "Salvataggio...",
+            "cancel": "Annulla",
+            "delete": "Elimina",
+            "deleteConfirmText": "Eliminare definitivamente questo utente? Questa azione non può essere annullata.",
+            "yesDelete": "Sì, elimina",
+            "deleting": "Eliminazione...",
+            "no": "No",
+            "errors": {
+                "forbidden": "Accesso negato",
+                "saveFailed": "Impossibile salvare le modifiche",
+                "deleteFailed": "Impossibile eliminare l'utente"
+            }
+        }
     }
+
 
 }

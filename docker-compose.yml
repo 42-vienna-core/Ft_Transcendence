@@ -65,6 +65,10 @@ services:
       AVATARS_URL: ${AVATARS_URL}
       BOT_PASS: ${BOT_PASS}
 
+      # ///// Email ////////// #
+
+      PROJECT_EMAIL: ${PROJECT_EMAIL}
+      EMAIL_PASS: ${EMAIL_PASS}
       # ///// Admin env variables /////
 
       ADMIN_1_USERNAME: ${ADMIN_1_USERNAME}

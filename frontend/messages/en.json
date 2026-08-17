@@ -49,6 +49,25 @@
         "have_account": "Already have an account?",
         "login_link": "Log In"
     },
+    "Reset": {
+        "title": "Reset Password",
+        "expla": "Change password to continue playing",
+        "email": "Email",
+        "newPassword": "New Password",
+        "confirm_password": "Confirm Password",
+        "loading": "Loading",
+        "no_account": "No Account",
+        "submit": "Submit",
+        "login": "Back to login",
+        "message": "Success",
+        "errorForm": "Failed to Submit",
+        "errorCode": "Failed to Send",
+        "resetCode" : {
+            "Reset Code": "Reset Code",
+            "placeholder": "Enter 6-digit code",
+            "errorForm": "Failed to verify"
+        }
+    },
     "Validation": {
         "required": "This field is required",
         "invalid_email": "Invalid email address",
@@ -69,6 +88,42 @@
                 "expl": "Online matchmaking, balanced by rating.",
                 "label": "Find match",
                 "wait_time": "avg. wait ~8 s"
+            }
+        }
+    },
+    "Admin" : {
+        "title": "Admin Panel",
+        "searchPlaceholder": "Search by name or email",
+        "searching": "Searching...",
+        "search": "Search",
+        "noUsersFound": "No users found.",
+        "viewEdit": "View/Edit",
+        "loadingUser": "Loading user...",
+        "edit": "Edit",
+        "errors": {
+            "forbidden": "Forbidden",
+            "loadUsersFailed": "Failed to load users",
+            "loadUserFailed": "Failed to load user"
+        },
+        "form": {
+            "username": "Username",
+            "email": "Email",
+            "newPassword": "New password (leave blank to keep unchanged)",
+            "role": "Role",
+            "password" : "Password",
+            "cannotChangeOwnRole": "You cannot change your own role",
+            "save": "Save",
+            "saving": "Saving...",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "deleteConfirmText": "Delete this user permanently? This cannot be undone.",
+            "yesDelete": "Yes, delete",
+            "deleting": "Deleting...",
+            "no": "No",
+            "errors": {
+                "forbidden": "Forbidden",
+                "saveFailed": "Failed to save changes",
+                "deleteFailed": "Failed to delete user"
             }
         }
     }

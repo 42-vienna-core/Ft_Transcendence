@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Role = "ADMIN" | "PLAYER";
+export type Role = "ADMIN" | "PLAYER" | "BOT";
 
 
 export type ListErrorKey = '' | 'forbidden' | 'loadUsersFailed';
