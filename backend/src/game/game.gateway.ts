@@ -3,14 +3,17 @@ import { Server} from 'socket.io';
 import type { changeDirectionPayload } from "./interfaces/events";
 import { RedisService } from "src/redis/redis.service";
 import { GameState } from './interfaces/game-state';
-import { RoomStatus } from 'prisma/generated';
+import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 
 
 @WebSocketGateway()
 export class GameGateway {
 	@WebSocketServer() server!: Server;
 	
-	constructor(private readonly redisService: RedisService){}
+	constructor(
+		private readonly redisService: RedisService,
+		private readonly gameRoom: GameRoomService,
+	){}
 
 	@SubscribeMessage('change-direction')
 	async handleChangeDirection(@MessageBody() data: changeDirectionPayload,){
@@ -36,9 +39,8 @@ export class GameGateway {
 		this.server.emit('online-users', onlineUsers);
 	}
 
-	async broadcastRoomUpdate(roomId: string, roomStatus: RoomStatus, players: number){
-		this.server.to(roomId).emit('room-update', {
-			roomId, roomStatus, players
-		});
+	async broadcastRoomUpdate(roomId: string){
+		const match = await this.gameRoom.getRoomUpdate(roomId);
+		this.server.to(roomId).emit('room-update', match);
 	}
 }
