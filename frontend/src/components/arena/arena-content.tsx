@@ -7,14 +7,17 @@ import type { Socket } from "socket.io-client";
 import { Loader, UserRound } from "lucide-react";
 import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
-import { ControlType, Direction, Game, GameState, RoomStateType, TICK_MS } from "@/types/gameTypes";
+import { ControlType, Direction, Game, GameState, RoomData, RoomStateType, RoomStatusType, TICK_MS } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
 import { useNotificationListener } from "../store/notification";
+import { useRoomDataBySocket } from "../store/useRoomData";
 
-function normalizeRoomStatus(raw: string | undefined): 'WAITING' | 'READY' | 'UNKNOWN' {
+function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
     if (!raw) return 'UNKNOWN';
     const s = raw.toUpperCase();
-    if (s === 'WAITING' || s === 'PENDING' || s === 'LOBBY') return 'WAITING';
+    // if (s === 'COUNTDOWN') return 'COUNTDOWN';
+    if (s === 'WAITING') return 'WAITING';
+    if (s === 'ABANDONED') return 'ABANDONED';
     if (s === 'READY' || s === 'RUNNING' || s === 'PLAYING' || s === 'STARTED') return 'READY';
     return 'UNKNOWN';
 }
@@ -61,7 +64,7 @@ function ArenaContent() {
     const [ gameState, setGameState ] = useState<GameState | null>(null);
     const [ gameDir, setGameDir ] = useState<Direction | null>(null);
     const [ control, setControl ] = useState<ControlType>('arrow');
-    const [ roomState, setRoomState ] = useState<RoomStateType>();
+    // const [ roomState, setRoomState ] = useState<RoomData | null>(null);
     const [ tick, setTick ] = useState<number>(0);
 
     const { isConnected, socket } = useGameSocket();
@@ -76,44 +79,42 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const {friendId} = useFriendAndRoomID();
+    const {friendId, roomId} = useFriendAndRoomID();
+    const {room, countdown } = useRoomDataBySocket();
+
+    const initCountDown = countdown ? countdown.countdown : 3;
+    const [secondsLeft, setSecondsLeft] = useState(initCountDown);
 
     useEffect(() => {
-        if (!socket || !isConnected) return;
-
-        if (gameMode === null) {
+        if (room === null) {
             router.replace('/');
         } else {
             r.current = true;
         }
 
-        const handleRoomUpdate = (data: RoomStateType) => {
-            setRoomState({ ...data });
+        setSecondsLeft(initCountDown);
+        const interval = setInterval(() => {
+            setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
+
+        return () => {
+            clearInterval(interval);
         };
+    }, [room, countdown]);
+
+    useEffect(() => {
+        if (!socket || !isConnected) return;
 
         const handleGameState = (data: Game) => {
+            console.log("game-state", data);
             setPlayers(data.snakes);
             setTick(data.tick);
         }
 
-        socket.on("room-update", handleRoomUpdate);
         socket.on("game-state", handleGameState);
 
         if (joinedSocketRef.current !== socket) {
             joinedSocketRef.current = socket;
-            const payload = { mode: gameMode};
-
-            if (gameMode === 'FRIEND_INV') {
-                socket.emit("join-match", {...payload, friendId});
-                return;
-            } 
-
-            if (gameMode === 'FRIEND_JOIN') {
-                socket.emit("join-match", {...payload, roomId: id});
-                return;
-            }
-
-            socket.emit("join-match", payload);
         }
 
         const setUpContol = () => {
@@ -126,18 +127,17 @@ function ArenaContent() {
         setUpContol();
 
         return () => {
-            socket.off("room-update", handleRoomUpdate);
             socket.off("game-state", handleGameState);
             resetPlayers();
         };
-    }, [socket, isConnected, gameMode, setPlayers, router]);
+    }, [socket, isConnected, setPlayers, router]);
 
     if (r.current === false) return null;
 
-    const status = normalizeRoomStatus(roomState?.roomStatus);
-    if (roomState && status === 'UNKNOWN') {
+    const status = normalizeRoomStatus(room?.roomStatus);
+    if (room&& status === 'UNKNOWN') {
         console.warn(
-            `Unknown roomStatus "${roomState.roomStatus}" — GameCanvas will not mount. ` +
+            `Unknown roomStatus "${room.roomStatus}" — GameCanvas will not mount. ` +
             `Add it to normalizeRoomStatus().`
         );
     }
@@ -149,9 +149,12 @@ function ArenaContent() {
     const elapsedSeconds = Math.floor((tick * TICK_MS) / 1000);
 
     const maxLenRoomId = 10;
-    const roomName = roomState && roomState.roomId.length > maxLenRoomId ?
-        roomState.roomId.slice(0, maxLenRoomId):
-        roomState?.roomId;
+    const roomName = room && room.roomId.length > maxLenRoomId ?
+        room.roomId.slice(0, maxLenRoomId):
+        room?.roomId;
+
+    // console.log("STATUS: ===>> ", roomStatus);
+    // console.log("secondsLeft: ===>> ",secondsLeft);
 
     return (
         <div className="grid grid-cols-5 w-full">
@@ -180,14 +183,14 @@ function ArenaContent() {
                 </div>
 
                 <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {status === 'WAITING' && (
+                    {room?.roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
-                            <Loader className="w-15 h-15 animate-spin" />
-                            <span>waiting for players…</span>
+                            <span>Game will start after</span>
+                            <h2>{secondsLeft}</h2>
                         </div>
                     )}
 
-                    {status === 'READY' && (
+                    {room?.roomStatus === 'PLAYING' && (
                         <GameCanvas
                             setGameState={setGameState}
                             setGameDir={setGameDir}
@@ -195,16 +198,9 @@ function ArenaContent() {
                         />
                     )}
 
-                    {!roomState && (
-                        <div className="flex flex-col items-center gap-3 text-text-tertiary">
-                            <Loader className="w-15 h-15 animate-spin" />
-                            <span>joining match…</span>
-                        </div>
-                    )}
-
-                    {status === 'UNKNOWN' && roomState && (
+                    {status === 'UNKNOWN' && room && (
                         <div className="text-danger text-sm text-center px-4">
-                            Unexpected room status: <code>{roomState.roomStatus}</code>
+                            Unexpected room status: <code>{room.roomStatus}</code>
                             <br />Add it to <code>normalizeRoomStatus()</code>.
                         </div>
                     )}

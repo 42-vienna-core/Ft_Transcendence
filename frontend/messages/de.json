@@ -49,6 +49,25 @@
         "have_account": "Bereits ein Konto?",
         "login_link": "Anmelden"
     },
+    "Reset": {
+        "title": "Reset Password",
+        "expla": "Change password to continue playing",
+        "email": "Email",
+        "newPassword": "New Password",
+        "confirm_password": "Passwort bestätigen",
+        "loading": "Loading",
+        "no_account": "No Account",
+        "submit": "Submit",
+        "login": "Back to login",
+        "message": "Success",
+        "errorForm": "Failed to Submit",
+        "errorCode": "Failed to Send",
+          "resetCode" :{
+            "Reset Code": "Code zurücksetzen",
+            "placeholder": "6-stelligen Code eingeben",
+            "errorForm": "Überprüfung fehlgeschlagen"
+          }
+    },
     "Validation": {
         "required": "Dieses Feld ist ein Pflichtfeld",
         "invalid_email": "Ungültige E-Mail-Adresse",
@@ -71,6 +90,41 @@
                 "wait_time": "Durchschn. Wartezeit ~8 Sek."
             }
         }
+    },
+     "Admin": {
+                "title": "Admin-Bereich",
+                "searchPlaceholder": "Nach Name oder E-Mail suchen",
+                "searching": "Suche...",
+                "search": "Suchen",
+                "noUsersFound": "Keine Benutzer gefunden.",
+                "viewEdit": "Anzeigen/Bearbeiten",
+                "loadingUser": "Benutzer wird geladen...",
+                "edit": "Bearbeiten",
+                "errors": {
+                    "forbidden": "Zugriff verweigert",
+                    "loadUsersFailed": "Benutzer konnten nicht geladen werden",
+                    "loadUserFailed": "Benutzer konnte nicht geladen werden"
+                },
+                "form": {
+                    "username": "Benutzername",
+                    "email": "E-Mail",
+                    "newPassword": "Neues Passwort (leer lassen, um es beizubehalten)",
+                    "role": "Rolle",
+                    "password" : "Das Passwort",
+                    "cannotChangeOwnRole": "Sie können Ihre eigene Rolle nicht ändern",
+                    "save": "Speichern",
+                    "saving": "Speichern...",
+                    "cancel": "Abbrechen",
+                    "delete": "Löschen",
+                    "deleteConfirmText": "Diesen Benutzer dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",
+                    "yesDelete": "Ja, löschen",
+                    "deleting": "Wird gelöscht...",
+                    "no": "Nein",
+                    "errors": {
+                        "forbidden": "Zugriff verweigert",
+                        "saveFailed": "Änderungen konnten nicht gespeichert werden",
+                        "deleteFailed": "Benutzer konnte nicht gelöscht werden"
+                    }
+                }
     }
-
 }

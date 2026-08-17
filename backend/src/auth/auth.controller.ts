@@ -33,9 +33,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  public async refresh(
-    @Body('refreshToken') refreshToken: string,
-  ) {
+  public async refresh( @Body('refreshToken') refreshToken: string ) {
     console.log("🟡 refresh")
     return this.authService.refresh(refreshToken);
   }
@@ -43,9 +41,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  public async logout(
-    @Authorized('sessionId') sessionId: string,
-  ) {
+  public async logout(@Authorized('sessionId') sessionId: string ) {
     console.log("🟡 logout")
     const count = await this.authService.logout(sessionId);
     return { success: true, count };
@@ -54,9 +50,7 @@ export class AuthController {
   @Post('logout-all')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  public async logoutAll(
-    @Authorized('userId') userId: number,
-  ) {
+  public async logoutAll( @Authorized('userId') userId: number) {
     console.log("🟡 logout-all")
     const count = await this.authService.logoutAll(userId);
     return { success: true, count };
@@ -65,10 +59,7 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   @Authorization()
-  public async changePassword(
-    @Authorized('userId') userId: number,
-    @Body() dto: ChangePasswordDto,
-  ) {
+  public async changePassword( @Authorized('userId') userId: number, @Body() dto: ChangePasswordDto) {
     console.log("🟡 change-password")
     return this.authService.changePassword(userId, dto);
   }

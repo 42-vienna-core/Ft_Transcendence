@@ -49,12 +49,7 @@ export const  usePlayerStore = create<PlayerStoreState>((set) => ({
 export const  useGameMode = create<GameMode>((set) => ({
     gameMode: null,
 
-    setGameMode: (mode) => {
-        set(() => ({
-            gameMode: mode
-        }))
-    },
-
+    setGameMode: (mode) => { set(() => ({ gameMode: mode }))},
     resetMode: () => {set(() => ({gameMode: null}))}
 }));
 

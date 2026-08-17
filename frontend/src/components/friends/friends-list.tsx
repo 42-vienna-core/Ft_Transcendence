@@ -82,7 +82,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     filter === 'Online' &&
                         <button
                             className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
-                            onClick={() => handleGameAction('FRIEND_INV', id)}
+                            onClick={() => handleGameAction('FRIENDS', id)}
                         >
                             invite
                         </button>
@@ -92,7 +92,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     filter === 'Playing' &&
                         <button
                             className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
-                            onClick={() => handleGameAction('FRIEND_JOIN', id)}
+                            onClick={() => handleGameAction('FRIENDS_JOIN', id)}
                         >
                             join
                         </button>
@@ -126,7 +126,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const [ user, setUser ] = useState<Friend | null>(null);
     const { socket, isConnected } = useGameSocket();
     const { setGameMode } = useGameMode();
-    const {setFriendId} = useFriendAndRoomID();
+    const { setFriendId } = useFriendAndRoomID();
     const router = useRouter();
     
     let newFriends: Friend[] = [];
