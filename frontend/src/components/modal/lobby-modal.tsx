@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, Plus, Users, X, LoaderCircle } from "lucide-react";
+import { Bot, Users, X, LoaderCircle } from "lucide-react";
 import ModalLayout from "./modal-layout";
-import { RoomData } from "@/types/gameTypes";
+import { GameModeType, RoomData } from "@/types/gameTypes";
+import { useProfile } from "@/providers/ProfileContext";
 
 interface LobbyModalProps {
     isOpen: boolean;
     roomData: RoomData | null;
     onStartmatch: () => void;
     onClose: () => void;
+    gameMode: GameModeType | null;
 }
 
 const MAX_PLAYERS = 4;
@@ -27,10 +29,10 @@ interface Player {
 function FilledSlot({ player }: { player: Player }) {
     return (
         <div className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-xl border border-border-default bg-bg-subtle p-3">
-            <div className={`grid size-9 place-items-center rounded-full text-sm font-medium capitalize ${player.avatar}`}>
-                {player.name}
+            <div className={`grid size-9 place-items-center rounded-full text-sm font-medium capitalize ${player.avatar || 'bg-slate-700 text-white'}`}>
+                {player.name ? player.name[0] : 'P'}
             </div>
-            <span className="text-xs font-medium capitalize text-text-primary">{player.name}</span>
+            <span className="text-xs font-medium capitalize text-text-primary max-w-full truncate">{player.name}</span>
             {player.isOwner ? (
                 <span className="rounded-full bg-accent-soft px-2 py-px text-[10px] font-medium text-accent-text">
                     host
@@ -58,37 +60,44 @@ export default function LobbyModal({
     onClose,
     roomData,
     onStartmatch,
+    gameMode,
 }: LobbyModalProps) {
+    const { id } = useProfile();
+    const [secondsLeft, setSecondsLeft] = useState<number>(COUNTDOWN_SECONDS);
     
-    const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
     useEffect(() => {
         if (!isOpen || !roomData) return;
 
-        const current_time: number = Date.now();
-   
-        const timer  =  Math.floor((roomData.timer - current_time) / 1000)
-        console.log(timer);
-       
-        setSecondsLeft(timer);
-        const interval = setInterval(() => {
-            setSecondsLeft(prev => (prev <= 1 ? 0 : prev - 1));
-        }, 1000);
+        const serverEndTime = roomData.timer || (Date.now() + COUNTDOWN_SECONDS * 1000);
+        
+        let interval: NodeJS.Timeout;
+
+        const updateTimer = () => {
+            const now = Date.now();
+            const diff = Math.max(0, Math.ceil((serverEndTime - now) / 1000));
+            setSecondsLeft(diff);
+
+            if (diff <= 0) {
+                clearInterval(interval);
+                onStartmatch();
+            }
+        };
+
+        updateTimer(); 
+        interval = setInterval(updateTimer, 1000);
 
         return () => clearInterval(interval);
-    }, [isOpen, roomData]);
+    }, [isOpen, roomData?.timer, onStartmatch]);
 
-    useEffect(() => {
-        if (isOpen && secondsLeft === 0) {
-            onStartmatch();
-        }
-    }, [isOpen, secondsLeft, onStartmatch]);
+    if (!isOpen || !roomData || !gameMode) return null;
 
-    if (!isOpen || !roomData) return null;
-
-    const players = roomData.players ? roomData.players: [];
+    const players = roomData.players ? roomData.players : [];
     const emptySlots = Array.from({ length: Math.max(MAX_PLAYERS - players.length, 0) });
+    
     const progress = secondsLeft / COUNTDOWN_SECONDS;
     const dashoffset = CIRCUMFERENCE * (1 - progress);
+
+    const isHost = roomData.players?.some(player => player.id === id && player.isOwner);
 
     return (
         <ModalLayout>
@@ -160,13 +169,18 @@ export default function LobbyModal({
 
             {/* start / cancel */}
             <div className="mt-5 flex gap-2.5">
-                <button
-                    type="button"
-                    className="flex-1 cursor-pointer rounded-lg bg-accent py-2.5 text-sm font-medium text-text-inverse transition-colors duration-150 hover:bg-accent-hover"
-                    onClick={onStartmatch}
-                >
-                    Start now
-                </button>
+                <div className="flex-1">
+                    {isHost && gameMode === 'FRIENDS' && (
+                        <button
+                            type="button"
+                            className="w-full cursor-pointer rounded-lg bg-accent py-2.5 text-sm font-medium text-text-inverse transition-colors duration-150 hover:bg-accent-hover"
+                            onClick={onStartmatch}
+                        >
+                            Start now
+                        </button>
+                    )}
+                </div>
+                
                 <button
                     type="button"
                     className="cursor-pointer rounded-lg border border-border-default px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"

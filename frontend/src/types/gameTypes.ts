@@ -62,7 +62,7 @@ export interface Friend {
 export interface RoomData{
     roomId: string;
     roomStatus: RoomStatusType;
-    timer: number; //in seconds
+    timer: number;
     players: [{
       id: number;
       name: string;
@@ -79,6 +79,15 @@ export interface FriendRequestData {
         avatar?: string | null;
         isOnline: boolean;
         score: number;
+    };
+}
+
+export interface GameRequestData {
+    roomId: string;
+    inviter: {
+        id: number;
+        name: string;
+        avatar?: string | null;
     };
 }
 

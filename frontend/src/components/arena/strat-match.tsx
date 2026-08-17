@@ -9,6 +9,7 @@ import { GameModeType, RoomData } from "@/types/gameTypes";
 import LobbyModal from "../modal/lobby-modal";
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useRoomDataBySocket } from "../store/useRoomData";
+import { useProfile } from "@/providers/ProfileContext";
 
 interface MachCard {
     id: GameModeType;
@@ -117,17 +118,17 @@ function MatchList({
 
 function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
-    const [loadingMode, setLoadingMode] = useState<GameModeType | null>(null);
+    const [gameMode, setGameMode] = useState<GameModeType | null>(null);
     const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(false);
     const {socket} = useGameSocket();
     const {roomData, clearGameData} = useRoomDataBySocket();
-    const {setGameMode} = useGameMode();
+    // const {setGameMode} = useGameMode();
     const t = useTranslations("Start_game");
 
     const router = useRouter();
 
     const handleModalClose = () => {
-        setLoadingMode(null);
+        setGameMode(null);
         setLoading(false);
         setIsLobbyOpen(false);
     }
@@ -136,7 +137,7 @@ function StartMatch () {
         if (!socket) return;
         
         setLoading(true);
-        setLoadingMode(mode);
+        setGameMode(mode);
         console.log("MODE: ", mode);
 
         // await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -178,7 +179,7 @@ function StartMatch () {
                </div>
                <MatchList
                    loading={loading}
-                   loadingMode={loadingMode}
+                   loadingMode={gameMode}
                    handleRoomLobby={handleRoomLobby}
                />
             </div>
@@ -187,6 +188,7 @@ function StartMatch () {
                 onClose={handleModalClose}
                 onStartmatch={handleStartMatch}
                 roomData={roomData}
+                gameMode={gameMode}
             />
         </>
        
