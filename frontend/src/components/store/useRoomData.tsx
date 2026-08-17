@@ -1,4 +1,4 @@
-import { RoomData } from '@/types/gameTypes';
+import { RoomData, RoomStatusType } from '@/types/gameTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
@@ -10,6 +10,7 @@ interface CountdownData{
 interface GameDataState {
     roomData: RoomData | null;
     countdownData: CountdownData | null;
+    roomStatus: RoomStatusType;
     clearGameData: () => void;
     openRoomListener: (socket: Socket | null) => void;
 }
@@ -17,22 +18,27 @@ interface GameDataState {
 export const useRoomDataBySocket = create<GameDataState>((set) => ({
     roomData: null,
     countdownData: null,
+    roomStatus: null,
 
     openRoomListener: (socket) => {
         if (!socket) return;
 
-        socket.off('lobby-update');
+        // socket.off('lobby-update');
         socket.off('countdown');
         socket.off('room-update');
 
 
-        socket.on("room-update", (date) => console.log("ROOM_UPDATE",date) );
+        // socket.on("room-update", (data: RoomData) => {
+        //     console.log("ROOM_UPDATE",data);
+        //     set(() => ({roomStatus: data.roomStatus}))
+        // });
 
 
-        socket.on('lobby-update', (data: RoomData) => {
+        socket.on('room-update', (data: RoomData) => {
             console.log("UPDATING LOBBY: ", data);
             set((state) => ({
-                roomData: state.roomData ? { ...state.roomData, ...data } : data
+                roomData: state.roomData ? { ...state.roomData, ...data } : data,
+                roomStatus: data.roomStatus
             }));
         });
 

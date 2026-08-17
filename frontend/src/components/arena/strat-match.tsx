@@ -156,10 +156,11 @@ function StartMatch () {
     }
 
     const handleStartMatch = () => {
-        if (!roomData ||roomData.roomStatus === 'ABANDONED') {
-            handleModalClose();
-            return;
-        }
+        // if (!roomData ||roomData.roomStatus === 'ABANDONED') {
+        //     return;
+        // }
+
+        // handleModalClose();
 
         console.log("Start match");
         console.log("Send 'LOBBY' status");

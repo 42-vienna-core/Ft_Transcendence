@@ -5,6 +5,7 @@ import { Bot, Users, X, LoaderCircle } from "lucide-react";
 import ModalLayout from "./modal-layout";
 import { GameModeType, RoomData } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
+import { useRoomDataBySocket } from "../store/useRoomData";
 
 interface LobbyModalProps {
     isOpen: boolean;
@@ -15,7 +16,7 @@ interface LobbyModalProps {
 }
 
 const MAX_PLAYERS = 4;
-const COUNTDOWN_SECONDS = 20;
+const TIMEOUT_SECONDS = 20;
 const RADIUS = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -63,12 +64,13 @@ export default function LobbyModal({
     gameMode,
 }: LobbyModalProps) {
     const { id } = useProfile();
-    const [secondsLeft, setSecondsLeft] = useState<number>(COUNTDOWN_SECONDS);
+    const [secondsLeft, setSecondsLeft] = useState<number>(TIMEOUT_SECONDS);
+    const {roomStatus} = useRoomDataBySocket();
     
     useEffect(() => {
         if (!isOpen || !roomData) return;
 
-        const serverEndTime = roomData.timer || (Date.now() + COUNTDOWN_SECONDS * 1000);
+        const serverEndTime = roomData.timer || (Date.now() + TIMEOUT_SECONDS * 1000);
         
         let interval: NodeJS.Timeout;
 
@@ -77,7 +79,8 @@ export default function LobbyModal({
             const diff = Math.max(0, Math.ceil((serverEndTime - now) / 1000));
             setSecondsLeft(diff);
 
-            if (diff <= 0) {
+            console.log(diff);
+            if (diff <= 1 || roomStatus === 'READY') {
                 clearInterval(interval);
                 onStartmatch();
             }
@@ -94,7 +97,7 @@ export default function LobbyModal({
     const players = roomData.players ? roomData.players : [];
     const emptySlots = Array.from({ length: Math.max(MAX_PLAYERS - players.length, 0) });
     
-    const progress = secondsLeft / COUNTDOWN_SECONDS;
+    const progress = secondsLeft / TIMEOUT_SECONDS;
     const dashoffset = CIRCUMFERENCE * (1 - progress);
 
     const isHost = roomData.players?.some(player => player.id === id && player.isOwner);

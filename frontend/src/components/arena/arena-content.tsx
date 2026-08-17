@@ -80,7 +80,7 @@ function ArenaContent() {
     const r = useRef<boolean>(false);
     const { id } = useProfile();
     const {friendId, roomId} = useFriendAndRoomID();
-    const {roomData: roomState, countdownData, clearGameData} = useRoomDataBySocket();
+    const {roomData: roomState, countdownData, roomStatus} = useRoomDataBySocket();
 
     const initCountDown = countdownData ? countdownData.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
@@ -101,7 +101,7 @@ function ArenaContent() {
             clearInterval(interval);
             // clearGameData();
         };
-    }, [roomState]);
+    }, [roomState, countdownData]);
 
     useEffect(() => {
         if (!socket || !isConnected) return;
@@ -131,7 +131,7 @@ function ArenaContent() {
             socket.off("game-state", handleGameState);
             resetPlayers();
         };
-    }, [socket, isConnected, setPlayers, router]);
+    }, [socket, isConnected, setPlayers, router, roomStatus]);
 
     if (r.current === false) return null;
 
@@ -154,7 +154,7 @@ function ArenaContent() {
         roomState.roomId.slice(0, maxLenRoomId):
         roomState?.roomId;
 
-    console.log("STATUS: ===>> ",roomState?.roomStatus);
+    console.log("STATUS: ===>> ", roomStatus);
     // console.log("secondsLeft: ===>> ",secondsLeft);
 
     return (
@@ -184,14 +184,14 @@ function ArenaContent() {
                 </div>
 
                 <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {secondsLeft > 0 && (
+                    {roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <span>Game will start after</span>
                             <h2>{secondsLeft}</h2>
                         </div>
                     )}
 
-                    {status === 'READY' && secondsLeft === 0 && (
+                    {roomStatus === 'PLAYING' && (
                         <GameCanvas
                             setGameState={setGameState}
                             setGameDir={setGameDir}
