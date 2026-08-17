@@ -13,7 +13,7 @@ import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Match } from 'src/gameRoom/interfaces/room-update.interface';
+import type { Match } from 'src/gameRoom/interfaces/room-update.interface';
 //import { time } from 'node:console';
 
 const COUNTDOWN = 3; // seconds
@@ -68,13 +68,20 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.redisService.removeOnline(client.data.userId, client.data.sessionId);
 
     const roomUser = await this.roomService.findBySocketId(client.id);
-    if (!client.data.roomId || !roomUser) return;
+    if (!roomUser)
+		return;
+	if (roomUser.room.status === RoomStatus.ABANDONED)
+		return;
+	if (roomUser.userId === roomUser.room.ownerId){
+		const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
+		if (abandoned)
+			return ;
+	}
+    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
 
-    await this.roomService.removeUserFromRoom(client.data.roomId, client.data.user.id);
+	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 
-	const match = await this.roomService.getRoomUpdate(client.data.roomId);
-
-	this.server.to(client.data.roomId).emit('room-update', match);
+	this.server.to(roomUser.roomId).emit('room-update', match);
    } catch (error) {
     console.log('handleDisconnect: error while cleaning up client', error instanceof Error ? error.message : error);
    }
@@ -126,10 +133,26 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('leave-room')
   async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto) {
-    await client.leave(data.roomId);
-    await this.roomService.removeUserFromRoom(data.roomId, client.data.user.id);
-   	const match = await this.roomService.getRoomUpdate(data.roomId);
-	this.server.to(data.roomId).emit('room-update', match);
+	const roomUser = await this.roomService.findBySocketId(client.id);
+	if (roomUser === null)
+		return { success: false };
+	if (data.roomId !== roomUser.roomId)
+		return { success: false };
+	if (roomUser.room.status === RoomStatus.ABANDONED){
+		await client.leave(roomUser.roomId);
+		return { success: true };
+	}
+	if (roomUser.userId === roomUser.room.ownerId){
+		const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
+		if (abandoned){
+			await client.leave(roomUser.roomId);
+		    return { success: true };
+		}
+	}
+    await client.leave(roomUser.roomId);
+    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
+	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
+	this.server.to(roomUser.roomId).emit('room-update', match);
 
     return { success: true };
   }
@@ -164,6 +187,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		countdown: event.countdown, 
 		roomId: event.match.roomId
   	});
+  }
+
+  @OnEvent('match.abandoned')
+  handleAbandonedMatch(event: {match: Match}){
+	this.server.to(event.match.roomId).emit('room-update', event.match);
   }
 
   @SubscribeMessage('get-playing-friends')
