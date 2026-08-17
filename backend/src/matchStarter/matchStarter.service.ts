@@ -8,22 +8,10 @@ import { GameService } from "src/game/game.service";
 import { FriendsService } from "src/friends/friends.service";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { setTimeout as wait } from 'node:timers/promises';
+import { Match } from "src/gameRoom/interfaces/room-update.interface";
 
 const EXP_TIME = 20_000;
 const COUNTDOWN = 3; // seconds
-
-export interface Match{
-	roomId: string;
-	roomStatus: RoomStatus;
-	timer: number | null;
-	players: {
-		id: number;
-		name: string;
-		avatar: string | null;
-		isOwner: boolean;
-	}[] | null;
-}
-
 
 @Injectable()
 export class MatchStarter {
@@ -83,10 +71,12 @@ export class MatchStarter {
 			data: { status: RoomStatus.READY}
 		})
 
+		const players = await this.returnPlayers(room.id);
+
 		return {
 			roomId: room.id,
 			roomStatus: ready.status,
-			players: null,
+			players,
 			timer: null
 		};
 	}

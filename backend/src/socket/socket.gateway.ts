@@ -3,7 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { AddUserGameRoomDto } from '../gameRoom/dto/addUser-gameRoom.dto';
 import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
-import { Match, MatchStarter } from '../matchStarter/matchStarter.service';
+import { MatchStarter } from '../matchStarter/matchStarter.service';
 import { MatchRequestDto } from '../matchStarter/dto/match.dto';
 import { RoomStatus } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
@@ -13,6 +13,7 @@ import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Match } from 'src/gameRoom/interfaces/room-update.interface';
 //import { time } from 'node:console';
 
 const COUNTDOWN = 3; // seconds
@@ -70,12 +71,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client.data.roomId || !roomUser) return;
 
     await this.roomService.removeUserFromRoom(client.data.roomId, client.data.user.id);
-    const players = await this.roomService.getPlayerCount(roomUser.roomId);
-    this.server.to(client.data.roomId).emit('room-update', {
-      roomId: roomUser.roomId,
-      roomStatus: client.data.roomStatus,
-      players,
-    });
+
+	const match = await this.roomService.getRoomUpdate(client.data.roomId);
+
+	this.server.to(client.data.roomId).emit('room-update', match);
    } catch (error) {
     console.log('handleDisconnect: error while cleaning up client', error instanceof Error ? error.message : error);
    }
@@ -109,18 +108,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
 
-		this.server.to(client.data.roomId).emit('lobby-update', {
+		this.server.to(client.data.roomId).emit('room-update', {
 			roomId: match.roomId,
 			roomStatus: match.roomStatus,
 			players: match.players,
 			timer: match.timer,
 		})
-		
-		this.server.to(client.data.roomId).emit('room-update', {
-			roomId: match.roomId,
-			roomStatus: match.roomStatus,
-			players: match.players?.length,
-		});
+
 		if (match.roomStatus === RoomStatus.READY){
 			this.server.to(client.data.roomId).emit('countdown', {roomId: match.roomId, countdown: COUNTDOWN});
 			await wait(COUNTDOWN * 1000);
@@ -133,13 +127,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('leave-room')
   async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody() data: AddUserGameRoomDto) {
     await client.leave(data.roomId);
-    await this.roomService.removeUserFromRoom(data.roomId, data.userId);
-    const players = await this.roomService.getPlayerCount(data.roomId);
-    this.server.to(data.roomId).emit('room-update', {
-      roomId: data.roomId,
-      players,
-    });
-    return { success: true, players };
+    await this.roomService.removeUserFromRoom(data.roomId, client.data.user.id);
+   	const match = await this.roomService.getRoomUpdate(data.roomId);
+	this.server.to(data.roomId).emit('room-update', match);
+
+    return { success: true };
   }
 
   @OnEvent('playing-friends.changed')
@@ -167,8 +159,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @OnEvent('match.countdown')
   handleMatchCountdown(event: {countdown: number, match: Match}){
-	this.server.to(event.match.roomId).emit('lobby-update', event.match);
-	this.server.to(event.match.roomId).emit('countdown', event.countdown, event.match.roomId);
+	this.server.to(event.match.roomId).emit('room-update', event.match);
+	this.server.to(event.match.roomId).emit('countdown', {
+		countdown: event.countdown, 
+		roomId: event.match.roomId
+  	});
   }
 
   @SubscribeMessage('get-playing-friends')

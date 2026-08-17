@@ -373,7 +373,7 @@ export class GameService {
 			username: roomUser.user.name,
 			color: roomUser.user.color,
 		}));
-		this.gameGateway.broadcastRoomUpdate(roomId, RoomStatus.PLAYING, users.length);
+		await this.gameGateway.broadcastRoomUpdate(roomId);
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);

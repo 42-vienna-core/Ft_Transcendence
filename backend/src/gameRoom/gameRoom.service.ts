@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGameRoomDto } from './dto/create-gameRoom.dto';
 import { CreatePrivateGameRoom } from './dto/create-private-gameRoom.dto';
 import { RoomStatus } from "@prisma/client";
+import { Match } from './interfaces/room-update.interface';
+
 
 @Injectable()
 export class GameRoomService {
@@ -129,4 +131,41 @@ export class GameRoomService {
 		},
 	});
   }
+
+  async getRoomUpdate(roomId: string) : Promise<Match>{
+	const room = await this.db.gameRoom.findUnique({
+		where: {id: roomId},
+	});
+	if (!room)
+		throw new BadRequestException('Room not found');
+
+	const participants = await this.db.roomUser.findMany({
+		where: {roomId: roomId},
+		select: {
+			user: {
+				select: {
+					id: true, 
+					avatar: true,
+					name: true,
+				},
+			},
+			room: {
+				select: {
+					ownerId: true,
+				},
+			},
+		},
+	});
+
+	return {
+		roomId,
+		roomStatus: room.status,
+		timer: room.waitTimeout?.getTime() ?? null,
+		players: participants.map(({user, room}) => ({
+			...user,
+			isOwner: user.id === room.ownerId,
+		})),
+	};
+  }
+
 }
