@@ -271,7 +271,16 @@ export class MatchStarter {
 					status: RoomStatus.READY,
 				},
 		});
-		this.eventEmitter.emit('match.countdown', {roomId: roomId, countdown: COUNTDOWN});
+		const participants = await this.returnPlayers(roomId);
+		if (!participants)
+			return;
+		const match: Match = {
+			roomId,
+			timer: null,
+			roomStatus: RoomStatus.READY,
+			players: participants,
+		}
+		this.eventEmitter.emit('match.countdown', {countdown: COUNTDOWN, match: match});
 		await wait(COUNTDOWN * 1000);
 		
 		//console.log ('Room status: ', ready.status)

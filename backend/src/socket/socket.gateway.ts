@@ -3,7 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { AddUserGameRoomDto } from '../gameRoom/dto/addUser-gameRoom.dto';
 import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
-import { MatchStarter } from '../matchStarter/matchStarter.service';
+import { Match, MatchStarter } from '../matchStarter/matchStarter.service';
 import { MatchRequestDto } from '../matchStarter/dto/match.dto';
 import { RoomStatus } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
@@ -166,8 +166,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @OnEvent('match.countdown')
-  handleMatchCountdown(event: {roomId: string, countdown: number}){
-	this.server.to(event.roomId).emit('countdown', event);
+  handleMatchCountdown(event: {countdown: number, match: Match}){
+	this.server.to(event.match.roomId).emit('lobby-update', event.match);
+	this.server.to(event.match.roomId).emit('countdown', event.countdown, event.match.roomId);
   }
 
   @SubscribeMessage('get-playing-friends')
