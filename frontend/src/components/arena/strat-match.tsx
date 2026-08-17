@@ -121,8 +121,7 @@ function StartMatch () {
     const [gameMode, setGameMode] = useState<GameModeType | null>(null);
     const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(false);
     const {socket} = useGameSocket();
-    const {roomData, clearGameData} = useRoomDataBySocket();
-    // const {setGameMode} = useGameMode();
+    const {room, clearGameData} = useRoomDataBySocket();
     const t = useTranslations("Start_game");
 
     const router = useRouter();
@@ -131,6 +130,7 @@ function StartMatch () {
         setGameMode(null);
         setLoading(false);
         setIsLobbyOpen(false);
+        // clearGameData();
     }
 
     const handleRoomLobby = async (mode: GameModeType) => {
@@ -143,9 +143,7 @@ function StartMatch () {
         // await new Promise((resolve) => setTimeout(resolve, 1000));
 
         socket.emit('join-match', {mode});
-        // setGameMode(mode)
         if (mode === 'CPU') {
-            // setGameMode(mode);
             router.push("/arena");
             router.refresh();
             return;
@@ -156,17 +154,7 @@ function StartMatch () {
     }
 
     const handleStartMatch = () => {
-        // if (!roomData ||roomData.roomStatus === 'ABANDONED') {
-        //     return;
-        // }
-
-        // handleModalClose();
-
         console.log("Start match");
-        console.log("Send 'LOBBY' status");
-
-        // setGameMode('RUNNING')
-        //star the game and go into the arena page
 
         router.push("/arena");
         router.refresh();
@@ -188,7 +176,7 @@ function StartMatch () {
                 isOpen={isLobbyOpen}
                 onClose={handleModalClose}
                 onStartmatch={handleStartMatch}
-                roomData={roomData}
+                room={room}
                 gameMode={gameMode}
             />
         </>

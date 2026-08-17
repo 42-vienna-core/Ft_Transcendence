@@ -5,11 +5,10 @@ import { Bot, Users, X, LoaderCircle } from "lucide-react";
 import ModalLayout from "./modal-layout";
 import { GameModeType, RoomData } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
-import { useRoomDataBySocket } from "../store/useRoomData";
 
 interface LobbyModalProps {
     isOpen: boolean;
-    roomData: RoomData | null;
+    room: RoomData | null;
     onStartmatch: () => void;
     onClose: () => void;
     gameMode: GameModeType | null;
@@ -59,48 +58,54 @@ function EmptySlot() {
 export default function LobbyModal({
     isOpen,
     onClose,
-    roomData,
+    room,
     onStartmatch,
     gameMode,
 }: LobbyModalProps) {
     const { id } = useProfile();
     const [secondsLeft, setSecondsLeft] = useState<number>(TIMEOUT_SECONDS);
-    const {roomStatus} = useRoomDataBySocket();
+    const [isStarting, setIsStarting] = useState(false);
+
+useEffect(() => {
+    if (!isOpen || !room || isStarting) return;
+
+        if (room.roomStatus === 'READY') {
+            onStartmatch();
+            return;
+        }
+
+    const serverEndTime = room.timer || (Date.now() + TIMEOUT_SECONDS * 1000);
     
-    useEffect(() => {
-        if (!isOpen || !roomData) return;
+    let interval: NodeJS.Timeout;
 
-        const serverEndTime = roomData.timer || (Date.now() + TIMEOUT_SECONDS * 1000);
-        
-        let interval: NodeJS.Timeout;
+    const updateTimer = () => {
+        const now = Date.now();
+        const diff = Math.max(0, Math.ceil((serverEndTime - now) / 1000));
+        setSecondsLeft(diff);
 
-        const updateTimer = () => {
-            const now = Date.now();
-            const diff = Math.max(0, Math.ceil((serverEndTime - now) / 1000));
-            setSecondsLeft(diff);
+        if (diff <= 0) {
+            clearInterval(interval);
+            setIsStarting(true);
+            onStartmatch();
+        }
+    };
 
-            console.log(diff);
-            if (diff <= 1 || roomStatus === 'READY') {
-                clearInterval(interval);
-                onStartmatch();
-            }
-        };
+    updateTimer(); 
+    interval = setInterval(updateTimer, 1000);
 
-        updateTimer(); 
-        interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+}, [isOpen, room?.timer, room?.roomStatus, onStartmatch, isStarting]); 
 
-        return () => clearInterval(interval);
-    }, [isOpen, roomData?.timer, onStartmatch]);
 
-    if (!isOpen || !roomData || !gameMode) return null;
+    if (!isOpen || !room || !gameMode) return null;
 
-    const players = roomData.players ? roomData.players : [];
+    const players = room.players ? room.players : [];
     const emptySlots = Array.from({ length: Math.max(MAX_PLAYERS - players.length, 0) });
     
     const progress = secondsLeft / TIMEOUT_SECONDS;
     const dashoffset = CIRCUMFERENCE * (1 - progress);
 
-    const isHost = roomData.players?.some(player => player.id === id && player.isOwner);
+    const isHost = room.players?.some(player => player.id === id && player.isOwner);
 
     return (
         <ModalLayout>
@@ -173,7 +178,7 @@ export default function LobbyModal({
             {/* start / cancel */}
             <div className="mt-5 flex gap-2.5">
                 <div className="flex-1">
-                    {isHost && gameMode === 'FRIENDS' && (
+                    {/* {isHost && gameMode === 'FRIENDS' && (
                         <button
                             type="button"
                             className="w-full cursor-pointer rounded-lg bg-accent py-2.5 text-sm font-medium text-text-inverse transition-colors duration-150 hover:bg-accent-hover"
@@ -181,7 +186,7 @@ export default function LobbyModal({
                         >
                             Start now
                         </button>
-                    )}
+                    )} */}
                 </div>
                 
                 <button

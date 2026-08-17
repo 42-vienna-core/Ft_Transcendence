@@ -2,7 +2,7 @@ export type ControlType = 'arrow' | 'WASD' | 'arrow + WASD';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 export type GameState = 'START' | 'WIN' | 'OVER' | null;
 export type GameModeType = 'QUICK' | 'FRIENDS' | 'FRIENDS_JOIN' | 'CPU' | null;
-export type RoomStatusType = 'WAITING' | 'READY' | 'COUNTDOWN' | 'PLAYING' |'RUNNING' | 'FINISHED' | 'ABANDONED' | null;
+export type RoomStatusType = 'WAITING' | 'READY' | 'PLAYING' | 'FINISHED' | 'ABANDONED' | null;
 
 // Server tick duration in milliseconds — shared so the match clock (arena-content)
 // stays in sync with the animation interpolation step (game-canvas).
@@ -43,7 +43,7 @@ export interface Game {
     roomId: string;
     snakes: Snake[];
     food: Food[];
-    status: 'waiting' | 'running' | 'finished';
+    status: RoomStatusType;
     tick: number;
     gridWidth: number;
     gridHeight: number;
@@ -59,7 +59,7 @@ export interface Friend {
     score: number;
 }
 
-export interface RoomData{
+export interface RoomData {
     roomId: string;
     roomStatus: RoomStatusType;
     timer: number;

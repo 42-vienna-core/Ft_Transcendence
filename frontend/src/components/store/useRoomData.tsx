@@ -8,54 +8,43 @@ interface CountdownData{
 }
 
 interface GameDataState {
-    roomData: RoomData | null;
-    countdownData: CountdownData | null;
-    roomStatus: RoomStatusType;
+    room: RoomData | null;
+    countdown: CountdownData | null;
     clearGameData: () => void;
     openRoomListener: (socket: Socket | null) => void;
 }
 
 export const useRoomDataBySocket = create<GameDataState>((set) => ({
-    roomData: null,
-    countdownData: null,
-    roomStatus: null,
+    room: null,
+    countdown: null,
 
     openRoomListener: (socket) => {
         if (!socket) return;
 
-        // socket.off('lobby-update');
         socket.off('countdown');
         socket.off('room-update');
 
-
-        // socket.on("room-update", (data: RoomData) => {
-        //     console.log("ROOM_UPDATE",data);
-        //     set(() => ({roomStatus: data.roomStatus}))
-        // });
-
-
         socket.on('room-update', (data: RoomData) => {
-            console.log("UPDATING LOBBY: ", data);
+            console.log("room-update: ", data);
             set((state) => ({
-                roomData: state.roomData ? { ...state.roomData, ...data } : data,
-                roomStatus: data.roomStatus
+                room: state.room ? { ...state.room, ...data } : data,
             }));
         });
 
-        socket.on('countdown', (countdownData: CountdownData) => {
-            console.log("COUNTDOWN: ", countdownData);
+        socket.on('countdown', (countdown: CountdownData) => {
+            console.log("COUNTDOWN: ", countdown);
 
             set((state) => {
-                if (state.roomData && state.roomData.roomId !== countdownData.roomId)
-                    return { countdownData: null };
+                if (state.room && state.room.roomId !== countdown.roomId)
+                    return { countdown: null };
                 return {
-                    countdownData: state.countdownData ? 
-                    { ...state.countdownData,  ...countdownData}: 
-                    countdownData
+                    countdown: state.countdown ? 
+                    { ...state.countdown,  ...countdown } :
+                    countdown
                 }
             });
         });
     },
 
-    clearGameData: () => set({ roomData: null, countdownData: null })
+    clearGameData: () => set({ room: null, countdown: null })
 }));

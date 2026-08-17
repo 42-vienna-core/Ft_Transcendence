@@ -15,7 +15,7 @@ import { useRoomDataBySocket } from "../store/useRoomData";
 function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
     if (!raw) return 'UNKNOWN';
     const s = raw.toUpperCase();
-    if (s === 'COUNTDOWN') return 'COUNTDOWN';
+    // if (s === 'COUNTDOWN') return 'COUNTDOWN';
     if (s === 'WAITING') return 'WAITING';
     if (s === 'ABANDONED') return 'ABANDONED';
     if (s === 'READY' || s === 'RUNNING' || s === 'PLAYING' || s === 'STARTED') return 'READY';
@@ -80,13 +80,13 @@ function ArenaContent() {
     const r = useRef<boolean>(false);
     const { id } = useProfile();
     const {friendId, roomId} = useFriendAndRoomID();
-    const {roomData: roomState, countdownData, roomStatus} = useRoomDataBySocket();
+    const {room, countdown } = useRoomDataBySocket();
 
-    const initCountDown = countdownData ? countdownData.countdown : 3;
+    const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
 
     useEffect(() => {
-        if (roomState === null) {
+        if (room === null) {
             router.replace('/');
         } else {
             r.current = true;
@@ -99,9 +99,8 @@ function ArenaContent() {
 
         return () => {
             clearInterval(interval);
-            // clearGameData();
         };
-    }, [roomState, countdownData]);
+    }, [room, countdown]);
 
     useEffect(() => {
         if (!socket || !isConnected) return;
@@ -131,14 +130,14 @@ function ArenaContent() {
             socket.off("game-state", handleGameState);
             resetPlayers();
         };
-    }, [socket, isConnected, setPlayers, router, roomStatus]);
+    }, [socket, isConnected, setPlayers, router]);
 
     if (r.current === false) return null;
 
-    const status = normalizeRoomStatus(roomState?.roomStatus);
-    if (roomState && status === 'UNKNOWN') {
+    const status = normalizeRoomStatus(room?.roomStatus);
+    if (room&& status === 'UNKNOWN') {
         console.warn(
-            `Unknown roomStatus "${roomState.roomStatus}" — GameCanvas will not mount. ` +
+            `Unknown roomStatus "${room.roomStatus}" — GameCanvas will not mount. ` +
             `Add it to normalizeRoomStatus().`
         );
     }
@@ -150,11 +149,11 @@ function ArenaContent() {
     const elapsedSeconds = Math.floor((tick * TICK_MS) / 1000);
 
     const maxLenRoomId = 10;
-    const roomName = roomState && roomState.roomId.length > maxLenRoomId ?
-        roomState.roomId.slice(0, maxLenRoomId):
-        roomState?.roomId;
+    const roomName = room && room.roomId.length > maxLenRoomId ?
+        room.roomId.slice(0, maxLenRoomId):
+        room?.roomId;
 
-    console.log("STATUS: ===>> ", roomStatus);
+    // console.log("STATUS: ===>> ", roomStatus);
     // console.log("secondsLeft: ===>> ",secondsLeft);
 
     return (
@@ -184,14 +183,14 @@ function ArenaContent() {
                 </div>
 
                 <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {roomStatus === 'READY' && (
+                    {room?.roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <span>Game will start after</span>
                             <h2>{secondsLeft}</h2>
                         </div>
                     )}
 
-                    {roomStatus === 'PLAYING' && (
+                    {room?.roomStatus === 'PLAYING' && (
                         <GameCanvas
                             setGameState={setGameState}
                             setGameDir={setGameDir}
@@ -199,9 +198,9 @@ function ArenaContent() {
                         />
                     )}
 
-                    {status === 'UNKNOWN' && roomState && (
+                    {status === 'UNKNOWN' && room && (
                         <div className="text-danger text-sm text-center px-4">
-                            Unexpected room status: <code>{roomState.roomStatus}</code>
+                            Unexpected room status: <code>{room.roomStatus}</code>
                             <br />Add it to <code>normalizeRoomStatus()</code>.
                         </div>
                     )}
