@@ -291,6 +291,7 @@ export class MatchStarter {
 		await this.redisService.deleteGameState(roomId);
 		const match = await this.gameRoom.getRoomUpdate(roomId);
 		this.eventEmitter.emit('match.abandoned', {match: match});
+		await this.gameRoom.removeAllUsersFromRoom(roomId);
 		const updated = await this.prismaService.gameRoom.findUnique({
 			where: {id: roomId},
 			select: {

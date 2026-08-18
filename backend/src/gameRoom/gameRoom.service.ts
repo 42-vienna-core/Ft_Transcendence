@@ -180,4 +180,10 @@ export class GameRoomService {
 	};
   }
 
+  async removeAllUsersFromRoom(roomId: string){
+	return this.db.roomUser.deleteMany({
+		where: {roomId},
+	});
+  }
+
 }
