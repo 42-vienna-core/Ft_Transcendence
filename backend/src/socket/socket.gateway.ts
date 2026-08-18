@@ -171,6 +171,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
   }
 
+  @OnEvent('friend-match.status')
+  async broadcastFriendMatchStatus(event: {ownerId: number, roomId: string, status: RoomStatus}){
+	const friends = await this.friendsService.getFriends(event.ownerId);
+	for (const friend of friends){
+		this.server.to(`user:${friend.id}`).emit('friend-match-status', {
+			roomId: event.roomId,
+			status: event.status,
+		});
+	}
+  }
+
   @OnEvent('match.countdown')
   handleMatchCountdown(event: {countdown: number, match: Match}){
 	this.server.to(event.match.roomId).emit('room-update', event.match);

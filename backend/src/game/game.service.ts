@@ -325,8 +325,10 @@ export class GameService {
 			}
 		});
 		
-		if (room && room.type === RoomType.FRIEND && room.ownerId !== null)
+		if (room && room.type === RoomType.FRIEND && room.ownerId !== null){
+			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: game.roomId, status: RoomStatus.FINISHED});
 			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		}
 
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')

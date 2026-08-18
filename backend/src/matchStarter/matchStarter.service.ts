@@ -214,6 +214,7 @@ export class MatchStarter {
 				data: { status: RoomStatus.READY}
 			})
 			status = RoomStatus.READY;
+			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: room.id, status});
 		};
 		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 		
@@ -244,17 +245,19 @@ export class MatchStarter {
 			return;
 		}
 		const ready = await this.prismaService.gameRoom.updateMany({
-				where: {
-					id: roomId,
-					status: RoomStatus.WAITING,
-				},
-				data: {
-					status: RoomStatus.READY,
-				},
+			where: {
+				id: roomId,
+				status: RoomStatus.WAITING,
+			},
+			data: {
+				status: RoomStatus.READY,
+			},
+
 		});
 		if (ready.count === 0)
 			return ;
-
+		if (room.ownerId && room.type === RoomType.FRIEND)
+			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: room.id ,status: RoomStatus.READY});
 		const participants = await this.returnPlayers(roomId);
 		if (!participants)
 			return;
@@ -295,15 +298,19 @@ export class MatchStarter {
 		const updated = await this.prismaService.gameRoom.findUnique({
 			where: {id: roomId},
 			select: {
+				id: true,
 				ownerId: true,
 				type: true,
+				status: true,
 			}
 		})
 		if (updated !== null){
 			const owner = updated.ownerId;
 			const type = updated.type;
-			if (owner != null && type === RoomType.FRIEND)
+			if (owner != null && type === RoomType.FRIEND){
+				this.eventEmitter.emit('friend-match.status', {ownerId: updated.ownerId, roomId: updated.id ,status: updated.status});
 				this.eventEmitter.emit('playing-friends.changed', {ownerId: owner});
+			}
 		}
 		return true;
 	}
@@ -318,14 +325,15 @@ export class MatchStarter {
 				status: RoomStatus.PLAYING,
 			},
 		})
-		 
 		if (updated.count === 0)
 			return;
 		const room = await this.prismaService.gameRoom.findUnique({
 			where: { id: roomId }
 		});
-		if (room && room.ownerId && room.type === RoomType.FRIEND)
+		if (room && room.ownerId && room.type === RoomType.FRIEND){
+			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: room.id, status: RoomStatus.PLAYING});
 			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		}
 		await this.gameService.startGame(roomId);
 	}
 
