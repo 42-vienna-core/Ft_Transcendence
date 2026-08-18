@@ -70,46 +70,46 @@ function FriendRuquestItem({
     );
 }
 
-function GameRuquestItem({
-    gameRequest: { roomId, inviter }, 
-    makeDecision
-}: GameRequestItemProps ) {
-    const {name, avatar} = inviter;
-    const av = name && typeof name === "string" ? name.slice(0, 2) : "";
-    const isAvatar = !!avatar;
+// function GameRuquestItem({
+//     gameRequest: { roomId, inviter }, 
+//     makeDecision
+// }: GameRequestItemProps ) {
+//     const {name, avatar} = inviter;
+//     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
+//     const isAvatar = !!avatar;
 
-    return (
-        <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
-            <div>
-                { isAvatar ? (
-                    <img className="size-[26px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
-                ) : (
-                    <div className="flex size-[26px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
-                        {av}
-                    </div>
-                )}
-            </div>
-            <div className="min-w-0">
-                <p className="text-base font-medium">{name}</p>
-                <OnlineStateItem isOnline={true}/>
-            </div>
-            <div className="flex gap-1">
-                <button
-                    className="flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-success-soft text-base text-success-text"
-                    onClick={() => makeDecision(roomId, true, true)}
-                >
-                    join
-                </button>
-                <button
-                    className="flex cursor-pointer items-center justify-center rounded-md border border-border-default text-base text-text-secondary transition-colors duration-150 hover:border-danger hover:text-danger"
-                    onClick={() => makeDecision(roomId, false, true)}
-                >
-                    cancel
-                </button>
-            </div>
-        </li>
-    );
-}
+//     return (
+//         <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
+//             <div>
+//                 { isAvatar ? (
+//                     <img className="size-[26px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
+//                 ) : (
+//                     <div className="flex size-[26px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
+//                         {av}
+//                     </div>
+//                 )}
+//             </div>
+//             <div className="min-w-0">
+//                 <p className="text-base font-medium">{name}</p>
+//                 <OnlineStateItem isOnline={true}/>
+//             </div>
+//             <div className="flex gap-1">
+//                 <button
+//                     className="flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-success-soft text-base text-success-text"
+//                     onClick={() => makeDecision(roomId, true, true)}
+//                 >
+//                     join
+//                 </button>
+//                 <button
+//                     className="flex cursor-pointer items-center justify-center rounded-md border border-border-default text-base text-text-secondary transition-colors duration-150 hover:border-danger hover:text-danger"
+//                     onClick={() => makeDecision(roomId, false, true)}
+//                 >
+//                     cancel
+//                 </button>
+//             </div>
+//         </li>
+//     );
+// }
 
 function RequestList({ requests, gameRequests, makeDecision }: RequestListProps) {
 
@@ -125,7 +125,7 @@ function RequestList({ requests, gameRequests, makeDecision }: RequestListProps)
                     )
                 )
             }
-            {
+            {/* {
                 gameRequests.length > 0 &&
                     gameRequests.map(request => (
                         <GameRuquestItem
@@ -134,7 +134,7 @@ function RequestList({ requests, gameRequests, makeDecision }: RequestListProps)
                             makeDecision={makeDecision} />
                     )
                 )
-            }
+            } */}
         </ul>
     );
 }

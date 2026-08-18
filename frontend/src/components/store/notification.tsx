@@ -25,7 +25,7 @@ export const useNotificationListener = create<NotificationState>((set) => ({
         socket.on('friend-match-invite', (data: GameRequestData) => {
             console.log("REQUESTED FRIENDS: ",data);
             set((state) => {
-                const updatedGameRequests = [...state.gameRequests, data]; 
+                const updatedGameRequests = [...state.gameRequests, data];
                 return {
                     gameRequests: updatedGameRequests,
                     notificationNumber: updatedGameRequests.length + state.friendRequests.length

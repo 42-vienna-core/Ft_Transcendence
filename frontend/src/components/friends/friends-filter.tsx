@@ -44,7 +44,7 @@ export function SharedBtn({
     );
 }
 
-function FriendsBar() {
+function FriendsFilter() {
     const [allFriends, setAllFriends] = useState<Friend[]>([]);
     const [requestsArr, setRequestsArr] = useState<Requests[]>([]);
     const [activeFilter, setActiveFilter] = useState<ActiveFilterType>('All');
@@ -98,7 +98,7 @@ function FriendsBar() {
     const removeRequestCard = (id: string) => {
         setRequestsArr(prev => prev.filter(r => r.id !== id));
     }
-    console.log(allFriends);
+    // console.log(allFriends);
     const friendsAll = allFriends.length;
     const friensOnline = allFriends.filter(item => item.isOnline).length;
     const labels = [{'All': friendsAll}, {'Online': friensOnline}, {'Playing': 1}];
@@ -151,4 +151,4 @@ function FriendsBar() {
     )
 }
 
-export default FriendsBar;
+export default FriendsFilter;

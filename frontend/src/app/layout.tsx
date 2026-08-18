@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { bungee, inter } from "../ui/font";
 import { Providers } from "@/providers/providers";
 import "./globals.css"
+import GlobalLobbyManager from "@/components/LobbyManager";
 
 export const metadata: Metadata = {
     title: "Snake Multiplayer",
@@ -28,6 +29,7 @@ export default function rootLayout({
                         enableSystem
                     >
                         {children}
+                        <GlobalLobbyManager />
                     </ThemeProvider>
                 </Providers> 
             </body>
