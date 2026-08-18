@@ -120,6 +120,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return (JSON.parse(data));
   }
 
+  async deleteGameState(gameId: string){
+	await this.del(`game:${gameId}:state`);
+  }
+
   async set(key: string, value: string) {
     await this.client.set(key, value);
   }

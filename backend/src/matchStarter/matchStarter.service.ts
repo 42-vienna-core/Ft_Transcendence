@@ -4,11 +4,12 @@ import { GameRoomService } from "src/gameRoom/gameRoom.service";
 import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { MatchMode, MatchRequestDto } from "./dto/match.dto";
 import { GameService } from "src/game/game.service";
-//import { RedisService } from "src/redis/redis.service";
+import { RedisService } from "src/redis/redis.service";
 import { FriendsService } from "src/friends/friends.service";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { setTimeout as wait } from 'node:timers/promises';
 import { Match } from "src/gameRoom/interfaces/room-update.interface";
+
 
 const EXP_TIME = 20_000;
 const COUNTDOWN = 3; // seconds
@@ -20,7 +21,7 @@ export class MatchStarter {
 		private readonly prismaService: PrismaService,
 		private readonly gameRoom: GameRoomService,
 		private readonly gameService: GameService,
-		//private readonly redisService: RedisService,
+		private readonly redisService: RedisService,
 		private readonly friendsService: FriendsService,
 		private readonly eventEmitter: EventEmitter2,
 	){}
@@ -239,17 +240,7 @@ export class MatchStarter {
 			return ;
 		const players = await this.gameRoom.getPlayerCount(room.id);
 		if (players <= 1){
-			const owner = room.ownerId;
-			const type = room.type;
-			const deleted = await this.prismaService.gameRoom.deleteMany({
-				where: {
-					id: roomId,
-					status: RoomStatus.WAITING,
-				},
-			});
-			if (deleted.count > 0 && owner !== null && type === RoomType.FRIEND)
-				this.eventEmitter.emit('playing-friends.changed', {ownerId: owner});
-		//	console.log ('Room has been deleted as nobody joined')
+			await this.updateAbandonedRoom(room.id);
 			return;
 		}
 		const ready = await this.prismaService.gameRoom.updateMany({
@@ -261,6 +252,9 @@ export class MatchStarter {
 					status: RoomStatus.READY,
 				},
 		});
+		if (ready.count === 0)
+			return ;
+
 		const participants = await this.returnPlayers(roomId);
 		if (!participants)
 			return;
@@ -272,14 +266,45 @@ export class MatchStarter {
 		}
 		this.eventEmitter.emit('match.countdown', {countdown: COUNTDOWN, match: match});
 		await wait(COUNTDOWN * 1000);
-		
-		//console.log ('Room status: ', ready.status)
-		
-		if (ready.count > 0){
-			if (room.ownerId !== null && room.type === RoomType.FRIEND)
-				this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
-			await this.startMatch(roomId);
+		await this.startMatch(roomId);
+	}
+
+
+	async updateAbandonedRoom(roomId: string) : Promise<boolean>{
+		const room = await this.prismaService.gameRoom.updateMany({
+			where: {
+				id: roomId,
+				status: {
+					in: [
+						RoomStatus.WAITING,
+						RoomStatus.PLAYING,
+						RoomStatus.READY,
+					],
+				},
+			},
+				data: {
+					status: RoomStatus.ABANDONED,
+				},
+		});
+		if (room.count === 0)
+			return false;
+		await this.redisService.deleteGameState(roomId);
+		const match = await this.gameRoom.getRoomUpdate(roomId);
+		this.eventEmitter.emit('match.abandoned', {match: match});
+		const updated = await this.prismaService.gameRoom.findUnique({
+			where: {id: roomId},
+			select: {
+				ownerId: true,
+				type: true,
+			}
+		})
+		if (updated !== null){
+			const owner = updated.ownerId;
+			const type = updated.type;
+			if (owner != null && type === RoomType.FRIEND)
+				this.eventEmitter.emit('playing-friends.changed', {ownerId: owner});
 		}
+		return true;
 	}
 
 	async startMatch(roomId: string){
