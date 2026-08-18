@@ -165,12 +165,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @OnEvent('friend-match.created')
-  async handleNewfriendMatch(event: { ownerId: number, roomId: string }){
+  async handleNewfriendMatch(event: { ownerId: number, roomId: string, status: RoomStatus }){
 	const owner = await this.userService.getUser(event.ownerId);
 	const friends = await this.friendsService.getFriends(event.ownerId);
 	for (const friend of friends){
 		this.server.to(`user:${friend.id}`).emit('friend-match-invite', {
 			roomId: event.roomId,
+			status: event.status,
 			inviter: {
 				id: owner.id,
 				name: owner.name,

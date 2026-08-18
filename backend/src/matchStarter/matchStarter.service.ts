@@ -164,7 +164,7 @@ export class MatchStarter {
 			}
 		});
 		setTimeout(() => {void this.finishWaitingTime(room.id)}, EXP_TIME);
-		this.eventEmitter.emit('friend-match.created', {ownerId: userId, roomId: room.id});
+		this.eventEmitter.emit('friend-match.created', {ownerId: userId, roomId: room.id, status: room.status});
 		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
 
 		const players = await this.returnPlayers(room.id);
