@@ -2,6 +2,11 @@ import { FriendRequestData, GameRequestData } from '@/types/gameTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand'
 
+interface FrindMatchStatus{
+    roomId: string;
+    status: 'ABANDONED' | 'FINISHED';
+}
+
 interface NotificationState {
     notificationNumber: number;
     gameRequests: GameRequestData[];
@@ -21,9 +26,33 @@ export const useNotificationListener = create<NotificationState>((set) => ({
 
         socket.off('friend-match-invite');
         socket.off('friend-request-received');
+        socket.off('friend-match-status');
+        
+        socket.on('friend-match-status', (data: FrindMatchStatus) => {
+            console.log("friend-match-status", data);
+            set((state) => {
+
+                if (data.status === 'ABANDONED' || data.status === 'FINISHED') {
+                    console.log("oldState: ",state.gameRequests);
+
+                    const newState = state.gameRequests.filter((it) => it.roomId !== data.roomId);
+                    console.log("newState: ",newState);
+                    
+                    return {
+                        gameRequests: newState,
+                        notificationNumber: newState.length
+                    }
+                } else {
+                    return {
+                        gameRequests: state.gameRequests,
+                        notificationNumber: state.gameRequests.length
+                    };
+                }
+            })
+        });
 
         socket.on('friend-match-invite', (data: GameRequestData) => {
-            console.log("REQUESTED FRIENDS: ",data);
+            console.log("friend-match-invite: ",data);
             set((state) => {
                 const updatedGameRequests = [...state.gameRequests, data];
                 return {
@@ -34,6 +63,8 @@ export const useNotificationListener = create<NotificationState>((set) => ({
         });
 
         socket.on('friend-request-received', (data: FriendRequestData) => {
+            console.log("friend-request-received: ", data);
+
             set((state) => {
                 const updatedFriendRequests = [...state.friendRequests, data];
                 return {

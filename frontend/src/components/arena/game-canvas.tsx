@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useGameControls } from "@/hooks/useGameControls";
 import { ControlType, Direction, Game, GameState, TICK_MS } from "@/types/gameTypes";
+import { useRoomDataBySocket } from "../store/useRoomData";
 
 const CELL = 20;
 const STEP = TICK_MS / 1000;
@@ -23,7 +24,7 @@ interface FitCanvasProps {
 
 interface GameProps {
     control: ControlType;
-    setGameState: Dispatch<SetStateAction<GameState>>;
+    // setGameState: Dispatch<SetStateAction<GameState>>;
     setGameDir: (state: Direction) => void;
 }
 
@@ -42,10 +43,10 @@ const lerp = (start: number, end: number, alpha: number): number => {
     return start + (end - start) * alpha;
 };
 
-export default function GameCanvas({control, setGameState, setGameDir }: GameProps) {
+export default function GameCanvas({control, setGameDir }: GameProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-    const gameStateRef = useRef<GameState>('START');
+    // const gameStateRef = useRef<GameState>('START');
     const currentDirection = useRef<Direction>('RIGHT');
     const bgMusicRef = useRef<HTMLAudioElement | null>(null);
     const gameoverSound = useRef<HTMLAudioElement | null>(null);
@@ -57,7 +58,9 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
 
     const { id } = useProfile();
     const router = useRouter();
-    const { resetMode} = useGameMode();
+    // const { resetMode} = useGameMode();
+    const {setGameStatus, gameStatus} = useRoomDataBySocket();
+
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
@@ -69,6 +72,9 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const screenRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
 
     useEffect(() => {
+
+        setGameStatus('START');
+
         const soundFlagLs = localStorage.getItem('soundtrack');
         if (soundFlagLs) {
             const parsedSoundFlag = JSON.parse(soundFlagLs)
@@ -91,11 +97,13 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         return () => {
             bgMusicRef.current?.pause();
             gameoverSound.current?.pause();
+            gameoverSecondSound.current?.pause();
             winSound.current?.pause();
             eatSound.current?.pause();
             eatSound.current = null;
             bgMusicRef.current = null;
             gameoverSound.current = null;
+            gameoverSecondSound.current = null;
             winSound.current = null;
         }
     },[])
@@ -115,9 +123,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         }
     }
 
-    const isEnded = () =>
-        gameStateRef.current === 'OVER' ||
-        gameStateRef.current === 'WIN' 
+    const isEnded = () => gameStatus === 'OVER' || gameStatus === 'WIN';
 
     const handleDirectionChange = (newDirection: Direction) => {
         const current = currentDirection.current;
@@ -139,11 +145,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         }
     };
 
-    const onEscPress = () => {
-        handleRestart('OVER');
-    }
-
-    useGameControls(control, handleDirectionChange, onEscPress);
+    useGameControls(control, handleDirectionChange, () => setGameStatus('OVER'));
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -170,8 +172,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             if (data.status === 'finished') {
                 const won = String(data.winnerId) === String(id);
 
-                gameStateRef.current = won ? 'WIN' : 'OVER';
-                setGameState(won ? 'WIN' : 'OVER');
+                setGameStatus(won ? 'WIN' : 'OVER');
 
                 if (won) {
                     playSoundEffect('win');
@@ -184,7 +185,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         };
 
         socket.on("game-state", handleGameState);
-        setGameState('START');
 
         let rafId: number;
 
@@ -217,7 +217,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             resizeObserver.disconnect();
             socket.off("game-state", handleGameState);
         };
-    }, [socket, isConnected, id, setGameState, setGameDir]);
+    }, [socket, isConnected, id, setGameStatus, setGameDir]);
 
     function advanceSnake(socket: Socket, dir: Direction) {
         const room = currRef.current?.roomId;
@@ -225,17 +225,6 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         socket.emit('change-direction', { direction: dir, roomId: room, userId: id });
     }
 
-    function handleRestart(state: GameState) {
-        const room = currRef.current?.roomId;
-        if (socket && room) {
-            socket.emit("leave-room", { roomId: room });
-        }
-        gameStateRef.current = state;
-        setGameState(state);
-        resetMode();
-        router.push('/');
-        router.refresh();
-    }
 
     function draw() {
         const ctx = ctxRef.current;
@@ -442,29 +431,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         ctx.restore();
     }
 
-    const showOver = gameStateRef.current === 'OVER' ;
-    const showWin = gameStateRef.current === 'WIN';
-
     return (
-        <div style={{ position: 'relative' }}>
-            <canvas ref={canvasRef} className="rounded-xl" />
-
-            {(showOver || showWin) && (
-                <div
-                    style={{ position: 'absolute', inset: 0 }}
-                    className="flex flex-col items-center justify-center bg-bg-overlay rounded-xl"
-                >
-                    <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
-                        {showWin ? 'You Win!' : 'Game Over'}
-                    </h2>
-                    <button
-                        onClick={() => handleRestart(gameStateRef.current)}
-                        className="cursor-pointer rounded-lg bg-accent px-4 py-2 font-semibold text-text-inverse transition-colors duration-200 hover:bg-accent-hover active:bg-accent-active"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            )}
-        </div>
+        <canvas ref={canvasRef} className="rounded-xl" />
     );
 }

@@ -3,7 +3,7 @@ export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | null;
 export type GameState = 'START' | 'WIN' | 'OVER' | null;
 export type GameModeType = 'QUICK' | 'FRIENDS' | 'FRIENDS_JOIN' | 'CPU' | null;
 export type RoomStatusType = 'WAITING' | 'READY' | 'PLAYING' | 'FINISHED' | 'ABANDONED' | null;
-
+export type GameStatusType  = 'running' | 'finished' | null;
 // Server tick duration in milliseconds — shared so the match clock (arena-content)
 // stays in sync with the animation interpolation step (game-canvas).
 export const TICK_MS = 150;
@@ -43,7 +43,7 @@ export interface Game {
     roomId: string;
     snakes: Snake[];
     food: Food[];
-    status: RoomStatusType;
+    status: GameStatusType;
     tick: number;
     gridWidth: number;
     gridHeight: number;

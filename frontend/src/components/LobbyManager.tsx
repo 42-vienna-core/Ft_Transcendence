@@ -3,19 +3,24 @@
 import { useRouter } from 'next/navigation';
 import LobbyModal from './modal/lobby-modal';
 import { useRoomDataBySocket } from './store/useRoomData';
+import { useGameSocket } from '@/providers/SocketProvider';
 
 export default function GlobalLobbyManager() {
     const router = useRouter();
+    const {socket} = useGameSocket();
     
-    const { isLobbyOpen, room, gameMode, setIsLobbyOpen, clearGameData } = useRoomDataBySocket();
+    const { isLobbyOpen, room, gameMode, clearGameData } = useRoomDataBySocket();
 
     const handleStartMatch = () => {
-        setIsLobbyOpen(false);
         router.push("/arena");
         router.refresh();
     };
 
-    const handleCloseLobby = () => {
+    const handleCloseLobby = (roomId: string) => {
+        if (!socket || !roomId) return;
+
+        console.log(roomId);
+        socket.emit('leave-room', {roomId});
         clearGameData();
     };
 

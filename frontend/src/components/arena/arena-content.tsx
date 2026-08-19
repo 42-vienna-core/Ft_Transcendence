@@ -12,15 +12,15 @@ import { useProfile } from "@/providers/ProfileContext";
 import { useNotificationListener } from "../store/notification";
 import { useRoomDataBySocket } from "../store/useRoomData";
 
-function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
-    if (!raw) return 'UNKNOWN';
-    const s = raw.toUpperCase();
-    // if (s === 'COUNTDOWN') return 'COUNTDOWN';
-    if (s === 'WAITING') return 'WAITING';
-    if (s === 'ABANDONED') return 'ABANDONED';
-    if (s === 'READY' || s === 'RUNNING' || s === 'PLAYING' || s === 'STARTED') return 'READY';
-    return 'UNKNOWN';
-}
+// function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
+//     if (!raw) return 'UNKNOWN';
+//     const s = raw.toUpperCase();
+//     if (s === 'WAITING') return 'WAITING';
+//     if (s === 'ABANDONED') return 'ABANDONED';
+//     if (s === 'FINISHED') return 'FINISHED';
+//     if (s === 'READY' || s === 'RUNNING' || s === 'PLAYING' || s === 'STARTED') return 'READY';
+//     return 'UNKNOWN';
+// }
 
 export function getOrdinal(num: number): string {
   const j = num % 10;
@@ -61,14 +61,12 @@ function Kbd({ children, active, activeClass = "text-accent-text" }: { children:
 }
 
 function ArenaContent() {
-    const [ gameState, setGameState ] = useState<GameState | null>(null);
+    // const [ gameState, setGameState ] = useState<GameState | null>(null);
     const [ gameDir, setGameDir ] = useState<Direction | null>(null);
     const [ control, setControl ] = useState<ControlType>('arrow');
-    // const [ roomState, setRoomState ] = useState<RoomData | null>(null);
     const [ tick, setTick ] = useState<number>(0);
 
     const { isConnected, socket } = useGameSocket();
-    const { gameMode } = useGameMode();
     const router = useRouter();
 
 
@@ -79,18 +77,19 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const {friendId, roomId} = useFriendAndRoomID();
-    const {room, countdown } = useRoomDataBySocket();
+    const {room, countdown, setIsLobbyOpen, roomStatus, gameStatus, clearStatus} = useRoomDataBySocket();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
 
     useEffect(() => {
-        if (room === null) {
+        if (!(gameStatus || roomStatus)) {
             router.replace('/');
         } else {
             r.current = true;
         }
+
+        setIsLobbyOpen(false);
 
         setSecondsLeft(initCountDown);
         const interval = setInterval(() => {
@@ -134,13 +133,13 @@ function ArenaContent() {
 
     if (r.current === false) return null;
 
-    const status = normalizeRoomStatus(room?.roomStatus);
-    if (room&& status === 'UNKNOWN') {
-        console.warn(
-            `Unknown roomStatus "${room.roomStatus}" — GameCanvas will not mount. ` +
-            `Add it to normalizeRoomStatus().`
-        );
+    function handleRestart() {
+        clearStatus();
+        router.push('/');
+        router.refresh();
     }
+
+    const status = roomStatus;
 
     const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
     const myScore = players.find(it => it.id === id)?.score ?? 0;
@@ -153,8 +152,8 @@ function ArenaContent() {
         room.roomId.slice(0, maxLenRoomId):
         room?.roomId;
 
-    // console.log("STATUS: ===>> ", roomStatus);
-    // console.log("secondsLeft: ===>> ",secondsLeft);
+    const showOver = gameStatus=== 'OVER' ;
+    const showWin = gameStatus === 'WIN';
 
     return (
         <div className="grid grid-cols-5 w-full">
@@ -183,32 +182,44 @@ function ArenaContent() {
                 </div>
 
                 <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {room?.roomStatus === 'READY' && (
+                    {status === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <span>Game will start after</span>
                             <h2>{secondsLeft}</h2>
                         </div>
                     )}
 
-                    {room?.roomStatus === 'PLAYING' && (
-                        <GameCanvas
-                            setGameState={setGameState}
-                            setGameDir={setGameDir}
-                            control={control}
-                        />
-                    )}
-
-                    {status === 'UNKNOWN' && room && (
-                        <div className="text-danger text-sm text-center px-4">
-                            Unexpected room status: <code>{room.roomStatus}</code>
-                            <br />Add it to <code>normalizeRoomStatus()</code>.
-                        </div>
-                    )}
+                    <div style={{ position: 'relative' }}>
+                        {
+                            (status === 'PLAYING' || status === 'running')  && (
+                                <GameCanvas
+                                    setGameDir={setGameDir}
+                                    control={control}
+                                />
+                        )}
+                        
+                        {(showOver || showWin) && (
+                            <div
+                                style={{ position: 'absolute', inset: 0 }}
+                                className="flex flex-col items-center justify-center bg-bg-overlay rounded-xl"
+                            >
+                                <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
+                                    {showWin ? 'You Win!' : 'Game Over'}
+                                </h2>
+                                <button
+                                    onClick={handleRestart}
+                                    className="cursor-pointer rounded-lg bg-accent px-4 py-2 font-semibold text-text-inverse transition-colors duration-200 hover:bg-accent-hover active:bg-accent-active"
+                                >
+                                    Try Again
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between py-4">
                     <div className="flex gap-1.5">
-                        <Kbd active={gameState === 'START'}>move</Kbd>
+                        <Kbd active={gameStatus === 'START'}>move</Kbd>
                         <Kbd active={gameDir === 'LEFT'} activeClass="text-warning-text">←</Kbd>
                         <Kbd active={gameDir === 'UP'} activeClass="text-warning-text">↑</Kbd>
                         <Kbd active={gameDir === 'DOWN'} activeClass="text-warning-text">↓</Kbd>

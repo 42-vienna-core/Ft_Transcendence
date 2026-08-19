@@ -6,9 +6,7 @@ import { UserRoundX } from 'lucide-react';
 import DialogModal from '../modal/dialog-modal';
 import { OnlineStateItem } from '@/ui/online-tracker';
 import { useGameSocket } from '@/providers/SocketProvider';
-import { Friend, GameModeType, RoomStatusType } from '@/types/gameTypes';
-import { useFriendAndRoomID, useGameMode } from '../store/useUserStore';
-import { useRouter } from "next/navigation";
+import { Friend } from '@/types/gameTypes';
 import { useRoomDataBySocket } from '../store/useRoomData';
 import { useNotificationListener } from '../store/notification';
 
@@ -28,7 +26,6 @@ interface ListOfFriendsProps {
 
 type ActiveFilterType = 'All' | 'Online' | 'Playing';
 
-
 interface FriendsContentProps {
     friends: Friend[];
     filter: ActiveFilterType;
@@ -39,22 +36,16 @@ const rowActionBtn =
     "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium text-text-secondary transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
-    // const {room} = useRoomDataBySocket();
     const { gameRequests } = useNotificationListener();
     
     const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
     const isAvatar =  !!avatar;
 
-    // console.log("room: ", room);
-    // console.log("gameRequests: ", gameRequests);
-
-    // const filtredRoom = gameRequests?.filter((it) => (room && it.roomId === room.roomId));
     const filtredInviter = gameRequests?.filter((it) => it.inviter.id === id); 
     const isHost = filtredInviter && filtredInviter.length > 0;
     const roomId = isHost ? filtredInviter[0].roomId : "";
 
-    // console.log("filtredRoom: ", filtredRoom, "filtredInviter: ",filtredInviter ,"isHost: ",isHost, "status: ",status);
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
@@ -79,7 +70,6 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     <span>In public match · Room 47 · 3rd of 8</span>
                     <span className="text-text-disabled">·</span>
                     <span className="font-medium text-text-primary">{score}</span>
-                    {/* <span className="text-xs text-success">▲42 wk</span> */}
                 </div>
             </div>
             <div className="ml-auto flex min-w-[76px] flex-col items-stretch gap-1">
@@ -139,11 +129,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const [ isOpen, setIsOpen ] = useState<boolean>(false);
     const [ user, setUser ] = useState<Friend | null>(null);
     const { socket, isConnected } = useGameSocket();
-    // const { setGameMode } = useGameMode();
-    // const { setFriendId } = useFriendAndRoomID();
-    const {gameMode, setIsLobbyOpen, setGameMode} = useRoomDataBySocket();
-    
-    const router = useRouter();
+    const { setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
     
     let newFriends: Friend[] = [];
 
@@ -179,13 +165,11 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const handleGameAction = async (roomId: string) => {
         if (!socket || !isConnected) return;
 
-        setGameMode('FRIENDS_JOIN');
-        // setFriendId(id);
+        clearStatus();
 
         socket.emit('join-match', {mode: 'FRIENDS_JOIN', roomId});
 
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
-
+        setGameMode('FRIENDS_JOIN');
         setIsLobbyOpen(true);
     }
 

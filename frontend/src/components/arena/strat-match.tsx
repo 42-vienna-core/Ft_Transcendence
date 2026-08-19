@@ -10,6 +10,7 @@ import LobbyModal from "../modal/lobby-modal";
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useProfile } from "@/providers/ProfileContext";
+import { useSession } from "next-auth/react";
 
 interface MachCard {
     id: GameModeType;
@@ -117,21 +118,23 @@ function MatchList({
 }
 
 function StartMatch () {
+    const session = useSession();
     const [loading, setLoading] = useState<boolean>(false);
     const {socket} = useGameSocket();
-    const {gameMode, setIsLobbyOpen, setGameMode} = useRoomDataBySocket();
+    const router = useRouter();
+    const {gameMode, setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
     const t = useTranslations("Start_game");
 
-    const router = useRouter();
-
     const handleGameMode = async (mode: GameModeType) => {
+        if (session.status === "unauthenticated") {
+            window.location.href = "/arena"; 
+        }
+
         if (!socket) return;
-        console.log("MODE: ", mode);
         
         setLoading(true);
         setGameMode(mode);
-
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
+        clearStatus();
 
         socket.emit('join-match', {mode});
 
