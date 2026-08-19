@@ -19,7 +19,7 @@ export default function GlobalLobbyManager() {
     const handleCloseLobby = (roomId: string) => {
         if (!socket || !roomId) return;
 
-        console.log(roomId);
+        console.log("emit('leave-room', {roomId:",roomId, "}");
         socket.emit('leave-room', {roomId});
         clearGameData();
     };

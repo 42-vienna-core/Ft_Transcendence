@@ -77,7 +77,7 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const {room, countdown, setIsLobbyOpen, roomStatus, gameStatus, clearStatus} = useRoomDataBySocket();
+    const {room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen} = useRoomDataBySocket();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
@@ -89,8 +89,6 @@ function ArenaContent() {
             r.current = true;
         }
 
-        setIsLobbyOpen(false);
-
         setSecondsLeft(initCountDown);
         const interval = setInterval(() => {
             setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
@@ -98,6 +96,7 @@ function ArenaContent() {
 
         return () => {
             clearInterval(interval);
+            setIsLobbyOpen(false);
         };
     }, [room, countdown]);
 
