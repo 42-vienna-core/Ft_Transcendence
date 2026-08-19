@@ -9,6 +9,7 @@ import { useGameMode } from "@/components/store/useUserStore";
 import { useGameControls } from "@/hooks/useGameControls";
 import { ControlType, Direction, Game, GameState, TICK_MS } from "@/types/gameTypes";
 import { useRoomDataBySocket } from "../store/useRoomData";
+import { useAudioStore } from "../store/useAudioStore";
 
 const CELL = 20;
 const STEP = TICK_MS / 1000;
@@ -46,20 +47,18 @@ const lerp = (start: number, end: number, alpha: number): number => {
 export default function GameCanvas({control, setGameDir }: GameProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-    // const gameStateRef = useRef<GameState>('START');
     const currentDirection = useRef<Direction>('RIGHT');
-    const bgMusicRef = useRef<HTMLAudioElement | null>(null);
-    const gameoverSound = useRef<HTMLAudioElement | null>(null);
-    const gameoverSecondSound = useRef<HTMLAudioElement | null>(null);
-    const winSound = useRef<HTMLAudioElement | null>(null);
-    const eatSound = useRef<HTMLAudioElement | null>(null);
+    // const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+    // const gameoverSound = useRef<HTMLAudioElement | null>(null);
+    // const gameoverSecondSound = useRef<HTMLAudioElement | null>(null);
+    // const winSound = useRef<HTMLAudioElement | null>(null);
+    // const eatSound = useRef<HTMLAudioElement | null>(null);
 
-    const isMuted = useRef<boolean>(false);
+    // const isMuted = useRef<boolean>(false);
 
     const { id } = useProfile();
-    const router = useRouter();
-    // const { resetMode} = useGameMode();
-    const {setGameStatus, gameStatus} = useRoomDataBySocket();
+    const { setGameStatus, gameStatus } = useRoomDataBySocket();
+    const { playMusic, playEffect ,stopBgMusic, stopEffectMusic} = useAudioStore();
 
     const { isConnected, socket } = useGameSocket();
 
@@ -74,54 +73,13 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
     useEffect(() => {
 
         setGameStatus('START');
-
-        const soundFlagLs = localStorage.getItem('soundtrack');
-        if (soundFlagLs) {
-            const parsedSoundFlag = JSON.parse(soundFlagLs)
-            isMuted.current = parsedSoundFlag;
-        } else {
-            isMuted.current = true;
-            localStorage.setItem('soundtrack', "true");
-        }
-
-        bgMusicRef.current = new Audio('/sounds/tanweraman.mp3');
-        bgMusicRef.current.loop = true;
-        bgMusicRef.current.volume = 0.4;
-        bgMusicRef.current.play().catch(() => {});
-
-        gameoverSound.current = new Audio('/sounds/bone-crack.mp3'); 
-        gameoverSecondSound.current = new Audio('/sounds/game-over.mp3'); 
-        winSound.current = new Audio('/sounds/winning-in-fortnite-be-like.mp3');
-        eatSound.current = new Audio('/sounds/eat.mp3');
+        playMusic('/sounds/tanweraman.mp3');
 
         return () => {
-            bgMusicRef.current?.pause();
-            gameoverSound.current?.pause();
-            gameoverSecondSound.current?.pause();
-            winSound.current?.pause();
-            eatSound.current?.pause();
-            eatSound.current = null;
-            bgMusicRef.current = null;
-            gameoverSound.current = null;
-            gameoverSecondSound.current = null;
-            winSound.current = null;
+            stopBgMusic();
+            stopEffectMusic();
         }
-    },[])
-
-    const playSoundEffect = (type: SoundEffectType) => {
-        if (!isMuted.current) return;
-        
-        if (type === 'eat' && eatSound) {
-            eatSound.current?.play().catch(() => {});
-        } else if (type === 'gameover' && gameoverSound) {
-            bgMusicRef.current?.pause();
-            gameoverSound.current?.play().catch(() => {});
-            gameoverSecondSound.current?.play().catch(() => {});
-        } else if (type === 'win' && winSound) {
-            bgMusicRef.current?.pause();
-            winSound.current?.play().catch(() => {});
-        }
-    }
+    },[playMusic, stopBgMusic, stopEffectMusic])
 
     const isEnded = () => gameStatus === 'OVER' || gameStatus === 'WIN';
 
@@ -164,23 +122,14 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
             const currScore = data.snakes.find(s => String(s.id) === String(id))?.score || 0;
 
             if (currScore > prevScore) {
-                eatSound.current?.pause();
-                playSoundEffect('eat');
+                console.log("i'm having meal ");
+                playEffect('/sounds/eat.mp3');
             }
 
 
             if (data.status === 'finished') {
                 const won = String(data.winnerId) === String(id);
-
                 setGameStatus(won ? 'WIN' : 'OVER');
-
-                if (won) {
-                    playSoundEffect('win');
-                } else {
-                    playSoundEffect('gameover');
-                }
-
-                eatSound.current?.pause();
             }
         };
 
@@ -222,7 +171,12 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
     function advanceSnake(socket: Socket, dir: Direction) {
         const room = currRef.current?.roomId;
         if (!room) return;
-        socket.emit('change-direction', { direction: dir, roomId: room, userId: id });
+
+        socket.emit('change-direction', { 
+            direction: dir, 
+            roomId: room, 
+            userId: id 
+        });
     }
 
 
@@ -432,6 +386,6 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
     }
 
     return (
-        <canvas ref={canvasRef} className="rounded-xl" />
+        <canvas ref={canvasRef} className="rounded-xl cursor-none" />
     );
 }

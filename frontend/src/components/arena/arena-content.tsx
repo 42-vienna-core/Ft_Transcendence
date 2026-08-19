@@ -11,6 +11,7 @@ import { ControlType, Direction, Game, GameState, RoomData, RoomStateType, RoomS
 import { useProfile } from "@/providers/ProfileContext";
 import { useNotificationListener } from "../store/notification";
 import { useRoomDataBySocket } from "../store/useRoomData";
+import { useAudioStore } from "../store/useAudioStore";
 
 // function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
 //     if (!raw) return 'UNKNOWN';
@@ -78,6 +79,7 @@ function ArenaContent() {
     const r = useRef<boolean>(false);
     const { id } = useProfile();
     const {room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen} = useRoomDataBySocket();
+    const { playMusic, toggleMute, stopEffectMusic, stopBgMusic, playEffect} = useAudioStore();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
@@ -89,6 +91,28 @@ function ArenaContent() {
             r.current = true;
         }
 
+        const soundFlagLs = localStorage.getItem('soundtrack');
+        if (soundFlagLs) {
+            const parsedSoundFlag = JSON.parse(soundFlagLs)
+            toggleMute(parsedSoundFlag);
+        } else {
+            toggleMute(true);
+            localStorage.setItem('soundtrack', "true");
+        }
+
+        if (gameStatus === 'OVER') {
+            playMusic('/sounds/bone-crack.mp3', false);
+            playMusic('/sounds/game-over.mp3', false);
+        } else if (gameStatus === 'WIN') {
+            playMusic('/sounds/winning-in-fortnite-be-like.mp3', false);
+        }
+
+        return () => {
+            stopBgMusic()
+        };
+    }, [room, playMusic, stopBgMusic]);
+
+    useEffect(() => {
         setSecondsLeft(initCountDown);
         const interval = setInterval(() => {
             setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
@@ -104,7 +128,7 @@ function ArenaContent() {
         if (!socket || !isConnected) return;
 
         const handleGameState = (data: Game) => {
-            console.log("game-state", data);
+            // console.log("game-state", data);
             setPlayers(data.snakes);
             setTick(data.tick);
         }
@@ -137,8 +161,6 @@ function ArenaContent() {
         router.push('/');
         router.refresh();
     }
-
-    const status = roomStatus;
 
     const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
     const myScore = players.find(it => it.id === id)?.score ?? 0;
@@ -181,16 +203,16 @@ function ArenaContent() {
                 </div>
 
                 <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {status === 'READY' && (
+                    {roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <span>Game will start after</span>
                             <h2>{secondsLeft}</h2>
                         </div>
                     )}
 
-                    <div style={{ position: 'relative' }}>
+                    <div className="relative w-full">
                         {
-                            (status === 'PLAYING' || status === 'running')  && (
+                            (roomStatus === 'PLAYING' || roomStatus === 'running')  && (
                                 <GameCanvas
                                     setGameDir={setGameDir}
                                     control={control}
@@ -198,10 +220,7 @@ function ArenaContent() {
                         )}
                         
                         {(showOver || showWin) && (
-                            <div
-                                style={{ position: 'absolute', inset: 0 }}
-                                className="flex flex-col items-center justify-center bg-bg-overlay rounded-xl"
-                            >
+                            <div className="absolute inset-0 flex flex-col items-center justify-center  bg-bg-overlay rounded-xl">
                                 <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
                                     {showWin ? 'You Win!' : 'Game Over'}
                                 </h2>
