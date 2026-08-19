@@ -93,7 +93,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('join-match')
 	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
 		
-		console.log(" >>>> start match was called");
+		console.log(" >>>> join match was called");
 		console.log("data: ", data);
 
     if (!client.data.user) {
@@ -129,6 +129,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('leave-room')
   async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody('roomId') roomId: string) {
+	console.log("LEAVE ROOM CALLED");
 	const roomUser = await this.roomService.findBySocketId(client.id);
 	if (roomUser === null)
 		return { success: false };
@@ -169,6 +170,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			}
 		});
 	}
+	console.log("FRIEND MATCH: invite sent!");
   }
 
   @OnEvent('friend-match.status')
@@ -180,6 +182,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			status: event.status,
 		});
 	}
+	console.log("FRIEND MATCH: updated status sent!");
   }
 
   @OnEvent('match.countdown')
