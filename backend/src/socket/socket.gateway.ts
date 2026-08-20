@@ -13,6 +13,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import type { Match } from 'src/gameRoom/interfaces/room-update.interface';
+import type { friendRequestData } from 'src/friends/interfaces/friend-request-data.interface';
 
 const COUNTDOWN = 3; // seconds
 
@@ -198,6 +199,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleAbandonedMatch(event: {match: Match}){
 	this.server.to(event.match.roomId).emit('room-update', event.match);
 	this.server.in(event.match.roomId).socketsLeave(event.match.roomId);
+  }
+
+  @OnEvent('friend-request.received')
+  handleFriendRequestNotification(event: friendRequestData){
+	this.server.to(`user:${event.receiverId}`).emit('friend-request-received', event.request);
   }
 
   @SubscribeMessage('get-playing-friends')

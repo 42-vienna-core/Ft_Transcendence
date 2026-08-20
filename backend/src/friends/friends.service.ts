@@ -4,13 +4,17 @@ import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { RequestStatus } from "@prisma/client";
 import { RoomStatus, RoomType } from "@prisma/client";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import type { friendRequestData } from './interfaces/friend-request-data.interface';
+
 
 @Injectable()
 export class FriendsService {
 
 	public constructor(
 		private readonly prismaService: PrismaService,
-		private readonly redis: RedisService,
+		private readonly redisService: RedisService,
+		private readonly eventEmitter: EventEmitter2,
 		private readonly configService: ConfigService,
 	) { }
 
@@ -52,9 +56,33 @@ export class FriendsService {
 			},
 			select: {
 				id: true,
-			}
+				sender: {
+					select: {
+						id: true,
+						name: true,
+						avatar: true,
+						score: true,
+					},
+				},
+			},
 		});
-		return request;
+		const avatarsUrl = this.configService.getOrThrow<string>('AVATARS_URL')
+		const senderStatus = await this.redisService.isOnline(senderId);
+		const data : friendRequestData = {
+			receiverId,
+			request: {
+				id: request.id,
+				sender: {
+					id: senderId,
+					name: request.sender.name,
+					isOnline: senderStatus,
+					score: request.sender.score,
+					avatar: request.sender.avatar ? avatarsUrl + request.sender.avatar : null,
+				}
+			}
+		}
+		this.eventEmitter.emit('friend-request.received', data);
+		return {id: request.id};
 	}
 
 	async acceptRequest(userId: number, requestId: string) {
@@ -134,7 +162,7 @@ export class FriendsService {
 			list.map(async (user) => ({
 				...user,
 				avatar: user.avatar ? avatarsUrl + user.avatar : null,
-				isOnline: await this.redis.isOnline(user.id),
+				isOnline: await this.redisService.isOnline(user.id),
 			})),
 		);
 		return friends;
@@ -170,6 +198,7 @@ export class FriendsService {
 						id: true,
 						name: true,
 						avatar: true,
+						score: true,
 					}
 				}
 			}
@@ -183,7 +212,7 @@ export class FriendsService {
 					avatar: request.sender.avatar
 						? avatarsUrl + request.sender.avatar
 						: null,
-					isOnline: await this.redis.isOnline(request.sender.id),
+					isOnline: await this.redisService.isOnline(request.sender.id),
 				},
 			})),
 		);
