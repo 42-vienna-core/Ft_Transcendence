@@ -1,6 +1,8 @@
-import { FriendRequestData, GameRequestData } from '@/types/gameTypes';
+import {  GameRequestData, Request } from '@/types/gameTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware';
+
 
 interface FrindMatchStatus{
     roomId: string;
@@ -8,72 +10,82 @@ interface FrindMatchStatus{
 }
 
 interface NotificationState {
-    notificationNumber: number;
+    gameNotification: number;
+    beFriendNotification: number;
     gameRequests: GameRequestData[];
-    friendRequests: FriendRequestData[];
+    friendRequests: Request[];
     openNotificationListener: (socket: Socket) => void;
     clearGameRequests: () => void;
+    removeRequestById: (id: string) => void;
 }
 
 
-export const useNotificationListener = create<NotificationState>((set) => ({
-    notificationNumber: 0,
-    gameRequests: [],
-    friendRequests: [],
+export const useNotificationListener = create<NotificationState>()(
+    devtools((set, get) => ({
+        gameNotification: 0,
+        beFriendNotification: 0,
+        gameRequests: [],
+        friendRequests: [],
 
-    openNotificationListener: (socket) => {
-        if (!socket) return;
+        openNotificationListener: (socket) => {
+            if (!socket) return;
 
-        socket.off('friend-match-invite');
-        socket.off('friend-request-received');
-        socket.off('friend-match-status');
-        
-        socket.on('friend-match-status', (data: FrindMatchStatus) => {
-            console.log("friend-match-status", data);
-            set((state) => {
+            socket.off('friend-match-invite');
+            socket.off('friend-request-received');
+            socket.off('friend-match-status');
 
-                if (data.status === 'ABANDONED' || data.status === 'FINISHED') {
-                    console.log("oldState: ",state.gameRequests);
+            socket.on('friend-match-status', (data: FrindMatchStatus) => {
+                console.log("friend-match-status", data);
+                set((state) => {
 
-                    const newState = state.gameRequests.filter((it) => it.roomId !== data.roomId);
-                    console.log("newState: ",newState);
-                    
-                    return {
-                        gameRequests: newState,
-                        notificationNumber: newState.length
+                    if (data.status === 'ABANDONED' || data.status === 'FINISHED') {
+                        console.log("oldState: ",state.gameRequests);
+
+                        const newState = state.gameRequests.filter((it) => it.roomId !== data.roomId);
+                        console.log("newState: ",newState);
+
+                        return {
+                            gameRequests: newState,
+                            gameNotification: newState.length
+                        }
+                    } else {
+                        return {
+                            gameRequests: state.gameRequests,
+                            gameNotification: state.gameRequests.length
+                        };
                     }
-                } else {
+                })
+            });
+
+            socket.on('friend-match-invite', (data: GameRequestData) => {
+                console.log("friend-match-invite: ",data);
+                set((state) => {
+                    const updatedGameRequests = [...state.gameRequests, data];
                     return {
-                        gameRequests: state.gameRequests,
-                        notificationNumber: state.gameRequests.length
+                        gameRequests: updatedGameRequests,
+                        gameNotification: updatedGameRequests.length,
                     };
-                }
-            })
-        });
-
-        socket.on('friend-match-invite', (data: GameRequestData) => {
-            console.log("friend-match-invite: ",data);
-            set((state) => {
-                const updatedGameRequests = [...state.gameRequests, data];
-                return {
-                    gameRequests: updatedGameRequests,
-                    notificationNumber: updatedGameRequests.length + state.friendRequests.length
-                };
+                });
             });
-        });
 
-        socket.on('friend-request-received', (data: FriendRequestData) => {
-            console.log("friend-request-received: ", data);
+            socket.on('friend-request-received', (data: Request) => {
+                console.log("friend-request-received: ", data);
 
-            set((state) => {
-                const updatedFriendRequests = [...state.friendRequests, data];
-                return {
-                    friendRequests: updatedFriendRequests,
-                    notificationNumber: state.gameRequests.length + updatedFriendRequests.length
-                };
+                set((state) => {
+                    const updatedFriendRequests = [...state.friendRequests, data];
+                    return {
+                        friendRequests: updatedFriendRequests,
+                        beFriendNotification: updatedFriendRequests.length
+                    };
+                });
             });
-        });
-    },
+        },
 
-    clearGameRequests: () => set({ gameRequests: [], notificationNumber: 0 })
-}));
+        clearGameRequests: () => set({ gameRequests: [], gameNotification: 0 }),
+        
+        removeRequestById: (id) => {
+            const newRequests = get().friendRequests.filter((it) => it.id !== id);
+            set({friendRequests: newRequests, beFriendNotification: newRequests.length });
+        }
+    })  
+)); 

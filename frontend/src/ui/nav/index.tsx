@@ -12,17 +12,15 @@ import { useNotificationListener } from '@/components/store/notification';
 
 export function NavLinks () {
     const {status, username, avatar } = useProfile();
-    const { notificationNumber } = useNotificationListener();
+    const { gameNotification, beFriendNotification} = useNotificationListener();
     const t = useTranslations("Header");
-
-    console.log(notificationNumber);
 
     return (
         <>
             <CustomLink
                 url={"/friends"}
                 label={t("f")}
-                notification={notificationNumber}
+                notification={gameNotification + beFriendNotification}
             />
             <CustomLink
                 url={"/rating"}

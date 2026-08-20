@@ -24,7 +24,7 @@ interface ListOfFriendsProps {
     handleGameAction: (roomId: string) => void;
 }
 
-type ActiveFilterType = 'All' | 'Online' | 'Playing';
+type ActiveFilterType = 'All' | 'Online' | 'Playing' | 'Requests';
 
 interface FriendsContentProps {
     friends: Friend[];
@@ -33,10 +33,10 @@ interface FriendsContentProps {
 }
 
 const rowActionBtn =
-    "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium text-text-secondary transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
+    "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium  transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
-    const { gameRequests } = useNotificationListener();
+    const { gameNotification, gameRequests } = useNotificationListener();
     
     const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
@@ -86,7 +86,9 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                 {
                     filter === 'Online' && isHost &&
                         <button
-                            className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
+                            className={`${rowActionBtn} py-[5px] hover:border-accent text-text-inverse active:text-accent-active
+                            ${gameNotification && 'animate-btn-blink '}
+                            `}
                             onClick={() => handleGameAction(roomId)}
                         >
                             join
@@ -172,6 +174,8 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
         setGameMode('FRIENDS_JOIN');
         setIsLobbyOpen(true);
     }
+
+    if (filter === 'Requests') return null;
 
     if (newFriends.length === 0 && filter === 'All')
         return  (

@@ -4,39 +4,52 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
 import AsideBar from './aside-bar';
 import FriendsContent from './friends-list';
-import { Friend } from '@/types/gameTypes';
+import { ActiveFilterType, Friend, Request } from '@/types/gameTypes';
 import { useNotificationListener } from '../store/notification';
+import { NotificationSign } from '@/ui/link';
+import FriendRequests from './friend-requests';
 
-interface Requests {
-    id: string;
-    sender: Friend;
+interface SharedBtnProps {
+    label: ActiveFilterType;
+    friendsNumber: number;
+    active: ActiveFilterType;
+    onClick: (compType: ActiveFilterType) => void;
 }
 
-type ActiveFilterType = 'All' | 'Online' | 'Playing';
 
 export function SharedBtn({
     label,
     friendsNumber,
     onClick,
     active,
-}:{
-    label: ActiveFilterType;
-    friendsNumber: number;
-    active: ActiveFilterType;
-    onClick: (compType: ActiveFilterType) => void;
-}) {
+}:SharedBtnProps) {
+    const {gameNotification, beFriendNotification} = useNotificationListener();
     const isActive = active === label;
 
     return (
         <li>
             <button
-                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
+                className={`relative inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
                     isActive
                         ? 'border-transparent bg-accent text-text-inverse'
                         : 'border-border-default text-text-secondary hover:border-accent hover:text-accent-hover active:text-accent-active'
                 }`}
                 onClick={() => onClick(label)}
-            >
+            >    
+                { 
+                    label === 'Online' && 
+                        <NotificationSign 
+                            notif={gameNotification}
+                            positionCss={"absolute left-0 bottom-5"}
+                        />
+                }
+                { 
+                    label === 'Requests' && 
+                        <NotificationSign 
+                            notif={beFriendNotification}
+                            positionCss={"absolute left-0 bottom-5"}
+                        />
+                }
                 {label}
                 <span className={`text-xs ${isActive ? 'opacity-80' : 'opacity-70'}`}>{friendsNumber}</span>
             </button>
@@ -46,11 +59,11 @@ export function SharedBtn({
 
 function FriendsFilter() {
     const [allFriends, setAllFriends] = useState<Friend[]>([]);
-    const [requestsArr, setRequestsArr] = useState<Requests[]>([]);
+    const [requestsArr, setRequestsArr] = useState<Request[]>([]);
     const [activeFilter, setActiveFilter] = useState<ActiveFilterType>('All');
+    const {gameRequests, friendRequests} = useNotificationListener();
 
     useEffect(() => {
-
         async function getAllFriends() {
             try {
                 const [requestsRes, friendsRes] = await Promise.all([
@@ -67,7 +80,7 @@ function FriendsFilter() {
         }
 
         getAllFriends();
-    },[])
+    },[gameRequests, friendRequests])
 
     const getListOfFriends = async () => {
         try {
@@ -85,23 +98,23 @@ function FriendsFilter() {
     }
 
     const handleOnClick = (compType: ActiveFilterType) => {
-        console.log(compType);
         setActiveFilter(compType);
     }
 
     const removeFriendCard = (id: number) => {
         if (id === 0) return;
-
         setAllFriends(prev => prev.filter(f => f.id !== id));
     }
 
-    const removeRequestCard = (id: string) => {
-        setRequestsArr(prev => prev.filter(r => r.id !== id));
-    }
-    // console.log(allFriends);
     const friendsAll = allFriends.length;
     const friensOnline = allFriends.filter(item => item.isOnline).length;
-    const labels = [{'All': friendsAll}, {'Online': friensOnline}, {'Playing': 1}];
+    const friendsRequests = requestsArr.length;
+    const labels = [
+        {'All': friendsAll}, 
+        {'Online': friensOnline}, 
+        {'Playing': 1}, 
+        {'Requests': friendsRequests}
+    ];
 
     return (
         <>
@@ -141,11 +154,12 @@ function FriendsFilter() {
                     filter={activeFilter}
                     removeFriendCard={removeFriendCard}
                 />
-                <AsideBar
+                <FriendRequests
                     requests={requestsArr}
-                    removeRequestCard={removeRequestCard}
+                    filter={activeFilter}
                     getListOfFriends={getListOfFriends}
                 />
+                <AsideBar/>
             </div>
         </>
     )
