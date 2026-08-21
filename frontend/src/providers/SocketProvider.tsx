@@ -23,7 +23,7 @@ export const SocketProvider = ({
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const openNotificationListener = useNotificationListener((state) => state.openNotificationListener);
-    const {openRoomListener} = useRoomDataBySocket();
+    const { openRoomListener } = useRoomDataBySocket();
     
     const {data: session} = useSession();
     const token = session?.accessToken;

@@ -63,7 +63,6 @@ export default function LobbyModal({
     onClose,
     onStartmatch,
 }: LobbyModalProps) {
-    const { id } = useProfile();
     const { isTimeoutRun, setTimeoutRun } = useRoomDataBySocket();
     const [ secondsLeft, setSecondsLeft ] = useState<number>(TIMEOUT_SECONDS);
 

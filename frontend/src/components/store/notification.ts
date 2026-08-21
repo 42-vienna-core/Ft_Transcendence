@@ -1,4 +1,4 @@
-import {  GameRequestData, Request } from '@/types/gameTypes';
+import {  Friend, GameRequestData, Request } from '@/types/gameTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware';
@@ -33,6 +33,7 @@ export const useNotificationListener = create<NotificationState>()(
             socket.off('friend-match-invite');
             socket.off('friend-request-received');
             socket.off('friend-match-status');
+            socket.off('playing-friends-changed');
 
             socket.on('friend-match-status', (data: FrindMatchStatus) => {
                 console.log("friend-match-status", data);
@@ -79,6 +80,16 @@ export const useNotificationListener = create<NotificationState>()(
                     };
                 });
             });
+
+            socket.on('playing-friends-changed', () => {
+                console.log("playing-friends-changed");
+
+                socket.emit('get-playing-friends', (data) => {
+                    console.log("get-playing-friends");
+                    console.log(data);
+                })
+            });
+
         },
 
         clearGameRequests: () => set({ gameRequests: [], gameNotification: 0 }),
