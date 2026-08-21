@@ -12,7 +12,6 @@ import { RoomType } from "@prisma/client";
 const GRID_WIDTH = 30;
 const GRID_HEIGHT = 30;
 const TICK_MS = 160;
-//const DIFFICULTY = 15; //the higher the harder it gets
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -59,7 +58,6 @@ function spawnFood(state: GameState){
 			if (snake.newPosition !== null && comparePosition(snake.newPosition, pos))
 				ok = false;
 		}
-		//EDGE CASE: check that food is reachable (dead snake)
 	}
 	state.food.push({position: pos, eaten: false});
 }
@@ -252,11 +250,6 @@ function initGame(id: string, users: Player[]) : GameState{
 	return game;
 }
 
-// function randomDirection() : Direction{
-// 	const dir: Direction[] = ['DOWN', 'LEFT', 'RIGHT', 'UP'];	
-// 	return dir[Math.floor(Math.random()* dir.length)];
-// }
-
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
 	let winners : number[] = [];
@@ -299,6 +292,17 @@ export class GameService {
 	) { };
 
 	async storeResults(game: GameState){
+		const updated = await this.prismaService.gameRoom.updateMany({
+			where: {
+				id: game.roomId,
+				status: RoomStatus.PLAYING,
+			},
+			data: {
+				status: RoomStatus.FINISHED,
+			},
+		});
+		if (updated.count === 0)
+			return ;
 		await this.prismaService.gameResults.create({
 			data: {
 				roomId: game.roomId,
@@ -313,21 +317,18 @@ export class GameService {
 				}
 			}
 		})
-		const room = await this.prismaService.gameRoom.update({
-			where: {
-				id: game.roomId
-			},
-			data: {
-				status: RoomStatus.FINISHED
-			},
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id: game.roomId },
 			select: {
 				type: true,
 				ownerId: true,
 			}
 		});
 		
-		if (room && room.type === RoomType.FRIEND && room.ownerId !== null)
+		if (room && room.type === RoomType.FRIEND && room.ownerId !== null){
+			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: game.roomId, status: RoomStatus.FINISHED});
 			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		}
 
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')
@@ -367,6 +368,8 @@ export class GameService {
 		});
 		if (!room)
 			throw new BadRequestException ('Room not found');
+		if (room.status !== RoomStatus.PLAYING)
+			return ;
 		const users = room.roomUsers.map((roomUser) => ({
 			id: roomUser.user.id,
 			isBot: roomUser.user.isBot,
@@ -377,26 +380,40 @@ export class GameService {
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
-		this.gameGateway.broadcastGameState(roomId, game);
+		await this.gameGateway.broadcastGameState(roomId, game);
 		setTimeout(() => this.tick(roomId), TICK_MS);
 	}
 
 	async tick(roomId: string){
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id: roomId },
+			select: {
+				status: true,
+				roomUsers: {
+					select: {
+						userId: true,
+					}
+				}
+			},
+		});
+		if (room === null || room.status !== RoomStatus.PLAYING){
+			await this.redisService.deleteGameState(roomId);
+			return ;
+		}
+		const activeUsers = new Set(room.roomUsers.map((roomUser) => roomUser.userId));
 		const game = await this.redisService.getGameState(roomId);
 		if (!game)
 			return ;
 		if (game.status !== 'finished'){
 			for (const snake of game.snakes){
-				if (snake.player === 'human' && !await this.redisService.isOnline(snake.id))
+				if (snake.player === 'human' && !activeUsers.has(snake.id))
 					snake.alive = false;
 			}
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot' /*&& game.tick % DIFFICULTY != 0*/)
+					if (snake.alive && snake.player === 'bot')
 						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
-					// else if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY == 0)
-					// 	snake.newDirection = randomDirection();
 				}
 			}
 			newHeadPosition(game);
@@ -413,6 +430,6 @@ export class GameService {
 		else{
 			setTimeout(() => this.tick(roomId), TICK_MS);
 		}
-		this.gameGateway.broadcastGameState(roomId, game);
+		await this.gameGateway.broadcastGameState(roomId, game);
 	}
 }

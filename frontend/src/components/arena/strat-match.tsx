@@ -10,6 +10,7 @@ import LobbyModal from "../modal/lobby-modal";
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useProfile } from "@/providers/ProfileContext";
+import { useSession } from "next-auth/react";
 
 interface MachCard {
     id: GameModeType;
@@ -22,14 +23,14 @@ function MatchItem({
     children,
     card,
     loading,
-    handleRoomLobby,
+    handleGameMode,
     loadingMode,
 }: {
     loading: boolean;
     children: React.ReactNode;
     card: MachCard;
     loadingMode: GameModeType | null;
-    handleRoomLobby: (mode: GameModeType) => void;
+    handleGameMode: (mode: GameModeType) => void;
 }) {
     const {title, expl, btnLabel, id} = card;
     const isAnyLoadingMode = loadingMode !== null;
@@ -55,7 +56,7 @@ function MatchItem({
                     type="button"
                     disabled={isAnyLoadingMode}
                     className="flex h-[36px] cursor-pointer items-center justify-center gap-1.5 rounded-md border border-border-default text-xs font-medium text-text-secondary transition-colors duration-150 hover:border-accent hover:text-accent-hover active:text-accent-active disabled:cursor-not-allowed disabled:opacity-40"
-                    onClick={() => handleRoomLobby(id)}
+                    onClick={() => handleGameMode(id)}
                 >
                     {btnLabel ? btnLabel: ""}
                 </button>
@@ -65,13 +66,13 @@ function MatchItem({
 }
 
 function MatchList({
-    handleRoomLobby,
+    handleGameMode,
     loadingMode,
     loading,
 }: {
     loading: boolean;
     loadingMode: GameModeType | null;
-    handleRoomLobby: (mode: GameModeType) => void;
+    handleGameMode: (mode: GameModeType) => void;
 }) {
     const cpu_t = useTranslations("Start_game.cards.cpu");
     const quick_t = useTranslations("Start_game.cards.quick");
@@ -107,7 +108,7 @@ function MatchList({
                     card={card}
                     loading={loading}
                     loadingMode={loadingMode}
-                    handleRoomLobby={handleRoomLobby}
+                    handleGameMode={handleGameMode}
                 >
                     {card.child}
                 </MatchItem>
@@ -117,47 +118,35 @@ function MatchList({
 }
 
 function StartMatch () {
+    const session = useSession();
     const [loading, setLoading] = useState<boolean>(false);
-    const [gameMode, setGameMode] = useState<GameModeType | null>(null);
-    const [isLobbyOpen, setIsLobbyOpen] = useState<boolean>(false);
     const {socket} = useGameSocket();
-    const {room, clearGameData} = useRoomDataBySocket();
+    const router = useRouter();
+    const {gameMode, setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
     const t = useTranslations("Start_game");
 
-    const router = useRouter();
+    const handleGameMode = async (mode: GameModeType) => {
+        if (session.status === "unauthenticated") {
+            window.location.href = "/arena"; 
+        }
 
-    const handleModalClose = () => {
-        setGameMode(null);
-        setLoading(false);
-        setIsLobbyOpen(false);
-        // clearGameData();
-    }
-
-    const handleRoomLobby = async (mode: GameModeType) => {
         if (!socket) return;
         
         setLoading(true);
         setGameMode(mode);
-        console.log("MODE: ", mode);
-
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
+        clearStatus();
 
         socket.emit('join-match', {mode});
+
         if (mode === 'CPU') {
             router.push("/arena");
             router.refresh();
+            setLoading(false);
             return;
         }
 
         setIsLobbyOpen(true);
         setLoading(false);
-    }
-
-    const handleStartMatch = () => {
-        console.log("Start match");
-
-        router.push("/arena");
-        router.refresh();
     }
 
     return (
@@ -169,16 +158,9 @@ function StartMatch () {
                <MatchList
                    loading={loading}
                    loadingMode={gameMode}
-                   handleRoomLobby={handleRoomLobby}
+                   handleGameMode={handleGameMode}
                />
             </div>
-            <LobbyModal
-                isOpen={isLobbyOpen}
-                onClose={handleModalClose}
-                onStartmatch={handleStartMatch}
-                room={room}
-                gameMode={gameMode}
-            />
         </>
        
     );

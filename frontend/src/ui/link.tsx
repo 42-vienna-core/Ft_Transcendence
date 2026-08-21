@@ -9,10 +9,26 @@ interface CustomLinkProps{
     notification?: number; 
 }
 
+interface NotificationSignProps{
+    notif: number | undefined;
+    positionCss?: string;
+    notification?: number; 
+}
+
+export function NotificationSign({notif, positionCss = ""}: NotificationSignProps) {
+    if (notif) {
+        return (
+            <span className={`${positionCss} bg-red-500 text-white text-sm w-4 h-4 rounded-full flex items-center justify-center font-bold`}>
+                {notif}
+            </span>
+        )
+    }
+}
+
 function CustomLink ({label, url, notification}: CustomLinkProps) {
     const pathname = usePathname();
     const isActive = pathname === url;
-    const notif = notification ? notification : "";
+    const notif = notification && notification;
 
     return (
         <Link
@@ -24,13 +40,10 @@ function CustomLink ({label, url, notification}: CustomLinkProps) {
             }`}
         >
             {label}{" "}
-            {
-                notif && 
-                    <span className="absolute top-2 -left-6 bg-red-500 text-white text-sm w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                        {notif}
-                    </span>
-            }
-             
+            <NotificationSign 
+                notif={notif} 
+                positionCss={"absolute top-2 -left-6"}
+            />
         </Link>
     )
 }

@@ -1,38 +1,9 @@
-import FriendRequests from './friend-requests';
 import FindFriends from './search';
 
-interface Request {
-    id: string;
-    sender: {
-        id: number;
-        name: string;
-        avatar?: string | null;
-        isOnline: boolean;
-        score: number;
-    };
-}
-
-interface AsideBarProps {
-    requests: Request[];
-    removeRequestCard: (id: string) => void
-    getListOfFriends: () => void;
-}
-
-export default function AsideBar({
-    requests,
-    removeRequestCard,
-    getListOfFriends,
-
-}:AsideBarProps) {    
+export default function AsideBar() {    
     return (
         <aside className="flex min-w-0 flex-col gap-2.5">
             <FindFriends/>
-
-            <FriendRequests
-                requests={requests}
-                removeRequestCard={removeRequestCard}
-                getListOfFriends={getListOfFriends}
-            />
         </aside>
     );
 }

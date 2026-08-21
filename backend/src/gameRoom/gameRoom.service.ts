@@ -110,6 +110,18 @@ export class GameRoomService {
   async findBySocketId(socketId: string) {
     return this.db.roomUser.findFirst({
       where: { socketId },
+	  select: {
+		roomId: true,
+		userId: true,
+		socketId: true,
+		room: {
+			select: {
+				ownerId: true,
+				status: true,
+				type: true,
+			},
+		},
+	  },
     });
   }
 
@@ -166,6 +178,12 @@ export class GameRoomService {
 			isOwner: user.id === room.ownerId,
 		})),
 	};
+  }
+
+  async removeAllUsersFromRoom(roomId: string){
+	return this.db.roomUser.deleteMany({
+		where: {roomId},
+	});
   }
 
 }

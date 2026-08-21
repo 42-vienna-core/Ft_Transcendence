@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useGameControls } from "@/hooks/useGameControls";
 import { ControlType, Direction, Game, GameState, TICK_MS } from "@/types/gameTypes";
+import { useRoomDataBySocket } from "../store/useRoomData";
+import { useAudioStore } from "../store/useAudioStore";
 
 const CELL = 20;
 const STEP = TICK_MS / 1000;
@@ -23,7 +25,7 @@ interface FitCanvasProps {
 
 interface GameProps {
     control: ControlType;
-    setGameState: Dispatch<SetStateAction<GameState>>;
+    // setGameState: Dispatch<SetStateAction<GameState>>;
     setGameDir: (state: Direction) => void;
 }
 
@@ -42,22 +44,22 @@ const lerp = (start: number, end: number, alpha: number): number => {
     return start + (end - start) * alpha;
 };
 
-export default function GameCanvas({control, setGameState, setGameDir }: GameProps) {
+export default function GameCanvas({control, setGameDir }: GameProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-    const gameStateRef = useRef<GameState>('START');
     const currentDirection = useRef<Direction>('RIGHT');
-    const bgMusicRef = useRef<HTMLAudioElement | null>(null);
-    const gameoverSound = useRef<HTMLAudioElement | null>(null);
-    const gameoverSecondSound = useRef<HTMLAudioElement | null>(null);
-    const winSound = useRef<HTMLAudioElement | null>(null);
-    const eatSound = useRef<HTMLAudioElement | null>(null);
+    // const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+    // const gameoverSound = useRef<HTMLAudioElement | null>(null);
+    // const gameoverSecondSound = useRef<HTMLAudioElement | null>(null);
+    // const winSound = useRef<HTMLAudioElement | null>(null);
+    // const eatSound = useRef<HTMLAudioElement | null>(null);
 
-    const isMuted = useRef<boolean>(false);
+    // const isMuted = useRef<boolean>(false);
 
     const { id } = useProfile();
-    const router = useRouter();
-    const { resetMode} = useGameMode();
+    const { setGameStatus, gameStatus } = useRoomDataBySocket();
+    const { playMusic, playEffect ,stopBgMusic, stopEffectMusic} = useAudioStore();
+
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
@@ -69,55 +71,17 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
     const screenRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
 
     useEffect(() => {
-        const soundFlagLs = localStorage.getItem('soundtrack');
-        if (soundFlagLs) {
-            const parsedSoundFlag = JSON.parse(soundFlagLs)
-            isMuted.current = parsedSoundFlag;
-        } else {
-            isMuted.current = true;
-            localStorage.setItem('soundtrack', "true");
-        }
 
-        bgMusicRef.current = new Audio('/sounds/tanweraman.mp3');
-        bgMusicRef.current.loop = true;
-        bgMusicRef.current.volume = 0.4;
-        bgMusicRef.current.play().catch(() => {});
-
-        gameoverSound.current = new Audio('/sounds/bone-crack.mp3'); 
-        gameoverSecondSound.current = new Audio('/sounds/game-over.mp3'); 
-        winSound.current = new Audio('/sounds/winning-in-fortnite-be-like.mp3');
-        eatSound.current = new Audio('/sounds/eat.mp3');
+        setGameStatus('START');
+        playMusic('/sounds/tanweraman.mp3');
 
         return () => {
-            bgMusicRef.current?.pause();
-            gameoverSound.current?.pause();
-            winSound.current?.pause();
-            eatSound.current?.pause();
-            eatSound.current = null;
-            bgMusicRef.current = null;
-            gameoverSound.current = null;
-            winSound.current = null;
+            stopBgMusic();
+            stopEffectMusic();
         }
-    },[])
+    },[playMusic, stopBgMusic, stopEffectMusic])
 
-    const playSoundEffect = (type: SoundEffectType) => {
-        if (!isMuted.current) return;
-        
-        if (type === 'eat' && eatSound) {
-            eatSound.current?.play().catch(() => {});
-        } else if (type === 'gameover' && gameoverSound) {
-            bgMusicRef.current?.pause();
-            gameoverSound.current?.play().catch(() => {});
-            gameoverSecondSound.current?.play().catch(() => {});
-        } else if (type === 'win' && winSound) {
-            bgMusicRef.current?.pause();
-            winSound.current?.play().catch(() => {});
-        }
-    }
-
-    const isEnded = () =>
-        gameStateRef.current === 'OVER' ||
-        gameStateRef.current === 'WIN' 
+    const isEnded = () => gameStatus === 'OVER' || gameStatus === 'WIN';
 
     const handleDirectionChange = (newDirection: Direction) => {
         const current = currentDirection.current;
@@ -139,11 +103,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         }
     };
 
-    const onEscPress = () => {
-        handleRestart('OVER');
-    }
-
-    useGameControls(control, handleDirectionChange, onEscPress);
+    useGameControls(control, handleDirectionChange, () => setGameStatus('OVER'));
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -162,29 +122,18 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             const currScore = data.snakes.find(s => String(s.id) === String(id))?.score || 0;
 
             if (currScore > prevScore) {
-                eatSound.current?.pause();
-                playSoundEffect('eat');
+                console.log("i'm having meal ");
+                playEffect('/sounds/eat.mp3');
             }
 
 
             if (data.status === 'finished') {
                 const won = String(data.winnerId) === String(id);
-
-                gameStateRef.current = won ? 'WIN' : 'OVER';
-                setGameState(won ? 'WIN' : 'OVER');
-
-                if (won) {
-                    playSoundEffect('win');
-                } else {
-                    playSoundEffect('gameover');
-                }
-
-                eatSound.current?.pause();
+                setGameStatus(won ? 'WIN' : 'OVER');
             }
         };
 
         socket.on("game-state", handleGameState);
-        setGameState('START');
 
         let rafId: number;
 
@@ -217,25 +166,19 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
             resizeObserver.disconnect();
             socket.off("game-state", handleGameState);
         };
-    }, [socket, isConnected, id, setGameState, setGameDir]);
+    }, [socket, isConnected, id, setGameStatus, setGameDir]);
 
     function advanceSnake(socket: Socket, dir: Direction) {
         const room = currRef.current?.roomId;
         if (!room) return;
-        socket.emit('change-direction', { direction: dir, roomId: room, userId: id });
+
+        socket.emit('change-direction', { 
+            direction: dir, 
+            roomId: room, 
+            userId: id 
+        });
     }
 
-    function handleRestart(state: GameState) {
-        const room = currRef.current?.roomId;
-        if (socket && room) {
-            socket.emit("leave-room", { roomId: room });
-        }
-        gameStateRef.current = state;
-        setGameState(state);
-        resetMode();
-        router.push('/');
-        router.refresh();
-    }
 
     function draw() {
         const ctx = ctxRef.current;
@@ -442,29 +385,7 @@ export default function GameCanvas({control, setGameState, setGameDir }: GamePro
         ctx.restore();
     }
 
-    const showOver = gameStateRef.current === 'OVER' ;
-    const showWin = gameStateRef.current === 'WIN';
-
     return (
-        <div style={{ position: 'relative' }}>
-            <canvas ref={canvasRef} className="rounded-xl" />
-
-            {(showOver || showWin) && (
-                <div
-                    style={{ position: 'absolute', inset: 0 }}
-                    className="flex flex-col items-center justify-center bg-bg-overlay rounded-xl"
-                >
-                    <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
-                        {showWin ? 'You Win!' : 'Game Over'}
-                    </h2>
-                    <button
-                        onClick={() => handleRestart(gameStateRef.current)}
-                        className="cursor-pointer rounded-lg bg-accent px-4 py-2 font-semibold text-text-inverse transition-colors duration-200 hover:bg-accent-hover active:bg-accent-active"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            )}
-        </div>
+        <canvas ref={canvasRef} className="rounded-xl cursor-none" />
     );
 }

@@ -76,6 +76,21 @@ module.exports = {
         sans: 'var(--font-sans)',
         mono: 'var(--font-mono)',
       },
+      keyframes: {
+        neonBlink: {
+          '0%, 100%': { 
+            backgroundColor: 'var(--color-accent)', 
+            boxShadow: '0 0 4px var(--color-accent)' 
+          },
+          '50%': { 
+            backgroundColor: '#22c55e', 
+            boxShadow: '0 0 16px #22c55e, 0 0 24px rgba(34, 197, 94, 0.4)' 
+          },
+        }
+      },
+      animation: {
+        'btn-blink': 'neonBlink 1.5s infinite ease-in-out', 
+      },
     },
   },
   plugins: [],

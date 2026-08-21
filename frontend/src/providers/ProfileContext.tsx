@@ -1,66 +1,70 @@
-'use client'
+'use client';
 
-import {signOut, useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
-import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface ProfileContextType {
     id: number;
     username: string;
     email: string;
     nameOnChange: string;
-    avatar: string | null;
+    avatar: string;
     status: 'loading' | 'authenticated' | 'unauthenticated';
     role: "ADMIN" | "PLAYER";
-    updateNameOnChange: Dispatch<SetStateAction<string>>;
-    updateSessionUsername: () => void;
-    updateAvatar: (newUrl: string) => void;
-    updateSession: (checkSession: boolean) => void;
+    
+    updateNameOnChange: (name: string) => void;
+    updateSessionUsername: () => Promise<void>;
+    updateAvatar: (newUrl: string) => Promise<void>;
+    updateSession: (checkSession: boolean) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
-export function ProfileProvider({children} : {children: React.ReactNode;}) {
-    const {data: session, update, status,} = useSession();
-    const [username, setUsername] = useState<string>("");
-    const [nameOnChange, setnameOnChange] = useState<string>("");
-    const [avatar, setAvatar] = useState<string | null>(null);
-    const [email, setEmail] = useState<string>("");
-    const [id, setId] = useState<number>(0);
-    const [role, setRole] = useState<"ADMIN" | "PLAYER">("PLAYER");
-    console.log("PROFILEPROVIDER useSession");
+export function ProfileProvider({ children }: { children: React.ReactNode }) {
+    const { data: session, update, status } = useSession();
+    const [nameOnChange, setNameOnChange] = useState<string>("");
 
     useEffect(() => {
-        if (session?.user) {
-            const ava = session.user.avatar;
-            setId(session.user.id);
-            setUsername(session.user.username);
-            setEmail(session.user.email);
-            setnameOnChange(session.user.username);
-            setAvatar(ava ? ava : "/png/default_avatar.png");
-            setRole(session.user.role);
+        if (session?.user?.username) {
+            setNameOnChange(session.user.username);
         }
-    },[session]);
+    }, [session?.user?.username]);
 
-    
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'production' && session) {
+            console.log("🔄 ProfileProvider: Session is already updated:", session.user);
+        }
+    }, [session]);
+
+    const id = session?.user?.id ?? 0;
+    const username = session?.user?.username ?? "";
+    const email = session?.user?.email ?? "";
+    const avatar = session?.user?.avatar ?? "/png/default_avatar.png";
+    const role = session?.user?.role ?? "PLAYER";
+
     const updateSessionUsername = async () => {
-        console.log("update session name");
-        setUsername(nameOnChange);
-        await update({user: {avatar, username: nameOnChange}});
-    }
+        if (!session?.user) return;
+        await update({
+            user: {
+                ...session.user,
+                username: nameOnChange
+            }
+        });
+    };
 
-    const updateAvatar = async (newUrl: string | null) => {
-        console.log("update avatar");
+    const updateAvatar = async (newUrl: string) => {
+        if (!session?.user) return;
+        await update({
+            user: {
+                ...session.user,
+                avatar: newUrl
+            }
+        });
+    };
 
-        setAvatar(newUrl);
-        await update({user: {username, avatar: newUrl}});
-    }
-
-    const updateNameOnChange = setnameOnChange;
-
-    const updateSession =  async (checkSession: boolean) => {
-        await update({checkSession: true});
-    }
+    const updateSession = async (checkSession: boolean) => {
+        await update({ checkSession });
+    };
 
     return (
         <ProfileContext.Provider value={{
@@ -74,17 +78,17 @@ export function ProfileProvider({children} : {children: React.ReactNode;}) {
             updateSession,
             updateSessionUsername, 
             updateAvatar,
-            updateNameOnChange
-            }}>
+            updateNameOnChange: setNameOnChange
+        }}>
             {children}
         </ProfileContext.Provider>
-    )
+    );
 }
 
 export function useProfile() {
     const context = useContext(ProfileContext);
     if (!context) {
-        throw new Error('useProfile must be used within a ProfileProvider')
+        throw new Error('useProfile must be used within a ProfileProvider');
     }
     return context;
 }

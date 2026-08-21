@@ -3,29 +3,22 @@
 import { OnlineStateItem } from "@/ui/online-tracker";
 import { apiFetch } from "@/lib/api-client";
 import { useNotificationListener } from "../store/notification";
-import { FriendRequestData, GameRequestData } from "@/types/gameTypes";
-import { useFriendAndRoomID, useGameMode } from "../store/useUserStore";
-import { useRouter } from "next/navigation";
+import { ActiveFilterType, Request} from "@/types/gameTypes";
 
 interface FriendRequestItemProps {
-    request: FriendRequestData;
-    makeDecision: (id: string, isProve: boolean, isGameReq: boolean) => void;
+    request: Request;
+    makeDecision: (id: string, isProve: boolean) => void;
 }
 
-interface GameRequestItemProps {
-    gameRequest: GameRequestData;
-    makeDecision: (id: string, isProve: boolean, isGameReq: boolean) => void;
-}
 
 interface RequestListProps {
-    requests: FriendRequestData[];
-    gameRequests: GameRequestData[]
-    makeDecision: (id: string, isProve: boolean, isGameReq: boolean) => void;
+    requests: Request[];
+    makeDecision: (id: string, isProve: boolean) => void;
 }
 
 interface RequestContentProps {
-    requests: FriendRequestData[];
-    removeRequestCard: (id:string) => void
+    requests: Request[];
+    filter: ActiveFilterType;
     getListOfFriends: () => void;
 }
 
@@ -38,12 +31,12 @@ function FriendRuquestItem({
     const isAvatar = !!avatar;
 
     return (
-        <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
+        <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
             <div>
                 { isAvatar ? (
-                    <img className="size-[26px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
+                    <img className="size-[32px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
                 ) : (
-                    <div className="flex size-[26px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
+                    <div className="flex size-[32px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
                         {av}
                     </div>
                 )}
@@ -54,84 +47,34 @@ function FriendRuquestItem({
             </div>
             <div className="flex gap-1">
                 <button
-                    className="flex size-[26px] cursor-pointer items-center justify-center rounded-md border border-transparent bg-success-soft text-base text-success-text"
-                    onClick={() => makeDecision(id, true, false)}
+                    className="flex p-1.5 cursor-pointer items-center justify-center rounded-md border border-transparent bg-success-soft text-base text-success-text transition-colors duration-150 hover:bg-accent hover:text-text-inverse"
+                    onClick={() => makeDecision(id, true)}
                 >
-                    +
+                    Accept
                 </button>
                 <button
-                    className="flex size-[26px] cursor-pointer items-center justify-center rounded-md border border-border-default text-base text-text-secondary transition-colors duration-150 hover:border-danger hover:text-danger"
-                    onClick={() => makeDecision(id, false, false)}
+                    className="flex  p-1.5 cursor-pointer items-center justify-center rounded-md border border-border-default text-base text-text-secondary transition-colors duration-150 hover:border-danger hover:text-danger"
+                    onClick={() => makeDecision(id, false)}
                 >
-                    -
+                    Decline
                 </button>
             </div>
         </li>
     );
 }
 
-function GameRuquestItem({
-    gameRequest: { roomId, inviter }, 
-    makeDecision
-}: GameRequestItemProps ) {
-    const {name, avatar} = inviter;
-    const av = name && typeof name === "string" ? name.slice(0, 2) : "";
-    const isAvatar = !!avatar;
 
+function RequestList({ requests, makeDecision }: RequestListProps) {
     return (
-        <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
-            <div>
-                { isAvatar ? (
-                    <img className="size-[26px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
-                ) : (
-                    <div className="flex size-[26px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
-                        {av}
-                    </div>
-                )}
-            </div>
-            <div className="min-w-0">
-                <p className="text-base font-medium">{name}</p>
-                <OnlineStateItem isOnline={true}/>
-            </div>
-            <div className="flex gap-1">
-                <button
-                    className="flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-success-soft text-base text-success-text"
-                    onClick={() => makeDecision(roomId, true, true)}
-                >
-                    join
-                </button>
-                <button
-                    className="flex cursor-pointer items-center justify-center rounded-md border border-border-default text-base text-text-secondary transition-colors duration-150 hover:border-danger hover:text-danger"
-                    onClick={() => makeDecision(roomId, false, true)}
-                >
-                    cancel
-                </button>
-            </div>
-        </li>
-    );
-}
-
-function RequestList({ requests, gameRequests, makeDecision }: RequestListProps) {
-
-    return (
-        <ul>
+        <ul className="flex flex-col gap-2">
             {
                 requests.length > 0 &&
                     requests.map(request => (
                         <FriendRuquestItem
                             key={`friend-${request.id}`}
                             request={request}
-                            makeDecision={makeDecision} />
-                    )
-                )
-            }
-            {
-                gameRequests.length > 0 &&
-                    gameRequests.map(request => (
-                        <GameRuquestItem
-                            key={request.roomId}
-                            gameRequest={request}
-                            makeDecision={makeDecision} />
+                            makeDecision={makeDecision} 
+                        />
                     )
                 )
             }
@@ -141,29 +84,15 @@ function RequestList({ requests, gameRequests, makeDecision }: RequestListProps)
 
 function FriendRequests({
     requests,
-    removeRequestCard, 
+    filter,
     getListOfFriends
-}: 
-    RequestContentProps
-) {
-    const { gameRequests } = useNotificationListener();
-    const { setRoomId, resetIds } = useFriendAndRoomID();
-    const router = useRouter();
+}: RequestContentProps) {
+    const { removeRequestById } = useNotificationListener();
 
-    async function makeDecision(id: string, isProv: boolean, isGameReq: boolean) {
+    async function makeDecision(id: string, isProv: boolean) {
         if (typeof id === 'string' && id.length === 0) return;
 
         const url = `friends/request/${String(id)}`
-
-        if (isGameReq) {
-            isProv ? setRoomId(id) : resetIds();
-
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            router.push("/arena");
-            router.refresh();
-        }
-
         try {
             if (isProv){
                 await apiFetch(`${url}/accept`, {method: 'PATCH'});
@@ -172,27 +101,28 @@ function FriendRequests({
                 await apiFetch(`${url}/reject`, {method: 'PATCH'});
             }
 
-            removeRequestCard(id);
+            removeRequestById(id);
         } catch (error) {
             console.log("ERROR: ", error);
         }
     }
 
-    // if (requests && requests.length > 0) {
-        return (
-            <div className="rounded-md bg-bg-subtle px-3.5 py-3">
-                <h3 className="mb-2 flex items-center justify-between !text-sm font-medium lowercase tracking-wide text-text-secondary">
-                    <span>Pending requests</span>
-                    <span className="text-xs font-normal text-text-tertiary">{requests.length}</span>
-                </h3>
-                <RequestList
-                    requests={requests}
-                    gameRequests={gameRequests}
-                    makeDecision={makeDecision}
-                />
+    if (filter !== 'Requests') return null
+
+    if (requests.length === 0) {
+        return  (
+            <div className="flex min-w-0 flex-col gap-2.5">
+                <p className="text-sm text-warning-text">No requests</p>
             </div>
-        );
-    // }
+        )
+    }
+
+    return (
+        <RequestList
+            requests={requests}
+            makeDecision={makeDecision}
+        />
+    );
 }
 
 export default FriendRequests;
