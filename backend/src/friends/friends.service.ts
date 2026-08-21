@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { RequestStatus } from "@prisma/client";
-import { RoomStatus, RoomType } from "@prisma/client";
+import { RoomStatus } from "@prisma/client";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import type { friendRequestData } from './interfaces/friend-request-data.interface';
 
@@ -260,10 +260,13 @@ export class FriendsService {
 			return [];
 		const rooms = await this.prismaService.gameRoom.findMany({
 			where: {
-				ownerId: {
-					in: friendIds,
+				roomUsers: {
+					some: {
+						userId: {
+							in: friendIds,
+						},
+					},
 				},
-				type: RoomType.FRIEND,
 				OR: [
 					{
 						status: {

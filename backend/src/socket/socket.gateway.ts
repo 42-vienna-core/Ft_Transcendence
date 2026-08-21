@@ -11,7 +11,7 @@ import { TokenService } from 'src/token/token.service';
 import { SessionService } from 'src/session/session.service';
 import { UnauthorizedException } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
-import { OnEvent } from '@nestjs/event-emitter';
+import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import type { Match } from 'src/gameRoom/interfaces/room-update.interface';
 import type { friendRequestData } from 'src/friends/interfaces/friend-request-data.interface';
 
@@ -27,6 +27,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly matchStarter: MatchStarter,
     private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
+	private readonly eventEmitter: EventEmitter2,
     private readonly friendsService: FriendsService,
   ) { }
 
@@ -75,7 +76,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			return ;
 	}
     await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
-
+	this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 
 	this.server.to(roomUser.roomId).emit('room-update', match);
@@ -143,6 +144,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
     await client.leave(roomUser.roomId);
     await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
+	this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 	this.server.to(roomUser.roomId).emit('room-update', match);
 
@@ -150,10 +152,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @OnEvent('playing-friends.changed')
-  async handlePlayingFrendsChanged(event: {ownerId: number}){
-	const friends = await this.friendsService.getFriends(event.ownerId);
-	for (const friend of friends)
-		this.server.to(`user:${friend.id}`).emit('playing-friends-changed');
+  async handlePlayingFrendsChanged(event: {userIds: number[]}){
+	console.log("playing friends changed");
+	const friends = await Promise.all(event.userIds.map((userId) => this.friendsService.getFriends(userId)));
+	const recipients = new Set(friends.flat().map((friend) => friend.id));
+	for (const friend of recipients)
+		this.server.to(`user:${friend}`).emit('playing-friends-changed');
   }
 
   @OnEvent('friend-match.created')
@@ -208,6 +212,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('get-playing-friends')
   async getPlayingFriends(@ConnectedSocket() client: Socket){
+	console.log("get playing friends");
 	return this.friendsService.getPlayingFriends(client.data.user.id);
   }
 

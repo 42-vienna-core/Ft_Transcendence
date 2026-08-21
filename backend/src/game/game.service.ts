@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameState, Direction, Snake, Position, Food, Player, PlayerType } from './interfaces/game-state';
+import { GameState, Direction, Snake, Position, Food, Player } from './interfaces/game-state';
+import type { PlayerType } from './interfaces/game-state';
 import { RedisService } from 'src/redis/redis.service';
 import { GameGateway } from './game.gateway';
 import { AiBotService } from 'src/aiOpponent/ai.service';
@@ -325,11 +326,15 @@ export class GameService {
 			}
 		});
 		
-		if (room && room.type === RoomType.FRIEND && room.ownerId !== null){
+		if (room && room.type === RoomType.FRIEND && room.ownerId !== null)
 			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: game.roomId, status: RoomStatus.FINISHED});
-			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		const userIds : number[] = [];
+		for (const user of game.snakes){
+			if (user.player === 'bot')
+				continue ;
+			userIds.push(user.id);
 		}
-
+		this.eventEmitter.emit('playing-friends.changed', {userIds});
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')
 				continue;

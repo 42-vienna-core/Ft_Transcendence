@@ -65,13 +65,16 @@ export class MatchStarter {
 				}
 			}
 		})
-	
+		
 		await this.gameRoom.addBotsToRoom(room.id);
 		const ready = await this.prismaService.gameRoom.update({
 			where: {id:room.id},
 			data: { status: RoomStatus.READY}
 		})
-
+		
+		const userIds : number[] = [userId];
+		this.eventEmitter.emit('playing-friends.changed', {userIds});
+		
 		const players = await this.returnPlayers(room.id);
 
 		return {
@@ -118,6 +121,9 @@ export class MatchStarter {
 			if (room.waitTimeout === null || room.waitTimeout <= new Date())
 				continue ;
 			await this.gameRoom.addUserToRoom(room.id, userId, socketId);
+					
+			const userIds : number[] = [userId];
+			this.eventEmitter.emit('playing-friends.changed', {userIds});
 
 			players = await this.gameRoom.getPlayerCount(room.id);
 			let status = room.status;
@@ -165,7 +171,8 @@ export class MatchStarter {
 		});
 		setTimeout(() => {void this.finishWaitingTime(room.id)}, EXP_TIME);
 		this.eventEmitter.emit('friend-match.created', {ownerId: userId, roomId: room.id, status: room.status});
-		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		const userIds : number[] = [userId];
+		this.eventEmitter.emit('playing-friends.changed', {userIds});
 
 		const players = await this.returnPlayers(room.id);
 
@@ -216,7 +223,8 @@ export class MatchStarter {
 			status = RoomStatus.READY;
 			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: room.id, status});
 		};
-		this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
+		const userIds : number[] = [userId];
+		this.eventEmitter.emit('playing-friends.changed', {userIds});
 		
 		const participants = await this.returnPlayers(room.id);
 
@@ -294,6 +302,9 @@ export class MatchStarter {
 		await this.redisService.deleteGameState(roomId);
 		const match = await this.gameRoom.getRoomUpdate(roomId);
 		this.eventEmitter.emit('match.abandoned', {match: match});
+		const userIds : number[] = [];
+		for(const user of match.players)
+			userIds.push(user.id);
 		await this.gameRoom.removeAllUsersFromRoom(roomId);
 		const updated = await this.prismaService.gameRoom.findUnique({
 			where: {id: roomId},
@@ -309,9 +320,9 @@ export class MatchStarter {
 			const type = updated.type;
 			if (owner != null && type === RoomType.FRIEND){
 				this.eventEmitter.emit('friend-match.status', {ownerId: updated.ownerId, roomId: updated.id ,status: updated.status});
-				this.eventEmitter.emit('playing-friends.changed', {ownerId: owner});
 			}
 		}
+		this.eventEmitter.emit('playing-friends.changed', {userIds});
 		return true;
 	}
 
@@ -330,10 +341,8 @@ export class MatchStarter {
 		const room = await this.prismaService.gameRoom.findUnique({
 			where: { id: roomId }
 		});
-		if (room && room.ownerId && room.type === RoomType.FRIEND){
+		if (room && room.ownerId && room.type === RoomType.FRIEND)
 			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: room.id, status: RoomStatus.PLAYING});
-			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
-		}
 		await this.gameService.startGame(roomId);
 	}
 
