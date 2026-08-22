@@ -290,16 +290,14 @@ export class FriendsService {
 				type: true,
 				maxUsers: true,
 				waitTimeout: true,
-				owner: {
-					select: {
-						id: true,
-						name: true,
-						avatar: true,
+				roomUsers: {
+					where: {
+						userId: {
+							in: friendIds,
+						},
 					},
-				},
-				_count: {
 					select: {
-						roomUsers: true,
+						userId: true,
 					},
 				},
 			},
