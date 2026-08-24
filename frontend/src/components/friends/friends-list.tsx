@@ -124,7 +124,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const [ user, setUser ] = useState<Friend | null>(null);
     const { socket, isConnected } = useGameSocket();
     const { setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
-    const { playFriends } = useNotificationListener();
+    const { playFriends, status} = useNotificationListener();
 
     let newFriends: Friend[] = [];
 
@@ -132,7 +132,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
         newFriends = friends;
     } else if (filter === 'Online') {
         newFriends = friends.filter(it => it.isOnline);
-    } else if (filter === 'Playing') {
+    } else if (filter === 'Playing' && status === 'PLAYING') {
         const playingIds = new Set(playFriends.flatMap(room => room.roomUsers.map(user => user.userId)));
         newFriends = friends.filter(it => playingIds.has(it.id));
     }

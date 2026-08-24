@@ -11,7 +11,8 @@ certs:
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 		-keyout nginx/certs/key.pem \
 		-out nginx/certs/cert.pem \
-		-subj "/C=US/ST=Dev/L=Dev/O=Dev/CN=localhost"
+		-subj "/C=US/ST=Dev/L=Dev/O=Dev/CN=192.168.1.11" \
+  		-addext "subjectAltName=IP:192.168.1.11"
 
 ## Copy .env.example to .env if it doesn't exist
 env:
