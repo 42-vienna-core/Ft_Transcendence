@@ -1,8 +1,20 @@
-import {  Friend, GameRequestData, Request } from '@/types/gameTypes';
+import {  Friend, GameRequestData, Request, RoomStatusType } from '@/types/gameTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware';
 
+interface PlayingFriendRoom {
+    id: string;
+    status: 'WAITING' | 'READY' | 'PLAYING';
+    type: 'PUBLIC' | 'PRIVATE' | 'FRIEND';
+    maxUsers: number;
+    waitTimeout: string | null;
+    owner: Friend | null;
+    roomUsers: {userId: number}[];
+    _count: {
+      roomUsers: number;
+    };
+  }
 
 interface FrindMatchStatus{
     roomId: string;
@@ -14,9 +26,17 @@ interface NotificationState {
     beFriendNotification: number;
     gameRequests: GameRequestData[];
     friendRequests: Request[];
+    playFriends: PlayingFriendRoom[];
+    status: RoomStatusType;
+
     openNotificationListener: (socket: Socket) => void;
+    setStatus: (status: RoomStatusType) => void;
+
     clearGameRequests: () => void;
     removeRequestById: (id: string) => void;
+    
+    clearPlayingFriends: () => void;
+    removePlayingFriendById: (id: string) => void
 }
 
 
@@ -26,6 +46,10 @@ export const useNotificationListener = create<NotificationState>()(
         beFriendNotification: 0,
         gameRequests: [],
         friendRequests: [],
+        playFriends: [],
+        status: null,
+
+        setStatus: (status) => set({status}),
 
         openNotificationListener: (socket) => {
             if (!socket) return;
@@ -37,13 +61,13 @@ export const useNotificationListener = create<NotificationState>()(
 
             socket.on('friend-match-status', (data: FrindMatchStatus) => {
                 console.log("friend-match-status", data);
+                get().setStatus(data.status);
+
                 set((state) => {
 
                     if (data.status === 'ABANDONED' || data.status === 'FINISHED') {
-                        console.log("oldState: ",state.gameRequests);
-
                         const newState = state.gameRequests.filter((it) => it.roomId !== data.roomId);
-                        console.log("newState: ",newState);
+                        get().removePlayingFriendById(data.roomId);
 
                         return {
                             gameRequests: newState,
@@ -82,11 +106,24 @@ export const useNotificationListener = create<NotificationState>()(
             });
 
             socket.on('playing-friends-changed', () => {
-                console.log("playing-friends-changed");
+                socket.emit('get-playing-friends', (data: PlayingFriendRoom[]) => {
+                    console.log("get-playing-friends", data);
 
-                socket.emit('get-playing-friends', (data) => {
-                    console.log("get-playing-friends");
-                    console.log(data);
+                    const arr = get().playFriends;
+
+                    arr.map((it) => {
+                        for (const room of data) {
+                            if (it.id === room.id) {
+                                get().removePlayingFriendById(it.id );
+                            }
+                        } 
+                    });
+                    
+                    const newPlaingFriends = [
+                        ...get().playFriends, ...data.filter((it) => it.type === 'FRIEND')
+                    ];
+
+                    set({playFriends: newPlaingFriends});
                 })
             });
 
@@ -97,6 +134,12 @@ export const useNotificationListener = create<NotificationState>()(
         removeRequestById: (id) => {
             const newRequests = get().friendRequests.filter((it) => it.id !== id);
             set({friendRequests: newRequests, beFriendNotification: newRequests.length });
-        }
+        },
+
+        clearPlayingFriends: () => set({ playFriends: []}),
+
+        removePlayingFriendById: (id) => {
+            set({playFriends: get().playFriends.filter((it) => it.id !== id)})
+        },
     })  
 )); 

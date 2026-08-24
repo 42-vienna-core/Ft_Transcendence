@@ -61,7 +61,7 @@ function FriendsFilter() {
     const [allFriends, setAllFriends] = useState<Friend[]>([]);
     const [requestsArr, setRequestsArr] = useState<Request[]>([]);
     const [activeFilter, setActiveFilter] = useState<ActiveFilterType>('All');
-    const {gameRequests, friendRequests} = useNotificationListener();
+    const {gameRequests, friendRequests, playFriends} = useNotificationListener();
 
     useEffect(() => {
         async function getAllFriends() {
@@ -108,12 +108,12 @@ function FriendsFilter() {
 
     const friendsAll = allFriends.length;
     const friensOnline = allFriends.filter(item => item.isOnline).length;
-    const friendsRequests = requestsArr.length;
+    const totalPlayingFriends = playFriends.reduce((sum, it) => sum + it.roomUsers.length, 0)
     const labels = [
-        {'All': friendsAll}, 
-        {'Online': friensOnline}, 
-        {'Playing': 1}, 
-        {'Requests': friendsRequests}
+        {'All':friendsAll},
+        {'Online': friensOnline},
+        {'Playing': totalPlayingFriends},
+        {'Requests': requestsArr.length}
     ];
 
     return (
@@ -124,7 +124,7 @@ function FriendsFilter() {
                     <div className="mt-1 text-sm text-text-secondary">
                         {friendsAll} total ·{" "}
                         <span className="text-success">{friensOnline} online</span> ·{" "}
-                        <span className="text-danger">1 playing</span>
+                        <span className="text-danger">{totalPlayingFriends} playing</span>
                     </div>
                 </div>
             </div>
