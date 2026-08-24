@@ -13,6 +13,7 @@ import { RoomType } from "@prisma/client";
 const GRID_WIDTH = 30;
 const GRID_HEIGHT = 30;
 const TICK_MS = 160;
+const POINTS = 5;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -164,7 +165,7 @@ function updateFoodScore(state: GameState){
 		if (!snake.alive)
 			continue;
 		if (snake.willGrow)
-			snake.score++;
+			snake.score += POINTS;
 	}
 }
 
@@ -338,16 +339,27 @@ export class GameService {
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')
 				continue;
+
 			const user = await this.prismaService.users.update({
 				where: { id: snake.id },
 				data: {
 					score: {increment: snake.score},
+					totMatches: {increment: 1},
 				},
 				select: {
 					id: true,
 					score: true,
+					level: true,
 				},
 			});
+			const newLevel = Math.floor(user.score / 100 );
+			if (newLevel > user.level){
+				await this.prismaService.users.updateMany({
+					where: {id: user.id},
+					data: {level: newLevel},
+				});
+			}
+
 			await this.redisService.updateScore(user.id, user.score);
 		}
 		await this.gameGateway.broadcastOnlineUsers();
