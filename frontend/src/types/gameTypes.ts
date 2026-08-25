@@ -93,3 +93,14 @@ export interface GameRequestData {
     };
 }
 
+export interface LeaderboardData{
+  id: number,
+  name: string,
+  avatar: string | null,
+  score: number,
+  level: number,
+  createdAt: Date,
+  rank: number,
+  totMatches: number,
+}
+

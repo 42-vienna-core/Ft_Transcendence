@@ -101,6 +101,6 @@ export class UserController {
   @Get('leaderboard')
   @Authorization()
   getLeaderboard(): Promise<Leaderboard[]>{
-	return this.userService.getLeaderboard();
+	  return this.userService.getLeaderboard();
   }
 }

@@ -153,7 +153,7 @@ const authMiddleware = withAuth(
     }
 );
 
-export default function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
     const path = req.nextUrl.pathname;
 
     if (path.startsWith('/api/auth') || path.startsWith('/api/admin')) {

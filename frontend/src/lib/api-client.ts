@@ -15,7 +15,7 @@ export async function apiFetch(endpoint: string, options: CustomApiOptions = {})
     console.log(url);
 
     const session = await getServerSession(authOptions);
-    console.log("SESSION: ",session);
+    console.log("SESSION: ", session);
 
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${session?.accessToken}`);
@@ -24,7 +24,7 @@ export async function apiFetch(endpoint: string, options: CustomApiOptions = {})
         headers.set('Content-Type', 'application/json');
     }
 
-    const res = await fetch(url, {...options, headers, cache: 'no-store' });
+    const res = await fetch(url, { ...options, headers, cache: 'no-store' });
 
     let data: any = null;
     const contentType = res.headers.get('content-type');

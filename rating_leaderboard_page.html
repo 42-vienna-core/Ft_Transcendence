@@ -1,0 +1,467 @@
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .frame {
+    background: var(--surface-1);
+    border-radius: 12px;
+    padding: 12px;
+    border: 0.5px solid var(--border);
+  }
+
+  .window {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--text-primary);
+  }
+
+  .logo-m {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--bg-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-accent);
+    font-size: 14px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 22px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .nav .active {
+    color: var(--text-primary);
+    font-weight: 500;
+    position: relative;
+  }
+
+  .nav .active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -16px;
+    height: 2px;
+    background: var(--text-primary);
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 4px 4px 12px;
+    border-radius: 999px;
+    border: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .pill .a {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .body {
+    padding: 18px 20px 22px;
+  }
+
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .page-head h1 {
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .page-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .chips {
+    display: flex;
+    gap: 6px;
+  }
+
+  .chip {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    color: var(--text-secondary);
+    border: 0.5px solid var(--border);
+    cursor: pointer;
+  }
+
+  .chip.on {
+    background: var(--text-primary);
+    color: var(--surface-2);
+    border-color: transparent;
+    font-weight: 500;
+  }
+
+  .podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .pod {
+    border-radius: 12px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    border: 0.5px solid var(--border);
+  }
+
+  .pod.p1 {
+    background: var(--bg-warning);
+    border-color: transparent;
+    order: 2;
+  }
+
+  .pod.p2 {
+    background: var(--surface-1);
+    order: 1;
+    margin-top: 14px;
+  }
+
+  .pod.p3 {
+    background: var(--surface-1);
+    order: 3;
+    margin-top: 14px;
+  }
+
+  .pod .medal {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .pod.p1 .medal {
+    color: var(--text-warning);
+  }
+
+  .pod.p2 .medal,
+  .pod.p3 .medal {
+    color: var(--text-secondary);
+  }
+
+  .pod .av {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .pod .nm {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pod .sc {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pod .meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .table {
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .trow {
+    display: grid;
+    grid-template-columns: 44px 1fr 88px 70px 90px;
+    align-items: center;
+    padding: 11px 14px;
+    font-size: 13px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .trow:last-child {
+    border-bottom: 0;
+  }
+
+  .trow.header {
+    background: var(--surface-1);
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: lowercase;
+    letter-spacing: 0.03em;
+    padding: 8px 14px;
+  }
+
+  .trow.me {
+    background: var(--bg-accent);
+  }
+
+  .trow.me .nm,
+  .trow.me .rank-n,
+  .trow.me .sc {
+    color: var(--text-accent);
+    font-weight: 500;
+  }
+
+  .rank-n {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .who .av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .who .txt {
+    min-width: 0;
+  }
+
+  .who .nm {
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .who .lv {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .sc {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  .cell-m {
+    text-align: right;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cell-d {
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .caption {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 10px 4px 0;
+    text-align: center;
+  }
+</style>
+
+<h2 class="sr-only">Rating leaderboard page with the shared app header, a top-three podium, and a ranked table of
+  players showing rank, name, level, score, and total matches, with the current user's row highlighted.</h2>
+
+<div class="frame" role="img"
+  aria-label="Leaderboard page: shared header with leaderboard active, top-three podium, and a ranked table of players by score with the current user highlighted.">
+  <div class="window">
+    <header class="head">
+      <div style="display: flex; align-items: center; gap: 32px;">
+        <div class="logo"><span class="logo-m" aria-hidden="true"><i
+              class="ti ti-brand-snapchat"></i></span><span>snake.io</span></div>
+        <nav class="nav">
+          <span>dashboard</span>
+          <span class="active">leaderboard</span>
+          <span>friends</span>
+          <span>shop</span>
+        </nav>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="ti ti-bell" aria-hidden="true" style="font-size: 18px; color: var(--text-secondary);"></i>
+        <div class="pill"><span>Igor V.</span><span class="a">IV</span></div>
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="page-head">
+        <div>
+          <h1>Leaderboard</h1>
+          <div class="page-meta">top players by score · updated just now</div>
+        </div>
+        <div class="chips">
+          <span class="chip on">All time</span>
+          <span class="chip">This week</span>
+          <span class="chip">Friends</span>
+        </div>
+      </div>
+
+      <div class="podium">
+        <div class="pod p2">
+          <span class="medal">2nd</span>
+          <div class="av" style="background:#B5D4F4; color:#0C447C;">MR</div>
+          <div class="nm">Mira</div>
+          <div class="sc">1 920</div>
+          <div class="meta">lvl 15 · 210 matches</div>
+        </div>
+        <div class="pod p1">
+          <span class="medal"><i class="ti ti-crown" aria-hidden="true"
+              style="font-size:12px; vertical-align:-1px;"></i> 1st</span>
+          <div class="av" style="background:#FAC775; color:#633806;">PE</div>
+          <div class="nm">Pengu</div>
+          <div class="sc">2 240</div>
+          <div class="meta">lvl 18 · 260 matches</div>
+        </div>
+        <div class="pod p3">
+          <span class="medal">3rd</span>
+          <div class="av" style="background:#F4C0D1; color:#72243E;">KO</div>
+          <div class="nm">Kostia</div>
+          <div class="sc">1 760</div>
+          <div class="meta">lvl 14 · 188 matches</div>
+        </div>
+      </div>
+
+      <div class="table">
+        <div class="trow header">
+          <span>rank</span><span>player</span><span style="text-align:right;">score</span><span
+            style="text-align:right;">matches</span><span style="text-align:right;">joined</span>
+        </div>
+        <div class="trow"><span class="rank-n">4</span>
+          <div class="who">
+            <div class="av" style="background:#CECBF6; color:#3C3489;">LI</div>
+            <div class="txt">
+              <div class="nm">Lila</div>
+              <div class="lv">level 13</div>
+            </div>
+          </div><span class="sc">1 480</span><span class="cell-m">172</span><span class="cell-d">Mar 2024</span>
+        </div>
+        <div class="trow"><span class="rank-n">5</span>
+          <div class="who">
+            <div class="av" style="background:#9FE1CB; color:#085041;">JO</div>
+            <div class="txt">
+              <div class="nm">Jonas</div>
+              <div class="lv">level 12</div>
+            </div>
+          </div><span class="sc">1 210</span><span class="cell-m">154</span><span class="cell-d">Jan 2024</span>
+        </div>
+        <div class="trow me"><span class="rank-n">6</span>
+          <div class="who">
+            <div class="av" style="background:#C0DD97; color:#27500A;">IV</div>
+            <div class="txt">
+              <div class="nm">you</div>
+              <div class="lv">level 12</div>
+            </div>
+          </div><span class="sc">1 482</span><span class="cell-m">182</span><span class="cell-d">Apr 2024</span>
+        </div>
+        <div class="trow"><span class="rank-n">7</span>
+          <div class="who">
+            <div class="av" style="background:#F0997B; color:#4A1B0C;">TO</div>
+            <div class="txt">
+              <div class="nm">Tomato</div>
+              <div class="lv">level 10</div>
+            </div>
+          </div><span class="sc">1 105</span><span class="cell-m">140</span><span class="cell-d">May 2024</span>
+        </div>
+        <div class="trow"><span class="rank-n">8</span>
+          <div class="who">
+            <div class="av" style="background:#85B7EB; color:#042C53;">NO</div>
+            <div class="txt">
+              <div class="nm">Noor</div>
+              <div class="lv">level 9</div>
+            </div>
+          </div><span class="sc">980</span><span class="cell-m">121</span><span class="cell-d">Jun 2024</span>
+        </div>
+        <div class="trow"><span class="rank-n">9</span>
+          <div class="who">
+            <div class="av" style="background:#5DCAA5; color:#04342C;">PI</div>
+            <div class="txt">
+              <div class="nm">Pickle</div>
+              <div class="lv">level 9</div>
+            </div>
+          </div><span class="sc">910</span><span class="cell-m">118</span><span class="cell-d">Jul 2024</span>
+        </div>
+        <div class="trow"><span class="rank-n">10</span>
+          <div class="who">
+            <div class="av" style="background:#B4B2A9; color:#2C2C2A;">TF</div>
+            <div class="txt">
+              <div class="nm">Tofu</div>
+              <div class="lv">level 8</div>
+            </div>
+          </div><span class="sc">845</span><span class="cell-m">102</span><span class="cell-d">Jul 2024</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="caption">/leaderboard · podium for the top 3 · ranked table with your row highlighted</p>
+</div>

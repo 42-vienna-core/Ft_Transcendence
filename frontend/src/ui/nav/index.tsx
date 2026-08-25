@@ -23,8 +23,8 @@ export function NavLinks () {
                 notification={gameNotification + beFriendNotification}
             />
             <CustomLink
-                url={"/rating"}
-                label={"Rating"}
+                url={"/leaderboard"}
+                label={"Leaderboard"}
             />
             {
                 status === "authenticated" &&
