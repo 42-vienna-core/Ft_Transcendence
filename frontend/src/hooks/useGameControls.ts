@@ -22,9 +22,7 @@ export function useGameControls(
 ) {
     const callbackRef = useRef(onDirectionChange);
     const escCallbackRef = useRef(onEscPress);
-
-    console.log(controlType);
-
+    
     useEffect(() => {
         callbackRef.current = onDirectionChange;
         escCallbackRef.current = onEscPress;

@@ -179,7 +179,7 @@ export default function ProfileSettingsContent() {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
     const [pending, setPending] = useState<boolean>(false);
     const {theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
+    // const [mounted, setMounted] = useState(false);
 
     const [lang, setLang] = useState("");
     const [control, setControl] = useState("");
@@ -196,14 +196,18 @@ export default function ProfileSettingsContent() {
     const [isOpenControl, setIsOpenControl] = useState(false);
     const [isOpenSnakeColor, setIsOpenSnakeColor] = useState(false);
 
-        useEffect(() => {
-        setMounted(true);
+    useEffect(() => {
+        if (!theme || theme === 'system') {
+            setTheme("dark");
+            setIsThemeDark(true);
+        }
+
         if (theme === 'dark') {
             setIsThemeDark(true);
         } else {
             setIsThemeDark(false);
         }
-        
+
         if (pathName.includes("en")) setLang("en");
         if (pathName.includes("ru")) setLang("ru");
         if (pathName.includes("de")) setLang("de");
@@ -354,7 +358,7 @@ export default function ProfileSettingsContent() {
                 <SettingBtnContainer>
                     <ToggleSwitch
                         title={t("ct")}
-                        label={isThemeDark ? "☀️" : "🌙"}
+                        label={isThemeDark ? "🌙" : "☀️"}
                         onToggle={togleTheme}
                         checked={isThemeDark}
                     />

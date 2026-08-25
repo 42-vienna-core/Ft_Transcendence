@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Post, HttpCode, HttpStatus, MaxFileSizeValidator, Query, ParseFilePipe, Patch, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService, type Leaderboard } from './user.service';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
 import { UpdateUserDto } from './dto/updata-user.dto';
@@ -96,5 +96,11 @@ export class UserController {
   async reset(@Body() body: ResetPasswordDto)
   {
     return await this.userService.reset(body);
+  }
+
+  @Get('leaderboard')
+  @Authorization()
+  getLeaderboard(): Promise<Leaderboard[]>{
+	  return this.userService.getLeaderboard();
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, Inject, forwardRef} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameState, Direction, Snake, Position, Food, Player, PlayerType } from './interfaces/game-state';
+import { GameState, Direction, Snake, Position, Food, Player } from './interfaces/game-state';
+import type { PlayerType } from './interfaces/game-state';
 import { RedisService } from 'src/redis/redis.service';
 import { GameGateway } from './game.gateway';
 import { AiBotService } from 'src/aiOpponent/ai.service';
@@ -12,7 +13,7 @@ import { RoomType } from "@prisma/client";
 const GRID_WIDTH = 30;
 const GRID_HEIGHT = 30;
 const TICK_MS = 160;
-//const DIFFICULTY = 15; //the higher the harder it gets
+const POINTS = 5;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
 	if (next === null)
@@ -59,7 +60,6 @@ function spawnFood(state: GameState){
 			if (snake.newPosition !== null && comparePosition(snake.newPosition, pos))
 				ok = false;
 		}
-		//EDGE CASE: check that food is reachable (dead snake)
 	}
 	state.food.push({position: pos, eaten: false});
 }
@@ -165,7 +165,7 @@ function updateFoodScore(state: GameState){
 		if (!snake.alive)
 			continue;
 		if (snake.willGrow)
-			snake.score++;
+			snake.score += POINTS;
 	}
 }
 
@@ -252,11 +252,6 @@ function initGame(id: string, users: Player[]) : GameState{
 	return game;
 }
 
-// function randomDirection() : Direction{
-// 	const dir: Direction[] = ['DOWN', 'LEFT', 'RIGHT', 'UP'];	
-// 	return dir[Math.floor(Math.random()* dir.length)];
-// }
-
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
 	let winners : number[] = [];
@@ -299,6 +294,17 @@ export class GameService {
 	) { };
 
 	async storeResults(game: GameState){
+		const updated = await this.prismaService.gameRoom.updateMany({
+			where: {
+				id: game.roomId,
+				status: RoomStatus.PLAYING,
+			},
+			data: {
+				status: RoomStatus.FINISHED,
+			},
+		});
+		if (updated.count === 0)
+			return ;
 		await this.prismaService.gameResults.create({
 			data: {
 				roomId: game.roomId,
@@ -313,13 +319,8 @@ export class GameService {
 				}
 			}
 		})
-		const room = await this.prismaService.gameRoom.update({
-			where: {
-				id: game.roomId
-			},
-			data: {
-				status: RoomStatus.FINISHED
-			},
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id: game.roomId },
 			select: {
 				type: true,
 				ownerId: true,
@@ -327,21 +328,38 @@ export class GameService {
 		});
 		
 		if (room && room.type === RoomType.FRIEND && room.ownerId !== null)
-			this.eventEmitter.emit('playing-friends.changed', {ownerId: room.ownerId});
-
+			this.eventEmitter.emit('friend-match.status', {ownerId: room.ownerId, roomId: game.roomId, status: RoomStatus.FINISHED});
+		const userIds : number[] = [];
+		for (const user of game.snakes){
+			if (user.player === 'bot')
+				continue ;
+			userIds.push(user.id);
+		}
+		this.eventEmitter.emit('playing-friends.changed', {userIds});
 		for (const snake of game.snakes){
 			if (snake.player === 'bot')
 				continue;
+
 			const user = await this.prismaService.users.update({
 				where: { id: snake.id },
 				data: {
 					score: {increment: snake.score},
+					totMatches: {increment: 1},
 				},
 				select: {
 					id: true,
 					score: true,
+					level: true,
 				},
 			});
+			const newLevel = Math.floor(user.score / 100 );
+			if (newLevel > user.level){
+				await this.prismaService.users.updateMany({
+					where: {id: user.id},
+					data: {level: newLevel},
+				});
+			}
+
 			await this.redisService.updateScore(user.id, user.score);
 		}
 		await this.gameGateway.broadcastOnlineUsers();
@@ -367,6 +385,8 @@ export class GameService {
 		});
 		if (!room)
 			throw new BadRequestException ('Room not found');
+		if (room.status !== RoomStatus.PLAYING)
+			return ;
 		const users = room.roomUsers.map((roomUser) => ({
 			id: roomUser.user.id,
 			isBot: roomUser.user.isBot,
@@ -377,26 +397,40 @@ export class GameService {
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
-		this.gameGateway.broadcastGameState(roomId, game);
+		await this.gameGateway.broadcastGameState(roomId, game);
 		setTimeout(() => this.tick(roomId), TICK_MS);
 	}
 
 	async tick(roomId: string){
+		const room = await this.prismaService.gameRoom.findUnique({
+			where: { id: roomId },
+			select: {
+				status: true,
+				roomUsers: {
+					select: {
+						userId: true,
+					}
+				}
+			},
+		});
+		if (room === null || room.status !== RoomStatus.PLAYING){
+			await this.redisService.deleteGameState(roomId);
+			return ;
+		}
+		const activeUsers = new Set(room.roomUsers.map((roomUser) => roomUser.userId));
 		const game = await this.redisService.getGameState(roomId);
 		if (!game)
 			return ;
 		if (game.status !== 'finished'){
 			for (const snake of game.snakes){
-				if (snake.player === 'human' && !await this.redisService.isOnline(snake.id))
+				if (snake.player === 'human' && !activeUsers.has(snake.id))
 					snake.alive = false;
 			}
 			if (game.botPresent){
 				const map = this.aiBotService.createMap(game);
 				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot' /*&& game.tick % DIFFICULTY != 0*/)
+					if (snake.alive && snake.player === 'bot')
 						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
-					// else if (snake.alive && snake.player === 'bot' && game.tick % DIFFICULTY == 0)
-					// 	snake.newDirection = randomDirection();
 				}
 			}
 			newHeadPosition(game);
@@ -413,6 +447,6 @@ export class GameService {
 		else{
 			setTimeout(() => this.tick(roomId), TICK_MS);
 		}
-		this.gameGateway.broadcastGameState(roomId, game);
+		await this.gameGateway.broadcastGameState(roomId, game);
 	}
 }

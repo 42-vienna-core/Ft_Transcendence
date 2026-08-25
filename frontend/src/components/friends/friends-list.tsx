@@ -6,26 +6,25 @@ import { UserRoundX } from 'lucide-react';
 import DialogModal from '../modal/dialog-modal';
 import { OnlineStateItem } from '@/ui/online-tracker';
 import { useGameSocket } from '@/providers/SocketProvider';
-import { Friend, GameModeType } from '@/types/gameTypes';
-import { useFriendAndRoomID, useGameMode } from '../store/useUserStore';
-import { useRouter } from "next/navigation";
+import { Friend } from '@/types/gameTypes';
+import { useRoomDataBySocket } from '../store/useRoomData';
+import { useNotificationListener } from '../store/notification';
 
 interface FriendCardProps {
     friend: Friend;
     filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
-    handleGameAction: (action: GameModeType, id: number) => void;
+    handleGameAction: (roomId: string) => void;
 }
 
 interface ListOfFriendsProps {
     friends: Friend[];
     filter: ActiveFilterType;
     removeFriend: (friend: Friend) => void;
-    handleGameAction: (action: GameModeType, id: number) => void;
+    handleGameAction: (roomId: string) => void;
 }
 
-type ActiveFilterType = 'All' | 'Online' | 'Playing';
-
+type ActiveFilterType = 'All' | 'Online' | 'Playing' | 'Requests';
 
 interface FriendsContentProps {
     friends: Friend[];
@@ -34,12 +33,21 @@ interface FriendsContentProps {
 }
 
 const rowActionBtn =
-    "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium text-text-secondary transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
+    "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium  transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
+    const { gameNotification, gameRequests, playFriends} = useNotificationListener();
+    
     const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
     const isAvatar =  !!avatar;
+
+    const filtredInviter = gameRequests?.filter((it) => it.inviter.id === id); 
+    const isHost = filtredInviter && filtredInviter.length > 0;
+    const roomId = isHost ? filtredInviter[0].roomId : "";
+
+    const playingRoom = playFriends.find(room => room.roomUsers.some(user => user.userId === id));
+    const isPlaying = !!playingRoom;
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
@@ -61,10 +69,9 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     <OnlineStateItem
                         isOnline={isOnline}
                     />
-                    <span>In public match · Room 47 · 3rd of 8</span>
+                    { isPlaying && <span>{"In match"} {`· Room ${playingRoom?.id.slice(0, 8)}`} </span>}
                     <span className="text-text-disabled">·</span>
-                    <span className="font-medium text-text-primary">{score}</span>
-                    {/* <span className="text-xs text-success">▲42 wk</span> */}
+                    <span className="font-medium text-text-primary">score {score}</span>
                 </div>
             </div>
             <div className="ml-auto flex min-w-[76px] flex-col items-stretch gap-1">
@@ -79,26 +86,17 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                 }
 
                 {
-                    filter === 'Online' &&
+                    filter === 'Online' && isHost &&
                         <button
-                            className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
-                            onClick={() => handleGameAction('FRIENDS', id)}
-                        >
-                            invite
-                        </button>
-                }
-
-               {
-                    filter === 'Playing' &&
-                        <button
-                            className={`${rowActionBtn} py-[5px] hover:border-accent hover:text-accent-hover active:text-accent-active`}
-                            onClick={() => handleGameAction('FRIENDS_JOIN', id)}
+                            className={`${rowActionBtn} py-[5px] hover:border-accent text-text-inverse active:text-accent-active
+                            ${gameNotification && 'animate-btn-blink '}
+                            `}
+                            onClick={() => handleGameAction(roomId)}
                         >
                             join
                         </button>
                 }
             </div>
-
         </li>
     )
 }
@@ -125,18 +123,19 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const [ isOpen, setIsOpen ] = useState<boolean>(false);
     const [ user, setUser ] = useState<Friend | null>(null);
     const { socket, isConnected } = useGameSocket();
-    const { setGameMode } = useGameMode();
-    const { setFriendId } = useFriendAndRoomID();
-    const router = useRouter();
-    
+    const { setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
+    const { playFriends, status} = useNotificationListener();
+
     let newFriends: Friend[] = [];
 
     if (filter === 'All') {
         newFriends = friends;
     } else if (filter === 'Online') {
-        newFriends  = friends.filter(it => it.isOnline);
+        newFriends = friends.filter(it => it.isOnline);
+    } else if (filter === 'Playing' && status === 'PLAYING') {
+        const playingIds = new Set(playFriends.flatMap(room => room.roomUsers.map(user => user.userId)));
+        newFriends = friends.filter(it => playingIds.has(it.id));
     }
-
 
     async function handeleFriendRemoving(friend: Friend) {
         setUser(friend);
@@ -160,18 +159,18 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
         }
     }
 
-    const handleGameAction = async (action: GameModeType, id: number) => {
-        console.log(action);
-        if (!socket || !isConnected || !action) return;
+    const handleGameAction = async (roomId: string) => {
+        if (!socket || !isConnected) return;
 
-        setGameMode(action);
-        setFriendId(id);
+        clearStatus();
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        socket.emit('join-match', {mode: 'FRIENDS_JOIN', roomId});
 
-        router.push("/arena");
-        router.refresh();
+        setGameMode('FRIENDS_JOIN');
+        setIsLobbyOpen(true);
     }
+
+    if (filter === 'Requests') return null;
 
     if (newFriends.length === 0 && filter === 'All')
         return  (
@@ -184,6 +183,12 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
             <div className="flex min-w-0 flex-col gap-2.5">
                 <p className="text-sm text-warning-text">No friends online</p>
             </div>)
+    
+    if (newFriends.length === 0 && filter === 'Playing')
+        return  (
+            <div className="flex min-w-0 flex-col gap-2.5">
+                <p className="text-sm text-warning-text">No playing friends</p>
+            </div>)
 
     return (
         <div className="flex min-w-0 flex-col gap-2.5">
@@ -192,17 +197,17 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
                 friends={newFriends}
                 removeFriend={handeleFriendRemoving}
                 handleGameAction={handleGameAction}
-        />
-        <DialogModal
-            isOpen={isOpen}
-            type={'REMOVE_FRIEND'}
-            title={`Remove ${user?.name} from friends?`}
-            warning="They'll no longer see your status or invite you to matches. You can add them back anytime."
-            secondBtn="Remove friend"
-            handleConfirmation={handleConfirmationRequest}
-        >
-            <UserRoundX className="w-4 h-4" />
-        </DialogModal>
+            />
+            <DialogModal
+                isOpen={isOpen}
+                type={'REMOVE_FRIEND'}
+                title={`Remove ${user?.name} from friends?`}
+                warning="They'll no longer see your status or invite you to matches. You can add them back anytime."
+                secondBtn="Remove friend"
+                handleConfirmation={handleConfirmationRequest}
+            >
+                <UserRoundX className="w-4 h-4" />
+            </DialogModal>
         </div>
     )
 }
