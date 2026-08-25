@@ -71,7 +71,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     />
                     { isPlaying && <span>{"In match"} {`· Room ${playingRoom?.id.slice(0, 8)}`} </span>}
                     <span className="text-text-disabled">·</span>
-                    <span className="font-medium text-text-primary">{score}</span>
+                    <span className="font-medium text-text-primary">score {score}</span>
                 </div>
             </div>
             <div className="ml-auto flex min-w-[76px] flex-col items-stretch gap-1">

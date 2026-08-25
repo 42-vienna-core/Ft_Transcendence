@@ -35,7 +35,7 @@ export default function LeaderboardList({ rest }: { rest: LeaderboardData[] }) {
     const isInTop = top.some(p => p.id === id);
     const me = rest.find(p => p.id === id);
 
-    const showPined = me && !isInTop;
+    const showPinned = me && !isInTop;
 
     return (
         <ul className="overflow-hidden rounded-xl border border-border-default">
@@ -43,7 +43,7 @@ export default function LeaderboardList({ rest }: { rest: LeaderboardData[] }) {
                 <span>rank</span><span>player</span><span className="text-right">score</span><span className="text-right">matches</span><span className="text-right">joined</span>
             </div>
 
-            {rest.map((item, idx) => {
+            {top.map((item) => {
                 return (
                     <LeaderboardItem
                         key={item.id} 
@@ -52,6 +52,21 @@ export default function LeaderboardList({ rest }: { rest: LeaderboardData[] }) {
                     />
                 )
             })}
+
+            { showPinned && 
+                <>
+                    <div className="flex items-center justify-center py-1 text-gray-300 text-xs ">
+                        .  .  .  .  .  .
+                    </div>
+                    <div className="sticky bottom-0 bg-blue-50 ">
+                        <LeaderboardItem 
+                            key={"pinned"}
+                            p={me}
+                            me={true}
+                        />            
+                    </div>
+                </>
+            }
         </ul>
     )
 }

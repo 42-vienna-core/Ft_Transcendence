@@ -6,8 +6,6 @@ import TopThreePodium from "./topThreePodium";
 import { apiFetch } from "@/lib/api-client";
 import { LeaderboardData } from "@/types/gameTypes";
 
-
-
 export default function LeaderboardComponent() {
     const [leaderboard, setLeaderboard] = useState<LeaderboardData[]>([]);
 
@@ -33,11 +31,7 @@ export default function LeaderboardComponent() {
             <div className="mb-4 flex items-end justify-between">
                 <div>
                     <h1 className="m-0 !text-[22px] font-medium text-text-primary">Leaderboard</h1>
-                    <div className="mt-1 text-xs text-text-secondary">top players by score </div>
-                </div>
-                <div className="flex gap-1.5">
-                    <span className="cursor-pointer rounded-full border border-transparent bg-text-primary px-3 py-[5px] text-xs font-medium text-bg-surface">All time</span>
-                    <span className="cursor-pointer rounded-full border border-border-default px-3 py-[5px] text-xs text-text-secondary">Friends</span>
+                    <div className="mt-1 text-xs text-text-secondary">top players by score · all time </div>
                 </div>
             </div>
             <TopThreePodium 
