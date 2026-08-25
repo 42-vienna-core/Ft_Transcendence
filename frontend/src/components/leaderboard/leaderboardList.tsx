@@ -15,7 +15,7 @@ function LeaderboardItem({p, me}: LeaderboardItemProps) {
         <li className={`grid grid-cols-[44px_1fr_88px_70px_90px] items-center ${me && "bg-text-inverse"} border-b border-border-default px-3.5 py-[11px] text-[13px] last:border-b-0`}>
             <span className="font-medium tabular-nums text-text-secondary">{p.rank}</span>
             <div className="flex min-w-0 items-center gap-2.5">
-                <Avatar name={p.name} avatar={p.avatar} size={30}/>
+                <Avatar name={p.name} avatar={p.avatar} style={"size-[30px]"}/>
                 <div className="min-w-0">
                     <div className="truncate font-medium text-text-primary">{me ? "me" : p.name}</div>
                     <div className="text-[11px] text-text-secondary">level {p.level}</div>
