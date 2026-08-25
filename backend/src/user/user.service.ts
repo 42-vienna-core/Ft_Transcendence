@@ -12,6 +12,16 @@ import { ResetCodeDto } from './dto/reset-code.dto';
 import { hash } from 'argon2';
 import { BadRequestException } from '@nestjs/common';
 
+export interface Leaderboard{
+	id: number,
+	name: string,
+	avatar: string | null,
+	score: number,
+	level: number,
+	createdAt: Date,
+	rank: number,
+	totMatches: number,
+}
 
 @Injectable()
 export class UserService {
@@ -279,5 +289,32 @@ export class UserService {
 		});
 		 
 		return {message: "Password changed"}
+	}
+
+	async getLeaderboard(): Promise<Leaderboard[]> {
+		const data = await this.prismaService.users.findMany({
+			where: {isBot: false},
+			select: {
+				id: true,
+				name: true,
+				avatar: true,
+				score: true,
+				level: true,
+				createdAt: true,
+				totMatches: true,
+			},
+			orderBy: [
+				{score: 'desc'},
+				{id: 'asc'},
+			],
+		});
+		const avatarUrl = this.configService.getOrThrow<string>('AVATARS_URL');
+	
+		const leaderboard : Leaderboard[] = data.map((user, index) => ({
+			...user,
+			avatar: user.avatar ? avatarUrl + user.avatar : null,
+			rank: index + 1,
+		}));
+		return leaderboard;
 	}
 }
