@@ -12,7 +12,7 @@ import { RoomType } from "@prisma/client";
 
 const GRID_WIDTH = 30;
 const GRID_HEIGHT = 30;
-const TICK_MS = 160;
+const TICK_MS = 130;
 const POINTS = 5;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
