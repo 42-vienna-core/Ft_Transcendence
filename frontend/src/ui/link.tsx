@@ -33,7 +33,7 @@ function CustomLink ({label, url, notification}: CustomLinkProps) {
     return (
         <Link
             href={url}
-            className={`relative py-2 text-sm font-medium tracking-wide transition-colors duration-150 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-right after:scale-x-0 after:bg-accent-hover after:transition-transform after:duration-300 hover:text-accent-hover hover:after:origin-left hover:after:scale-x-100 ${
+            className={`relative whitespace-nowrap py-2 text-xs font-medium tracking-wide transition-colors duration-150 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-right after:scale-x-0 after:bg-accent-hover after:transition-transform after:duration-300 hover:text-accent-hover hover:after:origin-left hover:after:scale-x-100 sm:text-sm ${
                 isActive
                     ? 'text-accent-hover after:origin-left after:scale-x-100'
                     : 'text-text-primary'

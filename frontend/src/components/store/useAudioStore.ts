@@ -7,7 +7,7 @@ interface AudioState {
     isPlaying: boolean;
     isMuted: boolean;
     currentTrack: string | null;
-  
+
     playMusic: (src: string, loop?: boolean) => void;
     pauseMusic: () => void;
     toggleMute: (isMute: boolean) => void;
@@ -20,8 +20,8 @@ interface AudioState {
 let bgMusicPlayer: HTMLAudioElement | null = null;
 let effectTune: HTMLAudioElement | null = null;
 
-export const useAudioStore = create<AudioState>()(    
-    devtools((set, get) => ({
+export const useAudioStore = create<AudioState>(
+    (set, get) => ({
         isPlaying: false,
         isMuted: false,
         currentTrack: null,
@@ -40,7 +40,7 @@ export const useAudioStore = create<AudioState>()(
 
             bgMusicPlayer.play()
                 .then(() => set({ isPlaying: true, currentTrack: src }))
-                .catch(() => {});
+                .catch(() => { });
         },
 
         pauseMusic: () => {
@@ -67,30 +67,27 @@ export const useAudioStore = create<AudioState>()(
             if (!effectTune) {
                 effectTune = new Audio(src);
             }
-        
+
             effectTune.volume = 0.5;
             effectTune.muted = !get().isMuted;
-            effectTune.play().catch(() => {});
+            effectTune.play().catch(() => { });
         },
 
         stopBgMusic: () => {
             if (bgMusicPlayer) {
-                bgMusicPlayer.pause(); 
-                bgMusicPlayer.src = ""; 
-                bgMusicPlayer = null;   
-    
+                bgMusicPlayer.pause();
+                bgMusicPlayer.src = "";
+                bgMusicPlayer = null;
+
                 set({ isPlaying: false, currentTrack: null });
             }
         },
         stopEffectMusic: () => {
             if (effectTune) {
-                effectTune.pause(); 
-                effectTune.src = ""; 
+                effectTune.pause();
+                effectTune.src = "";
                 effectTune = null;
             }
         }
     }),
-    {
-        name: "AudioState",
-    }
-));
+);

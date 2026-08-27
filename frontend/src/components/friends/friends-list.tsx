@@ -36,7 +36,7 @@ const rowActionBtn =
     "flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-default px-2 py-1 text-xs font-medium  transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
-    const { gameNotification, gameRequests, playFriends} = useNotificationListener();
+    const { gameNotification, gameRequests, playFriends, status} = useNotificationListener();
     
     const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
@@ -47,7 +47,8 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
     const roomId = isHost ? filtredInviter[0].roomId : "";
 
     const playingRoom = playFriends.find(room => room.roomUsers.some(user => user.userId === id));
-    const isPlaying = !!playingRoom;
+    const isPlaying = !!playingRoom && status === 'PLAYING';
+    const isShowBtn = filter === 'Online' && isHost && status !== 'PLAYING' && status !== 'READY';
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
@@ -86,7 +87,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                 }
 
                 {
-                    filter === 'Online' && isHost &&
+                    isShowBtn &&
                         <button
                             className={`${rowActionBtn} py-[5px] hover:border-accent text-text-inverse active:text-accent-active
                             ${gameNotification && 'animate-btn-blink '}

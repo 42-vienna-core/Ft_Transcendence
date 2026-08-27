@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
 import { useProfile } from '@/providers/ProfileContext';
-import { Loader } from 'lucide-react';
+import { Loader, Search, X } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
-
 
 interface Friend {
     id: number;
@@ -18,78 +17,91 @@ interface Friend {
 
 interface FriendCardProps {
     friend: Friend;
-    loading: boolean;
-    addFriend: (id: number) => void;
+    addFriend: (id: number) => Promise<boolean>;
 }
 
 interface FriendsListProps {
     friends: Friend[];
     message: string;
-    loading: boolean;
     isSuccess: boolean;
-    addFriend: (id: number) => void;
+    addFriend: (id: number) => Promise<boolean>;
 }
 
-function FriendCard ({friend, addFriend, loading}: FriendCardProps) {
-    const { id, name, avatar, isOnline} = friend;
-    const av = (name && typeof name === 'string' )? name.slice(0,2): "";
+type AddStatus = 'idle' | 'loading' | 'done';
+
+function FriendCard({ friend, addFriend }: FriendCardProps) {
+    const [status, setStatus] = useState<AddStatus>('idle');
+    const { id, name, avatar, isOnline } = friend;
+    const av = (name && typeof name === 'string') ? name.slice(0, 2) : "";
     const isAvatar = !!avatar;
+
+    async function handleOnClick() {
+        if (status !== 'idle') return;
+
+        setStatus('loading');
+        const success = await addFriend(id);
+        setStatus(success ? 'done' : 'idle');
+    }
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
             <div>
-                { isAvatar ? (
-                    <img className="size-[26px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
+                {isAvatar ? (
+                    <img className="size-[26px] shrink-0 rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
                 ) : (
-                    <div className="flex size-[26px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
+                    <div className="flex size-[26px] shrink-0 items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
                         {av}
                     </div>
                 )}
             </div>
 
             <div className="min-w-0">
-                <p className="text-base font-medium">{name}</p>
+                <p className="truncate text-base font-medium">{name}</p>
 
                 <OnlineStateItem
                     isOnline={isOnline}
                 />
 
             </div>
-                {
-                    loading && (
-                        <Loader className="h-5 w-5 animate-spin text-center text-accent" />
-                    )
-                }
 
-                {
-                    !loading && (
-                        <button
-                            className="cursor-pointer text-sm text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
-                            onClick={() => addFriend(id)}
-                        >
-                            + Add
-                        </button>
-                    )
-                }
+            {status === 'loading' && (
+                <Loader className="h-5 w-5 animate-spin text-center text-accent" />
+            )}
+
+            {status === 'idle' && (
+                <button
+                    type="button"
+                    className="cursor-pointer whitespace-nowrap text-sm text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
+                    onClick={handleOnClick}
+                >
+                    + Add
+                </button>
+            )}
+
+            {status === 'done' && (
+                <p className="whitespace-nowrap text-sm text-text-tertiary">done</p>
+            )}
         </li>
     )
 }
 
-function FriendsList({friends, message,loading, isSuccess, addFriend}: FriendsListProps) {
+function FriendsList({ friends, message, isSuccess, addFriend }: FriendsListProps) {
     return (
-        <ul>
+        <ul className="max-h-[45vh] divide-y divide-border-subtle overflow-y-auto">
             {friends.length > 0 &&
                 (friends.map((item) =>
                     <FriendCard
                         key={`friend-${item.id}`}
                         friend={item}
-                        loading={loading}
                         addFriend={addFriend}
                     />
                 ))
             }
-            { message.length != 0 &&
-                <li key='msg' className={`py-1 text-sm ${isSuccess ? "text-success": "text-warning-text"}`}>
+            {message.length != 0 &&
+                <li
+                    key='msg'
+                    className={`sticky bottom-0 border-t border-border-subtle bg-bg-subtle py-1.5 text-sm ${isSuccess ? "text-success" : "text-warning-text"}`}
+                >
                     {message}
                 </li>
             }
@@ -97,12 +109,14 @@ function FriendsList({friends, message,loading, isSuccess, addFriend}: FriendsLi
     )
 }
 
-export default function FindFriends() {
+export default function FindFriends({
+    styles,
+    handleFindModal
+}: { styles: string, handleFindModal: () => void }) {
     const userContext = useProfile();
     const [message, setMessage] = useState<string>("");
     const [result, setResult] = useState<Friend[]>([]);
     const [query, setQuery] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(false);
     const [isSuccess, setIsSuccess] = useState<boolean>(true);
 
 
@@ -116,7 +130,6 @@ export default function FindFriends() {
 
         try {
             const res = await apiFetch(`user/search?name=${value}`);
-            console.log("RES: ",res);
 
             if (Array.isArray(res) && res.length != 0) {
                 setResult(res);
@@ -134,13 +147,11 @@ export default function FindFriends() {
         }
     }, 300);
 
-    async function addFriend(id: number) {
+    async function addFriend(id: number): Promise<boolean> {
         const senderId = userContext.id;
         const receiverId = id;
 
-        if (!senderId || !receiverId) return
-
-        setLoading(true);
+        if (!senderId || !receiverId) return false;
 
         try {
             await apiFetch('friends/request', {
@@ -153,7 +164,8 @@ export default function FindFriends() {
 
             setIsSuccess(true);
             setMessage("The user has been added");
-        } catch (error){
+            return true;
+        } catch (error) {
             setIsSuccess(false);
 
             if (error instanceof Error) {
@@ -161,8 +173,7 @@ export default function FindFriends() {
             } else {
                 setMessage("An unknown error occurred");
             }
-        } finally {
-            setLoading(false);
+            return false;
         }
     }
 
@@ -172,10 +183,24 @@ export default function FindFriends() {
         handleSearchRequest(value);
     }
 
+    const isTooShort = query.trim().length > 0 && query.trim().length < 3;
+
     return (
-        <div className="rounded-md bg-bg-subtle px-3.5 py-3">
-            <h3 className="mb-2 !text-sm font-medium lowercase tracking-wide text-text-secondary">Find friends</h3>
-            <div className="mb-2 flex items-center gap-2 rounded-md border border-border-default bg-bg-surface px-2.5 py-1.5 transition-colors duration-200 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-soft">
+        <div className={styles}>
+            <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 className="!text-sm font-medium lowercase tracking-wide text-text-secondary">Find friends</h3>
+                <button
+                    type="button"
+                    onClick={handleFindModal}
+                    aria-label="Close"
+                    className="-mr-1 -mt-1 cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-muted hover:text-text-primary lg:hidden"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </div>
+
+            <div className="relative mb-2 flex items-center gap-2 rounded-md border border-border-default bg-bg-surface py-1.5 pl-8 pr-2.5 transition-colors duration-200 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-soft">
+                <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-text-tertiary" />
                 <input
                     type="text"
                     placeholder="username"
@@ -184,10 +209,14 @@ export default function FindFriends() {
                     className="w-full border-none bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
                 />
             </div>
+
+            {isTooShort && !message && (
+                <p className="mb-1 text-xs text-text-tertiary">Keep typing… (min 3 characters)</p>
+            )}
+
             <FriendsList
                 friends={result}
                 addFriend={addFriend}
-                loading={loading}
                 isSuccess={isSuccess}
                 message={message}
             />
