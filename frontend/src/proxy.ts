@@ -17,19 +17,11 @@ const rawRefreshTTL = env.JWT_REFRESH_TTL?.match(/\d+/)?.[0] || '7';
 const JWT_ACCESS_TTL = Number(rawAccessTTL);
 const JWT_REFRESH_TTL = Number(rawRefreshTTL);
 
-const REFRESH_AGE = (JWT_ACCESS_TTL - 1) * 60 * 1000;
+const REFRESH_AGE = (JWT_ACCESS_TTL - 2) * 60 * 1000;
 const COOKIE_MAX_AGE = JWT_REFRESH_TTL * 24 * 60 * 60;
 
 function createExpiredTime(): number {
     return Date.now() + REFRESH_AGE;
-}
-
-const PromiseError:JWT = {
-    accessToken: "",
-    refreshToken: "",
-    accessTokenExpiry: 0,
-    role: "PLAYER",
-    error: ""
 }
 
 

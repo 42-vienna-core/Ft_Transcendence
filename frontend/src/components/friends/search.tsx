@@ -7,21 +7,22 @@ import { useProfile } from '@/providers/ProfileContext';
 import { Loader, Search, X } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
 
-interface Friend {
+interface SearchingData{
     id: number;
     name: string;
     avatar?: string | null;
     isOnline: boolean;
     score: number;
+    friendStatus: "INCOMING" | "FRIEND" | "OUTGOING" | "NONE"; 
 }
 
 interface FriendCardProps {
-    friend: Friend;
+    friend: SearchingData;
     addFriend: (id: number) => Promise<boolean>;
 }
 
 interface FriendsListProps {
-    friends: Friend[];
+    friends: SearchingData[];
     message: string;
     isSuccess: boolean;
     addFriend: (id: number) => Promise<boolean>;
@@ -31,7 +32,7 @@ type AddStatus = 'idle' | 'loading' | 'done';
 
 function FriendCard({ friend, addFriend }: FriendCardProps) {
     const [status, setStatus] = useState<AddStatus>('idle');
-    const { id, name, avatar, isOnline } = friend;
+    const { id, name, avatar, isOnline, friendStatus } = friend;
     const av = (name && typeof name === 'string') ? name.slice(0, 2) : "";
     const isAvatar = !!avatar;
 
@@ -57,18 +58,16 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
 
             <div className="min-w-0">
                 <p className="truncate text-base font-medium">{name}</p>
-
                 <OnlineStateItem
                     isOnline={isOnline}
                 />
-
             </div>
 
             {status === 'loading' && (
                 <Loader className="h-5 w-5 animate-spin text-center text-accent" />
             )}
 
-            {status === 'idle' && (
+            {status === 'idle' && friendStatus === 'NONE' && (
                 <button
                     type="button"
                     className="cursor-pointer whitespace-nowrap text-sm text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
@@ -78,8 +77,20 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
                 </button>
             )}
 
+            {status === 'idle' && friendStatus === 'FRIEND' && (
+                <p className="whitespace-nowrap text-sm text-text-tertiary">Friends</p>
+            )}
+
+            {status === 'idle' && friendStatus === 'OUTGOING' && (
+                <p className="whitespace-nowrap text-sm text-text-tertiary">Requested</p>
+            )}
+
+            {status === 'idle' && friendStatus === 'INCOMING' && (
+                <p className="whitespace-nowrap text-sm text-text-tertiary">Respond in requests</p>
+            )}
+
             {status === 'done' && (
-                <p className="whitespace-nowrap text-sm text-text-tertiary">done</p>
+                <p className="whitespace-nowrap text-sm text-text-tertiary">Requested</p>
             )}
         </li>
     )
@@ -115,7 +126,7 @@ export default function FindFriends({
 }: { styles: string, handleFindModal: () => void }) {
     const userContext = useProfile();
     const [message, setMessage] = useState<string>("");
-    const [result, setResult] = useState<Friend[]>([]);
+    const [result, setResult] = useState<SearchingData[]>([]);
     const [query, setQuery] = useState<string>("");
     const [isSuccess, setIsSuccess] = useState<boolean>(true);
 

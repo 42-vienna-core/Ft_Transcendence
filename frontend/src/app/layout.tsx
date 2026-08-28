@@ -4,6 +4,7 @@ import { bungee, inter } from "../ui/font";
 import { Providers } from "@/providers/providers";
 import "./globals.css"
 import GlobalLobbyManager from "@/components/LobbyManager";
+import AppToaster from "@/components/app-toaster";
 
 export const metadata: Metadata = {
     title: "Snake Multiplayer",
@@ -30,6 +31,7 @@ export default function rootLayout({
                     >
                         {children}
                         <GlobalLobbyManager />
+                        <AppToaster />
                     </ThemeProvider>
                 </Providers> 
             </body>

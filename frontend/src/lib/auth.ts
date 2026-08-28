@@ -53,8 +53,6 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({token, user, account, trigger, session}) {
             console.log("=================JWT CALLBACK=======================")
-            // console.log(" jwt calback: ",token);
-
             if (user) {
                 token.sub = user.id;
                 token.name = user.name;
@@ -80,9 +78,6 @@ export const authOptions: NextAuthOptions = {
         },
         async session({session, token}) {
             console.log("=================SESSION CALLBACK=======================")
-
-            // console.log(" session calback: ",token);
-
             if (session.user) {
                 session.user.id = Number(token.sub);
                 session.user.username = token.name as string;
@@ -100,7 +95,6 @@ export const authOptions: NextAuthOptions = {
         error: '/login'
     },
     session: {strategy: 'jwt'},
-    // debug: true,
     secret: process.env.NEXTAUTH_SECRET
 }
 

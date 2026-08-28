@@ -10,6 +10,8 @@ import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/error";
+import { toast } from "sonner";
 import { PaintBucket, Trash2 } from "lucide-react";
 import { useOutsideClick } from "@/hooks/useOutsideClick";
 
@@ -241,18 +243,18 @@ export default function ProfileSettingsContent() {
     const modalSnakeColorRef = useOutsideClick(isOpenSnakeColor,() => setIsOpenSnakeColor(false));
 
 
-    const selectSnakeColor = (color: string) => {
+    const selectSnakeColor = async (color: string) => {
         setSnakeColor(color);
-        togleSnakeColorMenu(); 
+        togleSnakeColorMenu();
         localStorage.setItem('snakeColor', color);
 
         try {
-            apiFetch('user/me/color', {
+            await apiFetch('user/me/color', {
                 method: 'PATCH',
                 body: JSON.stringify({color: color}),
             })
         } catch (error) {
-            console.log("Change snake color error.");
+            toast.error(getErrorMessage(error, "Couldn't save your snake color."));
         }
     };
 
@@ -292,7 +294,11 @@ export default function ProfileSettingsContent() {
                 method: "DELETE"
             });
 
-            if (!res.success) return
+            if (!res.success) {
+                setPending(false);
+                toast.error("The server rejected the account deletion request.");
+                return;
+            }
 
             await signOut({
                 callbackUrl: "/login",
@@ -302,10 +308,10 @@ export default function ProfileSettingsContent() {
             localStorage.removeItem('controls');
             localStorage.removeItem('snakeColor');
             localStorage.removeItem('soundtrack');
-            localStorage.clear(); 
+            localStorage.clear();
         } catch (error) {
             setPending(false);
-            console.log("The server has rejected the deleting account request : ");
+            toast.error(getErrorMessage(error, "Couldn't delete your account."));
         }
     };
 
@@ -322,11 +328,11 @@ export default function ProfileSettingsContent() {
                 });
             } catch (error) {
                 setPending(false);
-                console.log("An error occurred while logOut: ", error);
+                toast.error(getErrorMessage(error, "Couldn't log you out."));
             }
         } else {
             setPending(false);
-            console.log("The server has rejected the logout request : ");
+            toast.error("The server rejected the logout request.");
         }
     };
 

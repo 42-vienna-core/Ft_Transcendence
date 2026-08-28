@@ -112,7 +112,6 @@ function ArenaContent() {
         if (!socket || !isConnected) return;
 
         const handleGameState = (data: Game) => {
-            // console.log("game-state", data);
             setPlayers(data.snakes);
             setTick(data.tick);
         }
@@ -157,7 +156,7 @@ function ArenaContent() {
         room.roomId.slice(0, maxLenRoomId):
         room?.roomId;
 
-    const showOver = gameStatus=== 'OVER' ;
+    const showOver = gameStatus === 'OVER' ;
     const showWin = gameStatus === 'WIN';
 
     return (
@@ -219,7 +218,7 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between py-4">
+                <div className="flex items-center justify-between py-4 hidden lg:block">
                     <div className="flex gap-1.5">
                         <Kbd active={gameStatus === 'START'}>move</Kbd>
                         <Kbd active={gameDir === 'LEFT'} activeClass="text-warning-text">←</Kbd>
@@ -230,7 +229,7 @@ function ArenaContent() {
                 </div>
             </div>
 
-            <aside className="mt-4 lg:col-span-1 lg:mt-0 lg:h-[calc(100vh-150px)] border-t lg:border-l lg:border-t-0 border-border-default p-4 text-text-primary">
+            <aside className="hidden lg:block mt-4 lg:col-span-1 lg:mt-0 lg:h-[calc(100vh-150px)] border-t lg:border-l lg:border-t-0 border-border-default p-4 text-text-primary">
                 <div className="rounded-[10px] bg-info-soft px-3 py-2.5">
                     <div className="flex items-center gap-2 text-xs text-info-text">
                         <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> your position

@@ -3,8 +3,13 @@
 import { fetchChangePassword } from "@/lib/auth-actions";
 import { apiFetch } from "@/lib/api-client";
 import { State } from "@/lib/definitions";
+import { useProfile } from "@/providers/ProfileContext";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { AlertCircle, X } from "lucide-react";
+import { PasswordField } from "../password-field";
+import SubmitButton from "@/ui/submit-btn";
 import ModalLayout from "./modal-layout";
 
 interface ChangePasswordModalProps {
@@ -19,10 +24,9 @@ const initialState: State = {
 
 export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
     const [state, setState] = useState<State>(initialState);
+    const { email } = useProfile();
 
     if (!isOpen) return null;
-
-    const resetState = () => setState(prev => ({ ...prev, error: false, message: "" }));
 
     async function handleChangePassword(formData: FormData) {
         setState(prev => ({ ...prev, message: "" }));
@@ -30,7 +34,6 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         const resValidedData = await fetchChangePassword(formData);
         if (!resValidedData.success) {
             setState(prev => ({ ...prev, message: resValidedData.message }));
-            console.log("Error: ", resValidedData.message);
             return;
         }
 
@@ -42,128 +45,79 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 body: JSON.stringify({ old: oldPass, new: newPass }),
             });
 
-            await signIn("credentials", {
-                email: "qwerty@gmail.com",
+            const signInResult = await signIn("credentials", {
+                email,
                 password: newPass,
+                redirect: false,
             });
+
+            if (signInResult?.error) {
+                setState(prev => ({ ...prev, message: "Password changed, but re-login failed. Please sign in again." }));
+                return;
+            }
         } catch (error) {
             if (error instanceof Error) {
                 setState(prev => ({ ...prev, message: error.message }));
-                console.log(error.message);
             } else {
-                console.log(error);
+                setState(prev => ({ ...prev, message: "An unknown error occurred" }));
             }
             return;
         }
 
+        toast.success("Your password has been changed.");
         onClose();
     }
 
     return (
         <ModalLayout>
-            <div className="flex items-center justify-between border-b border-[var(--color-border-default)] pb-3 mb-4">
-                <h3
-                    className="font-medium"
-                    style={{ fontSize: "var(--text-lg)", color: "var(--color-text-primary)" }}
-                >
-                    Change Password
+            <div className="mb-4 flex items-center justify-between border-b border-border-subtle pb-3">
+                <h3 className="text-lg font-medium text-text-primary">
+                    Change password
                 </h3>
                 <button
+                    type="button"
                     onClick={onClose}
-                    className="cursor-pointer rounded-[var(--radius-sm)] p-1 transition-colors"
-                    style={{ color: "var(--color-text-secondary)" }}
-                    onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
-                    onMouseOut={e => (e.currentTarget.style.background = "transparent")}
                     aria-label="Close"
+                    className="-mr-1 cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-muted hover:text-text-primary"
                 >
-                    ✕
+                    <X className="h-4 w-4" />
                 </button>
             </div>
 
             <form action={handleChangePassword} className="space-y-4">
-                <div className="space-y-1">
-                    <label
-                        className="block font-medium"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                    >
-                        Old password
-                    </label>
-                    <input
-                        name="oldPassword"
-                        type="password"
-                        onChange={resetState}
-                        required
-                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                    />
-                </div>
+                <PasswordField
+                    id="oldPassword"
+                    name="oldPassword"
+                    label="Old password"
+                />
 
-                <div className="space-y-1">
-                    <label
-                        className="block font-medium"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                    >
-                        New password
-                    </label>
-                    <input
-                        name="newPassword"
-                        type="password"
-                        onChange={resetState}
-                        required
-                        placeholder="At least 8 characters"
-                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                    />
-                </div>
+                <PasswordField
+                    id="newPassword"
+                    name="newPassword"
+                    label="New password"
+                />
 
-                <div className="space-y-1">
-                    <label
-                        className="block font-medium"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                    >
-                        Re-enter your password
-                    </label>
-                    <input
-                        name="confirmPassword"
-                        type="password"
-                        required
-                        placeholder="The password must match"
-                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                    />
-                </div>
+                <PasswordField
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    label="Re-enter your password"
+                />
 
-                <div className="h-4">
-                    {state.message && (
-                        <p style={{ fontSize: "var(--text-sm)", color: "var(--color-danger)" }}>
-                            {state.message}
-                        </p>
-                    )}
-                </div>
+                {state.message && (
+                    <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger-text">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <p>{state.message}</p>
+                    </div>
+                )}
 
-                <div className="flex justify-end gap-3 border-t border-[var(--color-border-default)] pt-4 mt-2">
+                <div className="flex flex-col gap-3 border-t border-border-subtle pt-4">
+                    <SubmitButton label="Save" loadingLabel="Saving..." />
                     <button
                         type="button"
                         onClick={onClose}
-                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-[var(--color-border-default)] transition-colors"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
-                        onMouseOut={e => (e.currentTarget.style.background = "transparent")}
+                        className="mx-auto cursor-pointer text-sm text-text-tertiary transition-colors duration-200 hover:text-accent hover:underline"
                     >
                         Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-transparent transition-colors"
-                        style={{
-                            fontSize: "var(--text-sm)",
-                            background: "var(--color-accent)",
-                            color: "var(--color-text-inverse)",
-                        }}
-                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-accent-hover)")}
-                        onMouseOut={e => (e.currentTarget.style.background = "var(--color-accent)")}
-                    >
-                        Save
                     </button>
                 </div>
             </form>

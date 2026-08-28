@@ -176,15 +176,6 @@ useEffect(() => {
             {/* start / cancel */}
             <div className="mt-5 flex gap-2.5">
                 <div className="flex-1">
-                    {/* {isHost && gameMode === 'FRIENDS' && (
-                        <button
-                            type="button"
-                            className="w-full cursor-pointer rounded-lg bg-accent py-2.5 text-sm font-medium text-text-inverse transition-colors duration-150 hover:bg-accent-hover"
-                            onClick={onStartmatch}
-                        >
-                            Start now
-                        </button>
-                    )} */}
                 </div>
                 
                 <button
@@ -198,7 +189,7 @@ useEffect(() => {
 
             <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-text-tertiary">
                 <Bot className="h-3.5 w-3.5" />
-                If no one joins, you'll play against the computer
+                If no one joins, you can play against the computer
             </p>
         </ModalLayout>
     );

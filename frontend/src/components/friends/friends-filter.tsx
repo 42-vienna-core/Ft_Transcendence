@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
+import { getErrorMessage } from '@/lib/error';
+import { toast } from 'sonner';
 import FindFriends from './search';
 import FriendsContent from './friends-list';
 import { ActiveFilterType, Friend, Request } from '@/types/gameTypes';
@@ -98,7 +100,7 @@ function FriendsFilter() {
 
             setAllFriends([]);
         } catch (error) {
-            console.log("ERROR getting all friends: ", error);
+            toast.error(getErrorMessage(error, "Couldn't refresh your friends list."));
         }
     }
 

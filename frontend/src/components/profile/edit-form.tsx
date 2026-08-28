@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
+import { getErrorMessage } from '@/lib/error';
+import { toast } from 'sonner';
 import { useFormStatus } from 'react-dom';
 import { useProfile } from '@/providers/ProfileContext';
 import { UserProfileSkeleton } from '../../ui/skeletons';
@@ -53,30 +55,34 @@ export default function EditProfileForm () {
         const file = fd.get("avatar") as File;
 
         if (file && file.size > 0) {
-            console.log(file);
-
             if (!ALLOWED_FILE_TYPES.includes(file.type)) {
                 setError('Invalid format. Please upload a JPEG, PNG, or WebP image.');
+                toast.error('Invalid format. Please upload a JPEG, PNG, or WebP image.');
                 return;
             }
 
             if (file.size > MAX_FILE_SIZE) {
                 setError('File is too large. Maximum size allowed is 2MB.');
+                toast.error('File is too large. Maximum size allowed is 2MB.');
                 return;
             }
-            
-            console.log(error);
 
             const formData = new FormData();
             formData.append("file", file);
 
-            const res = await apiFetch('user/me/avatar', {
-                method: 'PATCH',
-                body: formData
-            });
-      
-            if (res.success) {
-                updateAvatar(res.avatar);
+            try {
+                const res = await apiFetch('user/me/avatar', {
+                    method: 'PATCH',
+                    body: formData
+                });
+
+                if (res.success) {
+                    updateAvatar(res.avatar);
+                }
+            } catch (error) {
+                toast.error(getErrorMessage(error, "Couldn't update your avatar."));
+                setActive(false);
+                return;
             }
         }
 
@@ -85,13 +91,13 @@ export default function EditProfileForm () {
                 const res = await apiFetch('user/me', {
                     method: 'PATCH',
                     body: JSON.stringify({username: nameOnChange})
-                })  
+                })
 
                 if (res.success) {
                     updateSessionUsername();
                 }
             } catch (error) {
-                console.log(" error iN PROFILE: ", error);
+                toast.error(getErrorMessage(error, "Couldn't update your username."));
             }
         }
 
