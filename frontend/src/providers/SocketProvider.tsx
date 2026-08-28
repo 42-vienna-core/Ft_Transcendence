@@ -28,10 +28,10 @@ export const SocketProvider = ({
     const {data: session} = useSession();
     const token = session?.accessToken;
 
-    useEffect(() => {
-        if (!token) return;
+    let socketInstance: Socket | null = null;
 
-        let socketInstance: Socket | null = null;
+    useEffect(() => {
+        if (!token || socketInstance?.connected) return;
 
         try {
             if (!socketUrl) {
@@ -71,7 +71,7 @@ export const SocketProvider = ({
             setSocket(null);
             setIsConnected(false);
         };
-    }, [token]);
+    }, [token, socketInstance]);
 
     return (
         <SocketContext.Provider value={{ isConnected, socket }}>

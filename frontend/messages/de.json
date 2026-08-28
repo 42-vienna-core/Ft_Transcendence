@@ -3,7 +3,9 @@
         "a": "Arena",
         "f": "Freunde",
         "si": "Anmelden",
-        "su": "Registrieren"
+        "su": "Registrieren",
+        "rating" : "Bewertung"
+
     },
     "HomePage": {
         "title": "FÜR ECHTZEIT-KÄMPFE ENTWICKELT",
@@ -35,7 +37,8 @@
         "loading": "Anmeldung läuft...",
         "forgot_password": "Passwort vergessen?",
         "no_account": "Noch kein Konto?",
-        "register_link": "Registrieren"
+        "register_link": "Registrieren",
+        "google" : "Mit Google fortfahre"
     },
     "Register": {
         "title": "Registrierung",
@@ -75,21 +78,25 @@
         "password_mismatch": "Passwörter stimmen nicht überein"
     },
     "Start_game": {
-        "title": "Wähle deine Spielweise",
-        "cards": {
-            "cpu": {
-                "title": "vs. Computer",
-                "expl": "Schnelles Solo-Spiel. Keine Wartezeit.",
-                "label": "Spiel starten",
-                "wait_time": "Durchschn. Wartezeit ~3 Sek."
-            },
-            "quick": {
-                "title": "Schnelles Spiel",
-                "expl": "Online-Matchmaking, basierend auf der Bewertung.",
-                "label": "Spiel suchen",
-                "wait_time": "Durchschn. Wartezeit ~34 Sek."
-            }
+      "title": "Wähle, wie du spielen möchtest",
+      "wait_time": "Durchschn. Wartezeit: ~8 Sek.",
+      "cards": {
+        "cpu": {
+          "title": "Gegen den Computer",
+          "expl": "Schnelles Einzelspiel. Keine Wartezeit.",
+          "label": "Match starten"
+        },
+        "quick": {
+          "title": "Schnelles Match",
+          "expl": "Online-Matchmaking, nach Spielstärke ausgewogen.",
+          "label": "Match finden"
+        },
+        "friend": {
+          "title": "Mit Freunden spielen",
+          "expl": "Ein Raum zum Spielen mit Freunden.",
+          "label": "Match erstellen"
         }
+      }
     },
      "Admin": {
                 "title": "Admin-Bereich",
@@ -126,5 +133,164 @@
                         "deleteFailed": "Benutzer konnte nicht gelöscht werden"
                     }
                 }
+    },
+      "Footer": {
+        "rights": "Alle Rechte vorbehalten.",
+        "privacy": "Datenschutzerklärung",
+        "terms": "Nutzungsbedingungen"
+    },
+    "Legal": {
+        "back" : "Zurück zu Snake",
+        "privacyPolicy": {
+        "title": "Datenschutzerklärung",
+        "updated": "Zuletzt aktualisiert: 24. August 2026",
+        "intro": "Snake („das Projekt“, „wir“, „uns“) ist ein Echtzeit-Multiplayer-Spiel, das als Lernprojekt für den 42-Lehrplan (ft_transcendence) entwickelt wurde. Diese Erklärung beschreibt, welche Daten wir bei der Nutzung der Anwendung erheben, warum wir sie erheben und welche Wahlmöglichkeiten du hast.",
+        "sections": [
+            {
+            "heading": "1. Welche Daten wir erheben",
+            "items": [
+                {
+                "label": "Kontodaten:",
+                "text": "E-Mail-Adresse, Benutzername und ein gesalzenes & gehashtes Passwort (bei Registrierung mit E-Mail/Passwort)."
+                },
+                {
+                "label": "OAuth-Daten:",
+                "text": "wenn du dich mit Google oder GitHub anmeldest, erhalten wir deine Konto-ID beim jeweiligen Anbieter sowie die grundlegenden Profildaten (Name, E-Mail, Avatar), die dieser Anbieter mit uns teilt."
+                },
+                {
+                "label": "Spieldaten:",
+                "text": "Spielergebnisse, Punktestände, Siege/Niederlagen, beigetretene Spielräume und deine Freundesliste."
+                },
+                {
+                "label": "Einstellungen:",
+                "text": "gewählte Sprache, helles/dunkles Farbthema, Avatar und Schlangenfarbe."
+                },
+                {
+                "label": "Sitzungsdaten:",
+                "text": "kurzlebige Zugriffs- und Refresh-Tokens, die als HTTP-Only-Cookies gespeichert werden und ausschließlich dazu dienen, dich angemeldet zu halten."
+                },
+                {
+                "label": "Nachrichten an uns:",
+                "text": "Inhalte, die über das In-App-Kontaktformular gesendet werden."
+                }
+            ]
+            },
+            {
+            "heading": "2. Wie wir deine Daten nutzen",
+            "text": "Wir verwenden die oben genannten Daten, um: dich zu authentifizieren und deine Sitzung sicher zu halten; Matchmaking und Echtzeit-Gameplay über WebSockets zu betreiben; dein Profil, deine Statistiken, deinen Matchverlauf und deinen Online-Status deinen Freunden anzuzeigen; deine Sprach- und Themeneinstellungen zu merken; Codes zum Zurücksetzen des Passworts per E-Mail zu versenden; und auf Nachrichten zu antworten, die über das Kontaktformular gesendet wurden."
+            },
+            {
+            "heading": "3. Cookies & Tokens",
+            "text": "Wir verwenden zwei HTTP-Only-Cookies — ein Zugriffstoken und ein Refresh-Token —, um dich über Anfragen hinweg angemeldet zu halten. Diese Cookies werden nicht für Werbung oder seitenübergreifendes Tracking verwendet. Refresh-Tokens werden serverseitig gespeichert und können jederzeit durch Abmelden widerrufen werden."
+            },
+            {
+            "heading": "4. Dienste von Drittanbietern",
+            "text": "Wenn du dich für die Anmeldung mit Google oder GitHub entscheidest, verarbeitet dieser Anbieter deine Authentifizierung gemäß seiner eigenen Datenschutzerklärung. Wir erhalten nur die minimal notwendigen Profildaten, um dein Konto zu erstellen oder zuzuordnen. Wir verwenden keine Werbe- oder Analyse-Tracker von Drittanbietern."
+            },
+            {
+            "heading": "5. Weitergabe von Informationen",
+            "text": "Wir verkaufen oder vermieten deine personenbezogenen Daten nicht. Bestimmte Informationen sind für andere Nutzer im Rahmen der Kernfunktionen der App sichtbar — dein Benutzername, Avatar, Online-Status sowie Match-/Ranglistenergebnisse sind für Freunde und, sofern zutreffend, andere Spieler in einem Spielraum sichtbar."
+            },
+            {
+            "heading": "6. Speicherung & Löschung von Daten",
+            "text": "Wir bewahren deine Konto- und Spieldaten auf, solange dein Konto besteht. Die meisten deiner Daten kannst du selbst in deinen Profileinstellungen ändern. Um die Löschung deines Kontos und der zugehörigen Daten zu beantragen, kontaktiere uns über das In-App-Kontaktformular; wir bearbeiten die Anfrage innerhalb einer angemessenen Frist."
+            },
+            {
+            "heading": "7. Sicherheit",
+            "text": "Passwörter werden vor der Speicherung gehasht und gesalzen. Die gesamte Kommunikation zwischen deinem Browser und unserem Backend ist mit HTTPS verschlüsselt. Der Zugriff auf administrative Funktionen ist auf Konten mit der Admin-Rolle beschränkt."
+            },
+            {
+            "heading": "8. Datenschutz von Kindern",
+            "text": "Das Projekt ist ein studentisches Softwareprojekt und richtet sich nicht an Kinder unter 16 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Kindern unter diesem Alter."
+            },
+            {
+            "heading": "9. Änderungen dieser Erklärung",
+            "text": "Wir können diese Erklärung im Zuge der Weiterentwicklung des Projekts aktualisieren. Wesentliche Änderungen spiegeln sich in der Aktualisierung des Datums „Zuletzt aktualisiert“ oben wider."
+            },
+            {
+            "heading": "10. Kontakt",
+            "text": "Fragen zu dieser Erklärung oder deinen Daten kannst du jederzeit über die Kontakt-Schaltfläche unten rechts in der App senden, oder sieh dir unsere {link} an."
+            }
+        ]
+        },
+        "termsOfService": {
+        "title": "Nutzungsbedingungen",
+        "updated": "Zuletzt aktualisiert: 24. August 2026",
+        "intro": "Diese Bedingungen regeln deine Nutzung von Snake („das Projekt“), einem Echtzeit-Multiplayer-Spiel, das als Lernprojekt für den 42-Lehrplan (ft_transcendence) entwickelt wurde. Mit der Erstellung eines Kontos oder der Nutzung der App stimmst du diesen Bedingungen zu.",
+        "sections": [
+            {
+            "heading": "1. Lernprojekt",
+            "text": "Das Projekt wird von Studierenden im Rahmen eines Schullehrplans entwickelt. Es dient Lern- und Demonstrationszwecken, nicht als kommerzielles Produkt, und wird „wie besehen“ ohne jegliche Gewährleistung bereitgestellt."
+            },
+            {
+            "heading": "2. Dein Konto",
+            "items": [
+                {
+                "text": "Du musst korrekte Registrierungsangaben machen und deine Zugangsdaten vertraulich behandeln."
+                },
+                {
+                "text": "Du bist für alle Aktivitäten verantwortlich, die unter deinem Konto stattfinden."
+                },
+                {
+                "text": "Ein Konto pro Person. Erstelle keine Konten, um dich als jemand anderen auszugeben."
+                },
+                {
+                "text": "Du kannst dein Konto jederzeit in deinen Profileinstellungen löschen."
+                }
+            ]
+            },
+            {
+            "heading": "3. Zulässige Nutzung",
+            "text": "Bei der Nutzung des Projekts stimmst du zu, Folgendes zu unterlassen:",
+            "items": [
+                {
+                "text": "Automatisierte Skripte, Bots oder Exploits verwenden, um dir einen unfairen Vorteil in Matches zu verschaffen (der eingebaute KI-Gegner ist der einzige zulässige nicht-menschliche Spieler)."
+                },
+                {
+                "text": "Andere Spieler über Profile, Freundschaftsanfragen oder Nachrichten belästigen, missbrauchen oder sich als sie ausgeben."
+                },
+                {
+                "text": "Versuchen, Authentifizierung, Ratenbegrenzungen oder andere Sicherheitskontrollen zu umgehen oder ohne Erlaubnis auf das Konto eines anderen Nutzers zuzugreifen."
+                },
+                {
+                "text": "Rechtswidrige, anstößige oder rechtsverletzende Inhalte über einen beliebigen Teil der App hochladen oder einreichen."
+                }
+            ]
+            },
+            {
+            "heading": "4. Moderation & Durchsetzung",
+            "text": "Konten mit der Administratorrolle können Konten überprüfen, bearbeiten oder entfernen, die gegen diese Bedingungen verstoßen. Wir können den Zugang zum Projekt für jedes Konto aussetzen oder beenden, das gegen Abschnitt 3 verstößt."
+            },
+            {
+            "heading": "5. Inhalte & geistiges Eigentum",
+            "text": "Der Quellcode, das Design und die Assets des Projekts gehören seinen studentischen Urhebern und werden hier zu Ausbildungszwecken verwendet. Du behältst das Eigentum an allen von dir eingereichten Inhalten (wie deinem gewählten Benutzernamen oder einer über das Kontaktformular gesendeten Nachricht) und gewährst uns eine begrenzte Lizenz, diese zu speichern und anzuzeigen, soweit dies für den Betrieb des Projekts erforderlich ist."
+            },
+            {
+            "heading": "6. Verfügbarkeit",
+            "text": "Als studentisches Projekt kann das Projekt jederzeit ohne Vorankündigung geändert, unterbrochen oder offline genommen werden, auch zu Bewertungs- oder Wartungszwecken. Wir garantieren keine unterbrechungsfreie Verfügbarkeit."
+            },
+            {
+            "heading": "7. Haftungsbeschränkung",
+            "text": "Soweit gesetzlich zulässig, haften die Urheber des Projekts nicht für indirekte, zufällige oder Folgeschäden, die aus deiner Nutzung der App entstehen."
+            },
+            {
+            "heading": "8. Änderungen dieser Bedingungen",
+            "text": "Wir können diese Bedingungen im Zuge der Weiterentwicklung des Projekts aktualisieren. Die fortgesetzte Nutzung der App nach Veröffentlichung von Änderungen gilt als Zustimmung zu den überarbeiteten Bedingungen."
+            },
+            {
+            "heading": "9. Kontakt",
+            "text": "Fragen zu diesen Bedingungen kannst du über die Kontakt-Schaltfläche unten rechts in der App senden, oder sieh dir unsere {link} an."
+            }
+        ]
+        }
+    },
+    "agreement": {
+      "beforePlaying": "Vor dem Spielen",
+      "readPlaying": "Bitte lies die Bedingungen und stimme ihnen zu, um Snake weiterzuspielen.",
+      "readPolicy": "Ich habe die Datenschutzerklärung gelesen und stimme ihr zu",
+      "readTerms": "Ich habe die Nutzungsbedingungen gelesen und stimme ihnen zu",
+      "reject": "Ablehnen",
+      "saving": "Wird gespeichert...",
+      "accept": "Akzeptieren und fortfahren"
     }
 }

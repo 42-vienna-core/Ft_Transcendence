@@ -50,7 +50,6 @@ export class UserService {
 		return user;
 	}
 
-
 	public async getUser(id: number) {
 		console.log("~~~~~~~~~~~~~~~~~~~~ getUser me");
 		const user = await this.prismaService.users.findUnique({
@@ -316,5 +315,34 @@ export class UserService {
 			rank: index + 1,
 		}));
 		return leaderboard;
+	}
+
+	async createOAuthUser(data: { email: string; name: string; provider: string; providerId: string; passwordHash: string }) {
+		const res = await this.prismaService.users.create({
+			data: {
+				email: data.email,
+				name: data.name,
+				provider: data.provider,
+				providerId: data.providerId,
+				password: data.passwordHash,
+				role: "PLAYER",
+			},
+		});
+		return res;
+	}
+
+	async acceptTerms(userId: number) {
+		const user = await this.prismaService.users.update({
+			where: { id: userId },
+			data: { termsAcceptedAt: new Date() },
+			select: { termsAcceptedAt: true },
+		});
+		return { termsAcceptedAt: user.termsAcceptedAt };
+	}
+
+	async findByProvider(provider: string, providerId: string) {
+		return await this.prismaService.users.findUnique({
+			where: { provider_providerId: { provider, providerId } },
+		});
 	}
 }

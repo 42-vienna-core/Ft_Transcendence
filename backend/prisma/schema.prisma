@@ -25,6 +25,10 @@ model Users {
   level		  Int @default(0)
   color		    String @default("#39FF14")
   totMatches	Int @default(0)
+  
+  termsAcceptedAt DateTime?
+  provider    String?
+  providerId  String?
 
   resetCode   String?
   codeExpire  DateTime?
@@ -46,6 +50,8 @@ model Users {
 
   sentRequests  FriendsRequest [] @relation("SentRequests")
   receivedRequests  FriendsRequest [] @relation("ReceivedRequests")
+  @@unique([provider, providerId])
+
 }
 
 enum Role {
