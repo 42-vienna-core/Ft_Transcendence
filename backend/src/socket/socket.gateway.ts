@@ -92,41 +92,43 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit("online-users", onlineUsers);
   }
 
-  @SubscribeMessage('join-match')
-	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
+  	@SubscribeMessage('join-match')
+		async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
 		
 		console.log(" >>>> join match was called");
 		console.log("data: ", data);
 
-    if (!client.data.user) {
-      console.log("ERROR !client.data.user || client.data.user === undefined");
-      client.disconnect();
-      return;
-    }
+    	if (!client.data.user) {
+    	  console.log("ERROR !client.data.user || client.data.user === undefined");
+    	  client.disconnect();
+    	  return;
+    	}
 
 		const match = await this.matchStarter.prepareMatch(
 			client.data.user.id, 
 			client.id, data
 		);
-		console.log("MATCH: ",match);
-
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
 
-		this.server.to(client.data.roomId).emit('room-update', {
-			roomId: match.roomId,
-			roomStatus: match.roomStatus,
-			players: match.players,
-			timer: match.timer,
-		})
+		const curMatch = await this.roomService.getRoomUpdate(match.roomId);
+		if (curMatch.roomStatus === RoomStatus.ABANDONED){
+			client.emit('room-update', curMatch);
+			await this.roomService.removeUserFromRoom(curMatch.roomId, client.data.user.id);
+			await client.leave(match.roomId);
+			delete client.data.roomId;
+			return curMatch;
+		}
 
-		if (match.roomStatus === RoomStatus.READY){
-			this.server.to(client.data.roomId).emit('countdown', {roomId: match.roomId, countdown: COUNTDOWN});
+		this.server.to(client.data.roomId).emit('room-update', curMatch);
+
+		if (curMatch.roomStatus === RoomStatus.READY){
+			this.server.to(curMatch.roomId).emit('countdown', {roomId: curMatch.roomId, countdown: COUNTDOWN});
 			await wait(COUNTDOWN * 1000);
-			await this.matchStarter.startMatch(match.roomId);
+			await this.matchStarter.startMatch(curMatch.roomId);
 		}
     	console.log("ROOM STATUS: ", match.roomStatus);
-		return match;
+		return curMatch;
 	}
 
   @SubscribeMessage('leave-room')
@@ -200,8 +202,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @OnEvent('match.abandoned')
-  handleAbandonedMatch(event: {match: Match}){
-	this.server.to(event.match.roomId).emit('room-update', event.match);
+  handleAbandonedMatch(event: {match: Match, socketIds: string[]}){
+	this.server.to(event.match.roomId).to(event.socketIds).emit('room-update', event.match);
 	this.server.in(event.match.roomId).socketsLeave(event.match.roomId);
   }
 
