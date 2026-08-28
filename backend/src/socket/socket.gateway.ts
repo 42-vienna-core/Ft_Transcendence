@@ -4,7 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { MatchStarter } from '../matchStarter/matchStarter.service';
 import { MatchRequestDto } from '../matchStarter/dto/match.dto';
-import { RoomStatus } from "@prisma/client";
+import { RoomStatus, RoomType } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { setTimeout as wait } from 'node:timers/promises';
 import { TokenService } from 'src/token/token.service';
@@ -70,12 +70,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const roomUser = await this.roomService.findBySocketId(client.id);
     if (!roomUser)
 		return;
-	if (roomUser.userId === roomUser.room.ownerId){
-		const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
-		if (abandoned)
-			return ;
+	let changeOwner = false;
+	if (roomUser.userId === roomUser.room.ownerId && roomUser.room.status !== RoomStatus.PLAYING){
+		if (roomUser.room.type === RoomType.PUBLIC)
+			changeOwner = await this.roomService.changeOwner(roomUser.roomId, roomUser.userId);
+		if (!changeOwner){
+			const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
+			if (abandoned)
+				return ;
+		}
 	}
-    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
+	if (!changeOwner)
+	    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
 	this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 
@@ -139,18 +145,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return { success: false };
 	if (roomId !== roomUser.roomId)
 		return { success: false };
-	if (roomUser.userId === roomUser.room.ownerId){
-		const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
-		if (abandoned)
-		    return { success: true };
+	let ownerChange = false;
+	if (roomUser.userId === roomUser.room.ownerId && roomUser.room.status !== RoomStatus.PLAYING){
+		if (roomUser.room.type === RoomType.PUBLIC)
+			ownerChange = await this.roomService.changeOwner(roomUser.roomId, roomUser.userId);
+		if (!ownerChange){
+			const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
+			if (abandoned)
+				return { success: true };
+		}
 	}
-    await client.leave(roomUser.roomId);
-    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
+	await client.leave(roomUser.roomId);
+	if (!ownerChange)
+		await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
 	this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 	this.server.to(roomUser.roomId).emit('room-update', match);
 
-    return { success: true };
+	return { success: true };
   }
 
   @OnEvent('playing-friends.changed')
