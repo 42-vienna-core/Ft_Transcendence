@@ -22,7 +22,7 @@ model Users {
   role        Role   @default(PLAYER)
   isBot       Boolean @default(false)
   score       Int @default(0)
-  level		  Int @default(0)
+  level		    Int @default(0)
   color		    String @default("#39FF14")
   totMatches	Int @default(0)
   

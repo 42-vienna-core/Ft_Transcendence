@@ -76,6 +76,7 @@ function MatchList({
 }) {
     const cpu_t = useTranslations("Start_game.cards.cpu");
     const quick_t = useTranslations("Start_game.cards.quick");
+    const quick_f = useTranslations("Start_game.cards.friend")
 
     const cards =  [{
             id: 'CPU' as GameModeType,
@@ -93,9 +94,9 @@ function MatchList({
         },
         {
             id: 'FRIENDS' as GameModeType,
-            title: "Match with friends",
-            expl: "A room for playing with friends.",
-            btnLabel: "Create match",
+            title: quick_f("title"),
+            expl: quick_f("expl"),
+            btnLabel: quick_f("label"),
             child: <Globe/>
         },
     ];

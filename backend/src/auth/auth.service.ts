@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
@@ -129,11 +129,13 @@ export class AuthService {
         return count;
     }
 
-    public async changePassword(userId: number, dto: ChangePasswordDto) {
+    async changePassword(userId: number, dto: ChangePasswordDto) {
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
+        if (user.provider)
+            throw new BadRequestException("Password change is not available for accounts linked to google");
         const isPasswordValid = await verify(user.password, dto.old);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
@@ -144,7 +146,8 @@ export class AuthService {
         await this.sessionService.deleteAllUserSessions(userId);
         return { success: true };
     }
-     async oauthLogin(profile: OAuthProfileType) {
+
+    async oauthLogin(profile: OAuthProfileType) {
         let user = await this.userService.findByProvider(profile.provider, profile.providerId);
 
         if (!user) {

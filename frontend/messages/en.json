@@ -304,8 +304,6 @@
             "addMessage" : "The user has been added",
             "addError" : "An unknown error occurred",
             "error" : "User not found"
-          
-            
         },
         "request" : {
             "censel" : "Cancel",
@@ -313,5 +311,17 @@
             "pending" : "Pending requests",
             "invite" : "Invite"
         }
+    },
+     "leaderboard" : {
+        "leaderboard" : "Leaderboard",
+        "top" : "Top players by score · all time ",
+        "me" : "Me",
+        "matches" : "Matches",
+        "lvl" : "Lvl",
+        "level" : "Level",
+        "score" : "Score",
+        "joined" : "Joined",
+        "rank" : "Rank",
+        "player" : "Player"
     }
 }
