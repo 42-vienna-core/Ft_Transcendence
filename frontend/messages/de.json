@@ -81,13 +81,13 @@
                 "title": "vs. Computer",
                 "expl": "Schnelles Solo-Spiel. Keine Wartezeit.",
                 "label": "Spiel starten",
-                "wait_time": "Durchschn. Wartezeit ~8 Sek."
+                "wait_time": "Durchschn. Wartezeit ~3 Sek."
             },
             "quick": {
                 "title": "Schnelles Spiel",
                 "expl": "Online-Matchmaking, basierend auf der Bewertung.",
                 "label": "Spiel suchen",
-                "wait_time": "Durchschn. Wartezeit ~8 Sek."
+                "wait_time": "Durchschn. Wartezeit ~34 Sek."
             }
         }
     },

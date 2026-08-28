@@ -81,13 +81,13 @@
                 "title": "vs Computer",
                 "expl": "Partita veloce in singolo. Nessuna attesa.",
                 "label": "Inizia partita",
-                "wait_time": "attesa media ~8 s"
+                "wait_time": "attesa media ~3 s"
             },
             "quick": {
                 "title": "Partita veloce",
                 "expl": "Matchmaking online, bilanciato in base al punteggio.",
                 "label": "Trova partita",
-                "wait_time": "attesa media ~8 s"
+                "wait_time": "attesa media ~34 s"
             }
         }
     },

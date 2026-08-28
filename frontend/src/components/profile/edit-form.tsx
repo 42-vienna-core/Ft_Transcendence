@@ -16,7 +16,7 @@ function SubmitFormButton({ isActive }: {isActive: boolean}) {
 
     return (
         <button
-            className={`w-[100px] cursor-pointer rounded border border-transparent bg-bg-muted px-3 py-1.5 text-sm text-text-primary transition-colors duration-200 hover:bg-bg-subtle ${isActive ? 'block': 'hidden'}`}
+            className={`min-w-[150px] cursor-pointer rounded border border-transparent bg-bg-muted px-3 py-1.5 text-sm text-text-primary transition-colors duration-200 hover:bg-bg-subtle ${isActive ? 'block': 'hidden'}`}
             disabled={pending}
             type="submit"
         >
@@ -101,12 +101,12 @@ export default function EditProfileForm () {
     const showAvatar = isActive ? (tempAvatar ? tempAvatar : avatar ) : avatar;
 
     return (
-        <form action={handleEditSubmit}>
-            <div className="flex h-24 items-center gap-4 border-b border-border-default pb-[18px]">
+        <form action={handleEditSubmit} className='mb-6'>
+            <div className="flex min-h-24 flex-wrap items-center gap-4 border-b border-border-default pb-[18px]">
                 {
                     status !== 'loading' ? (
                         <>
-                            <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-info-soft text-[22px] font-medium text-info-text">
+                            <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-info-soft text-[22px] font-medium text-info-text">
                                 <img src={showAvatar ? showAvatar : "#"} alt="avatar" className="h-full w-full rounded-full object-cover" />
                                 <label className={`${isActive ? 'flex': 'hidden'} absolute bottom-0 right-0 h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-border-default bg-accent text-text-inverse shadow-lg transition-colors duration-200 hover:bg-accent-hover`}>
                                     <span className="text-xs leading-none">+</span>
@@ -119,7 +119,7 @@ export default function EditProfileForm () {
                                     />
                                 </label>
                             </div>
-                            <div>
+                            <div className="min-w-0 flex-1">
                                 <label htmlFor="username" className={`${isActive ? 'block': 'hidden'}`}>
                                     <input
                                         id="username"
@@ -131,7 +131,7 @@ export default function EditProfileForm () {
                                         className="w-full border-none text-lg text-text-primary outline-none transition-colors duration-200 focus:text-accent"
                                     />
                                 </label>
-                                <div className={`text-lg font-medium text-text-primary ${isActive ? 'hidden': 'block'}`}>
+                                <div className={`truncate text-lg font-medium text-text-primary ${isActive ? 'hidden': 'block'}`}>
                                     {username}
                                 </div>
                                 <div className="mt-0.5 text-sm text-text-secondary">
@@ -147,10 +147,10 @@ export default function EditProfileForm () {
                     )
                 }
                 
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex shrink-0 gap-2">
                     <button
                         type="button"
-                        className={`w-[100px] cursor-pointer rounded border border-border-default bg-bg-muted px-3 py-1.5 text-sm text-text-primary transition-colors duration-200 hover:bg-bg-subtle ${isActive ? 'hidden': 'block'}`}
+                        className={`w-[150px] break-words cursor-pointer rounded border border-border-default bg-bg-muted px-3 py-1.5 text-sm text-text-primary transition-colors duration-200 hover:bg-bg-subtle ${isActive ? 'hidden': 'block'}`}
                         onClick={()=> setActive(true)}
                     >
                         {t("epBtn")}

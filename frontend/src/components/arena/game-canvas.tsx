@@ -151,7 +151,7 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
 
         resizeObserver.observe(container);
 
-        const TICK = STEP;
+        const TICK = currRef.current ? currRef.current.tick : STEP;
         const frame = (now: number) => {
             const elapsed = (now - stateTimeRef.current) / 1000;
             alphaRef.current = Math.min(elapsed / TICK, 1);

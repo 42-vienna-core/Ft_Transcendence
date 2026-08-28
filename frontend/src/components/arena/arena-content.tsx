@@ -161,15 +161,15 @@ function ArenaContent() {
     const showWin = gameStatus === 'WIN';
 
     return (
-        <div className="grid grid-cols-5 w-full">
-            <div className="col-span-4 mr-[15px]">
-                <div className="flex items-center justify-between py-4">
+        <div className="grid grid-cols-1 w-full lg:grid-cols-5">
+            <div className="lg:col-span-4 lg:mr-[15px]">
+                <div className="flex flex-wrap items-center justify-between gap-y-2 py-4">
                     <div className="mr-[10px] rounded-full bg-success-soft px-2.5 py-1 ">
                         <p className="trancate items-center text-xs text-success-text">
                             live match · room {roomName ?? '—'}
                         </p>
                     </div>
-                    
+
                     <div className="flex gap-[18px] text-xs text-text-secondary">
                         <div>
                             <p className="text-lg font-medium text-text-primary">{formatTime(elapsedSeconds)}</p>
@@ -186,7 +186,7 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                <div id="canvas-container" className="col-span-4 h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
+                <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
                     {roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <span>Game will start after</span>
@@ -230,7 +230,7 @@ function ArenaContent() {
                 </div>
             </div>
 
-            <aside className="col-span-1 h-[calc(100vh-150px)] border-l border-border-default p-4 text-text-primary">
+            <aside className="mt-4 lg:col-span-1 lg:mt-0 lg:h-[calc(100vh-150px)] border-t lg:border-l lg:border-t-0 border-border-default p-4 text-text-primary">
                 <div className="rounded-[10px] bg-info-soft px-3 py-2.5">
                     <div className="flex items-center gap-2 text-xs text-info-text">
                         <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> your position

@@ -85,8 +85,6 @@ useEffect(() => {
 
         if (diff <= 0) {
             clearInterval(interval);
-            setTimeoutRun(true);
-            onStartmatch();
         }
     };
 
@@ -99,7 +97,7 @@ useEffect(() => {
 }, [isOpen, room?.timer, room?.roomStatus, onStartmatch, isTimeoutRun]);
 
 
-    if (!isOpen || !room || !gameMode || room.roomStatus === 'ABANDONED') return null;
+    if (!isOpen || !room || !gameMode) return null;
 
     const players = room.players ? room.players : [];
     const emptySlots = Array.from({ length: Math.max(MAX_PLAYERS - players.length, 0) });
@@ -143,7 +141,7 @@ useEffect(() => {
                 />
             </div>
 
-            <div className="mt-3 grid grid-cols-4 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {players.map(player => (
                     <FilledSlot key={player.id} player={player} />
                 ))}

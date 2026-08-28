@@ -12,7 +12,7 @@ function LeaderboardItem({p, me}: LeaderboardItemProps) {
 
 
     return (
-        <li className={`grid grid-cols-[44px_1fr_88px_70px_90px] items-center ${me && "bg-text-inverse"} border-b border-border-default px-3.5 py-[11px] text-[13px] last:border-b-0`}>
+        <li className={`grid grid-cols-[32px_1fr_60px] sm:grid-cols-[44px_1fr_88px_70px_90px] items-center ${me && "bg-text-inverse"} border-b border-border-default px-2.5 sm:px-3.5 py-[11px] text-[13px] last:border-b-0`}>
             <span className="font-medium tabular-nums text-text-secondary">{p.rank}</span>
             <div className="flex min-w-0 items-center gap-2.5">
                 <Avatar name={p.name} avatar={p.avatar} style={"size-[30px]"}/>
@@ -22,8 +22,8 @@ function LeaderboardItem({p, me}: LeaderboardItemProps) {
                 </div>
             </div>
             <span className="text-right tabular-nums text-text-primary">{p.score}</span>
-            <span className="text-right tabular-nums text-text-secondary">{p.totMatches}</span>
-            <span className="text-right text-xs text-text-tertiary">{dateCreated}</span>
+            <span className="hidden text-right tabular-nums text-text-secondary sm:inline">{p.totMatches}</span>
+            <span className="hidden text-right text-xs text-text-tertiary sm:inline">{dateCreated}</span>
         </li>
     )
 }
@@ -39,8 +39,8 @@ export default function LeaderboardList({ rest }: { rest: LeaderboardData[] }) {
 
     return (
         <ul className="overflow-hidden rounded-xl border border-border-default">
-            <div className="grid grid-cols-[44px_1fr_88px_70px_90px] items-center bg-bg-subtle px-3.5 py-2 text-[11px] lowercase tracking-[0.03em] text-text-secondary">
-                <span>rank</span><span>player</span><span className="text-right">score</span><span className="text-right">matches</span><span className="text-right">joined</span>
+            <div className="grid grid-cols-[32px_1fr_60px] sm:grid-cols-[44px_1fr_88px_70px_90px] items-center bg-bg-subtle px-2.5 sm:px-3.5 py-2 text-[11px] lowercase tracking-[0.03em] text-text-secondary">
+                <span>rank</span><span>player</span><span className="text-right">score</span><span className="hidden text-right sm:inline">matches</span><span className="hidden text-right sm:inline">joined</span>
             </div>
 
             {top.map((item) => {

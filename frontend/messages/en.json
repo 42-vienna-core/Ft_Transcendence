@@ -81,13 +81,13 @@
                 "title": "vs Computer",
                 "expl": "Quick solo match. No waiting.",
                 "label": "Start match",
-                "wait_time": "avg. wait ~8 s"
+                "wait_time": "avg. wait ~3 s"
             },
             "quick": {
                 "title": "Quick match",
                 "expl": "Online matchmaking, balanced by rating.",
                 "label": "Find match",
-                "wait_time": "avg. wait ~8 s"
+                "wait_time": "avg. wait ~34 s"
             }
         }
     },

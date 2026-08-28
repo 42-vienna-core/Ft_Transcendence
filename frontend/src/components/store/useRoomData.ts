@@ -56,8 +56,10 @@ export const useRoomDataBySocket = create<GameDataState>()(
             socket.on('game-state', (data: Game) => {
                 get().setRoomStatus(data.status);
 
-                if (data.status === 'finished')
+                if (data.status === 'finished') {
                     get().clearGameData();
+                    get().clearStatus();
+                }
             });
 
             socket.on('room-update', (data: RoomData) => {
@@ -67,6 +69,7 @@ export const useRoomDataBySocket = create<GameDataState>()(
                 if (data.roomStatus === 'ABANDONED') {
                     set({isLobbyOpen: false});
                     get().clearGameData();
+                    get().clearStatus();
                     return;
                 }
 

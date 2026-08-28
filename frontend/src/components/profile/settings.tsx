@@ -179,8 +179,6 @@ export default function ProfileSettingsContent() {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
     const [pending, setPending] = useState<boolean>(false);
     const {theme, setTheme } = useTheme();
-    // const [mounted, setMounted] = useState(false);
-
     const [lang, setLang] = useState("");
     const [control, setControl] = useState("");
     const [snakeColor, setSnakeColor] = useState("");
@@ -334,9 +332,9 @@ export default function ProfileSettingsContent() {
 
     return (
         <>
-            <div className="grid grid-cols-[1.3fr_1fr] gap-[18px]">
+            <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[1.3fr_1fr]">
                 <div className="rounded-md border border-border-default bg-bg-surface px-4 py-3.5" aria-label="Settings">
-                <h3 className="mb-3 !text-sm font-medium lowercase tracking-wide text-text-secondary">preferences</h3>
+                <h3 className="mb-3 !text-sm font-medium lowercase tracking-wide text-text-secondary">settings</h3>
 
                 {/* Languages */}
                 <SettingBtnContainer>
@@ -358,7 +356,7 @@ export default function ProfileSettingsContent() {
                 <SettingBtnContainer>
                     <ToggleSwitch
                         title={t("ct")}
-                        label={isThemeDark ? "🌙" : "☀️"}
+                        label={isThemeDark ? "☀️" : "🌙"}
                         onToggle={togleTheme}
                         checked={isThemeDark}
                     />
@@ -404,17 +402,6 @@ export default function ProfileSettingsContent() {
                         handleOnClick={selectControl}
                     />
                 </SettingBtnContainer>
-
-                {/* Notifications */}
-                <div className="flex items-center justify-between border-b border-border-default py-2.5 last:border-b-0">
-                    <div className="flex items-center gap-2.5 text-sm text-text-primary">
-                        notifications
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                        friend requests, match results
-                    </div>
-                </div>
-
 
                 <SettingBtnContainer>
                     <SettingBatton

@@ -23,6 +23,8 @@ export class GameGateway {
 		const snake = game.snakes.find(s => s.id === data.userId);
 		if (!snake)
 			return {success: false};
+		if (!snake.alive)
+			return {success: false};
 		snake.newDirection = data.direction;
 		console.log(data);
 		await this.redisService.setGameWithTTL(game.roomId, game);

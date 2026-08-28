@@ -101,7 +101,7 @@ function MatchList({
     ];
 
     return (
-        <ul className="grid grid-cols-3 gap-2.5 p-5 pt-4 text-text-secondary">
+        <ul className="grid grid-cols-1 gap-2.5 p-5 pt-4 text-text-secondary sm:grid-cols-3">
             {cards.map((card) =>
                 <MatchItem
                     key={card.id}
@@ -127,7 +127,7 @@ function StartMatch () {
 
     const handleGameMode = async (mode: GameModeType) => {
         if (session.status === "unauthenticated") {
-            window.location.href = "/arena"; 
+            window.location.href = "/login"; 
         }
 
         if (!socket) return;
@@ -151,7 +151,7 @@ function StartMatch () {
 
     return (
         <>
-            <div className="relative px-8 pt-20 text-center">
+            <div className="relative px-4 pt-10 text-center sm:px-8 sm:pt-20">
                <div className="mono mb-8 inline-block rounded-full border border-accent bg-accent/5 px-3.5 py-1.5 text-xs uppercase tracking-[0.2em] text-accent">
                    // {t("title")}
                </div>

@@ -9,9 +9,13 @@ import { useAudioStore } from './store/useAudioStore';
 export default function GlobalLobbyManager() {
     const router = useRouter();
     const {socket} = useGameSocket();
-    const { isLobbyOpen, room, gameMode, clearGameData } = useRoomDataBySocket();
+    const { isLobbyOpen, room, gameMode, clearGameData, roomStatus} = useRoomDataBySocket();
+
+    console.log("LOBY status ====> ", roomStatus);
 
     const handleStartMatch = () => {
+        if (!roomStatus) return ;
+        
         router.push("/arena");
         router.refresh();
     };
