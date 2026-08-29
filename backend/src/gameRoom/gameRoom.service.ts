@@ -186,4 +186,43 @@ export class GameRoomService {
 	});
   }
 
+  async changeOwner(roomId: string, ownerId: number){
+	return this.db.$transaction(async (transaction) => {
+		const newOwner = await transaction.roomUser.findFirst({
+		where: {
+			roomId,
+			userId: {
+				not: ownerId,
+			},
+		},
+		orderBy: {
+			userId: 'asc',
+		},
+		select: {
+			userId: true,
+		},
+		});
+		if (!newOwner)
+			return false;
+		const updated = await transaction.gameRoom.updateMany({
+			where: {
+				id: roomId,
+				ownerId,
+			},
+			data: {
+				ownerId: newOwner.userId,
+			},
+		});
+		if (updated.count === 0)
+			return false;
+		await transaction.roomUser.deleteMany({
+			where: {
+				roomId,
+				userId: ownerId,
+			},
+		});
+		return true;
+	});
+  }
+
 }

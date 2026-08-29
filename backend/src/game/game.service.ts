@@ -8,11 +8,11 @@ import { AiBotService } from 'src/aiOpponent/ai.service';
 import { RoomStatus } from "@prisma/client";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RoomType } from "@prisma/client";
+import { ConfigService } from '@nestjs/config';
 
 
 const GRID_WIDTH = 30;
 const GRID_HEIGHT = 30;
-const TICK_MS = 130;
 const POINTS = 5;
 
 function isOppositeDir(next: Direction | null, cur: Direction) : boolean{
@@ -281,17 +281,24 @@ function gameOver(game : GameState) : GameState{
 }
 
 
+
 @Injectable()
 export class GameService {
-
+	private readonly tickMs: number;
 	public constructor(
 		private readonly prismaService: PrismaService,
 		private readonly redisService: RedisService,
 		private readonly aiBotService: AiBotService,
 		private readonly eventEmitter: EventEmitter2,
+		private readonly configService: ConfigService,
 		
 		@Inject(forwardRef(() => GameGateway)) private readonly gameGateway: GameGateway,
-	) { };
+	) { 
+		const tickMs = Number(this.configService.getOrThrow<string>('TICK_MS'));
+		if (!Number.isInteger(tickMs) || tickMs <= 0)
+				throw new Error('Tick must be a positive integer');
+		this.tickMs = tickMs;
+	};
 
 	async storeResults(game: GameState){
 		const updated = await this.prismaService.gameRoom.updateMany({
@@ -398,7 +405,7 @@ export class GameService {
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
 		await this.gameGateway.broadcastGameState(roomId, game);
-		setTimeout(() => this.tick(roomId), TICK_MS);
+		setTimeout(() => this.tick(roomId), this.tickMs);
 	}
 
 	async tick(roomId: string){
@@ -445,7 +452,7 @@ export class GameService {
 		if (game.status === 'finished')
 			await this.storeResults(game);
 		else{
-			setTimeout(() => this.tick(roomId), TICK_MS);
+			setTimeout(() => this.tick(roomId), this.tickMs);
 		}
 		await this.gameGateway.broadcastGameState(roomId, game);
 	}

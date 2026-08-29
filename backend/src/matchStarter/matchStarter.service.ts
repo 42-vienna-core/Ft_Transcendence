@@ -301,7 +301,17 @@ export class MatchStarter {
 			return false;
 		await this.redisService.deleteGameState(roomId);
 		const match = await this.gameRoom.getRoomUpdate(roomId);
-		this.eventEmitter.emit('match.abandoned', {match: match});
+		const roomSockets = await this.prismaService.roomUser.findMany({
+			where: {
+				roomId,
+				socketId: {
+					not: null,
+				},
+			},
+			select: { socketId: true },
+		});
+		const socketIds = roomSockets.flatMap(({socketId}) => socketId ? [socketId] : []);
+		this.eventEmitter.emit('match.abandoned', {match, socketIds});
 		const userIds : number[] = [];
 		for(const user of match.players)
 			userIds.push(user.id);

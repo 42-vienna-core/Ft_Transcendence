@@ -4,7 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { MatchStarter } from '../matchStarter/matchStarter.service';
 import { MatchRequestDto } from '../matchStarter/dto/match.dto';
-import { RoomStatus } from "@prisma/client";
+import { RoomStatus, RoomType } from "@prisma/client";
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { setTimeout as wait } from 'node:timers/promises';
 import { TokenService } from 'src/token/token.service';
@@ -70,12 +70,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const roomUser = await this.roomService.findBySocketId(client.id);
     if (!roomUser)
 		return;
-	if (roomUser.userId === roomUser.room.ownerId){
-		const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
-		if (abandoned)
-			return ;
+	let changeOwner = false;
+	if (roomUser.userId === roomUser.room.ownerId && roomUser.room.status !== RoomStatus.PLAYING){
+		if (roomUser.room.type === RoomType.PUBLIC)
+			changeOwner = await this.roomService.changeOwner(roomUser.roomId, roomUser.userId);
+		if (!changeOwner){
+			const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
+			if (abandoned)
+				return ;
+		}
 	}
-    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
+	if (!changeOwner)
+	    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
 	this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 
@@ -92,41 +98,43 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.emit("online-users", onlineUsers);
   }
 
-  @SubscribeMessage('join-match')
-	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
+  	@SubscribeMessage('join-match')
+		async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
 		
 		console.log(" >>>> join match was called");
 		console.log("data: ", data);
 
-    if (!client.data.user) {
-      console.log("ERROR !client.data.user || client.data.user === undefined");
-      client.disconnect();
-      return;
-    }
+    	if (!client.data.user) {
+    	  console.log("ERROR !client.data.user || client.data.user === undefined");
+    	  client.disconnect();
+    	  return;
+    	}
 
 		const match = await this.matchStarter.prepareMatch(
 			client.data.user.id, 
 			client.id, data
 		);
-		console.log("MATCH: ",match);
-
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
 
-		this.server.to(client.data.roomId).emit('room-update', {
-			roomId: match.roomId,
-			roomStatus: match.roomStatus,
-			players: match.players,
-			timer: match.timer,
-		})
+		const curMatch = await this.roomService.getRoomUpdate(match.roomId);
+		if (curMatch.roomStatus === RoomStatus.ABANDONED){
+			client.emit('room-update', curMatch);
+			await this.roomService.removeUserFromRoom(curMatch.roomId, client.data.user.id);
+			await client.leave(match.roomId);
+			delete client.data.roomId;
+			return curMatch;
+		}
 
-		if (match.roomStatus === RoomStatus.READY){
-			this.server.to(client.data.roomId).emit('countdown', {roomId: match.roomId, countdown: COUNTDOWN});
+		this.server.to(client.data.roomId).emit('room-update', curMatch);
+
+		if (curMatch.roomStatus === RoomStatus.READY){
+			this.server.to(curMatch.roomId).emit('countdown', {roomId: curMatch.roomId, countdown: COUNTDOWN});
 			await wait(COUNTDOWN * 1000);
-			await this.matchStarter.startMatch(match.roomId);
+			await this.matchStarter.startMatch(curMatch.roomId);
 		}
     	console.log("ROOM STATUS: ", match.roomStatus);
-		return match;
+		return curMatch;
 	}
 
   @SubscribeMessage('leave-room')
@@ -137,18 +145,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		return { success: false };
 	if (roomId !== roomUser.roomId)
 		return { success: false };
-	if (roomUser.userId === roomUser.room.ownerId){
-		const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
-		if (abandoned)
-		    return { success: true };
+	let ownerChange = false;
+	if (roomUser.userId === roomUser.room.ownerId && roomUser.room.status !== RoomStatus.PLAYING){
+		if (roomUser.room.type === RoomType.PUBLIC)
+			ownerChange = await this.roomService.changeOwner(roomUser.roomId, roomUser.userId);
+		if (!ownerChange){
+			const abandoned  = await this.matchStarter.updateAbandonedRoom(roomUser.roomId);
+			if (abandoned)
+				return { success: true };
+		}
 	}
-    await client.leave(roomUser.roomId);
-    await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
+	await client.leave(roomUser.roomId);
+	if (!ownerChange)
+		await this.roomService.removeUserFromRoom(roomUser.roomId, roomUser.userId);
 	this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 	const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 	this.server.to(roomUser.roomId).emit('room-update', match);
 
-    return { success: true };
+	return { success: true };
   }
 
   @OnEvent('playing-friends.changed')
@@ -200,8 +214,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @OnEvent('match.abandoned')
-  handleAbandonedMatch(event: {match: Match}){
-	this.server.to(event.match.roomId).emit('room-update', event.match);
+  handleAbandonedMatch(event: {match: Match, socketIds: string[]}){
+	this.server.to(event.match.roomId).to(event.socketIds).emit('room-update', event.match);
 	this.server.in(event.match.roomId).socketsLeave(event.match.roomId);
   }
 
