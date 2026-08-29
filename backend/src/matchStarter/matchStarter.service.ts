@@ -138,7 +138,7 @@ export class MatchStarter {
 	async prepareQuickMatch(userId: number, socketId: string) : Promise<Match>{
 		for (let retry = 0; retry < 3; retry++){
 			const data = await this.prismaService.$transaction(async(transaction) =>{
-				await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext('quick-match'))`;
+				await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext('quick-match'))::text`;
 				let newRoom = false;
 				let room = await transaction.gameRoom.findFirst({
 					where: {
