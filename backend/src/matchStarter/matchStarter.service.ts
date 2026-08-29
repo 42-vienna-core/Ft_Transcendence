@@ -407,7 +407,7 @@ export class MatchStarter {
 				return false;
 		}
 		await this.redisService.deleteGameState(roomId);
-		const match = await this.gameRoom.getRoomUpdate(roomId);
+		let match = await this.gameRoom.getRoomUpdate(roomId);
 		const roomSockets = await this.prismaService.roomUser.findMany({
 			where: {
 				roomId,
@@ -418,7 +418,6 @@ export class MatchStarter {
 			select: { socketId: true },
 		});
 		const socketIds = roomSockets.flatMap(({socketId}) => socketId ? [socketId] : []);
-		this.eventEmitter.emit('match.abandoned', {match, socketIds});
 		const userIds : number[] = [];
 		for(const user of match.players)
 			userIds.push(user.id);
@@ -431,7 +430,9 @@ export class MatchStarter {
 				type: true,
 				status: true,
 			}
-		})
+		});
+		match = await this.gameRoom.getRoomUpdate(roomId);
+		this.eventEmitter.emit('match.abandoned', {match, socketIds});
 		if (updated !== null){
 			const owner = updated.ownerId;
 			const type = updated.type;
