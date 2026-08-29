@@ -60,10 +60,11 @@ export class UserService {
 				name: true,
 				avatar: true,
 				score: true,
+				level: true,
 				color: true,
 				role: true,
 				// isBot: true,
-				// createdAt: true,
+				createdAt: true,
 				// updatedAt: true,
 				// isVerified: true,
 			},
@@ -151,6 +152,7 @@ export class UserService {
 				name: true,
 				avatar: true,
 				score: true,
+				level: true,
 			},
 		});
 		// return users;
@@ -220,6 +222,7 @@ export class UserService {
 				name: true,
 				email: true,
 				role: true,
+				level: true,
 			},
 		});
 	}
@@ -237,6 +240,7 @@ export class UserService {
 				name: true,
 				email: true,
 				role: true,
+				level: true,
 				createdAt: true,
 			},
 		});
