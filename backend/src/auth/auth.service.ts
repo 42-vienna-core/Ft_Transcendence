@@ -11,7 +11,6 @@ import { RedisService } from 'src/redis/redis.service';
 import { OAuthProfileType } from 'src/common/strategies/google.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomBytes } from 'crypto';
-import { MailService } from 'src/mail/mail.service'; 
 
 @Injectable()
 export class AuthService {
@@ -23,7 +22,6 @@ export class AuthService {
         private readonly configService: ConfigService,
         private readonly redis: RedisService,
         private readonly DB: PrismaService,
-        private readonly mailService: MailService,
     ) { }
 
     public async register(dto: RegisterRequest) {
@@ -144,20 +142,7 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
-
-        // const passwordHash = await hash(dto.new);
-
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-        await this.DB.users.update({
-            where: {id: user.id},
-			data: { resetCode : code, codeExpire: new Date(Date.now() + 5 * 60 * 1000), } 
-        })
-        await this.mailService.sendResetCode(user.email, code);
-		return  { email: user.email, password: dto.new };
-        // await this.userService.updatePassword(userId, passwordHash);
-        // await this.sessionService.deleteAllUserSessions(userId);
-        // return { success: true };
+        return await this.userService.startPasswordReset(user.id, {email: user.email, password: dto.new})
     }
 
     async oauthLogin(profile: OAuthProfileType) {

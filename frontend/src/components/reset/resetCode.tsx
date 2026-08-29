@@ -4,11 +4,8 @@ import { AlertCircle } from "lucide-react";
 
 import { useState } from "react";
 
-type props = {
-    email: string, password: string
-}
 
-export default function ResetCode ({email, password} : props) {
+export default function ResetCode ({email} : {email: string}) {
 
     const resetCode = useTranslations("Reset.resetCode");
     const [code, setCode] = useState("");
@@ -26,7 +23,7 @@ export default function ResetCode ({email, password} : props) {
             setError(false);
             try {
                 const res = await fetch(`/api/admin?path=/user/resetCode/`, {
-                    method: "POST", body: JSON.stringify({ email, password, code }),
+                    method: "POST", body: JSON.stringify({ email, code }),
                 });
                 if (res.ok) router.push("/login");
                 else setError(true);

@@ -9,7 +9,6 @@ import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { UserModule } from '../user/user.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { GoogleStrategy } from 'src/common/strategies/google.strategy';
-import { MailModule } from 'src/mail/mail.modul';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { MailModule } from 'src/mail/mail.modul';
     SessionModule,
     TokenModule,
     RedisModule,
-    MailModule
   ],
   providers: [
     AuthService,

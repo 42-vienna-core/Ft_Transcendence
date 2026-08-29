@@ -246,6 +246,22 @@ export class UserService {
 		return users;
 	}
 
+	async startPasswordReset (id : number, body : {email: string, password: string}) {
+		const code = Math.floor(100000 + Math.random() * 900000).toString();
+		const pendingPassword = await hash(body.password);
+
+		await this.prismaService.users.update({ 
+			where: { id },
+			data: {
+				pendingPassword,
+				resetCode : code, 
+				codeExpire: new Date(Date.now() + 5 * 60 * 1000), 
+			} 
+		});
+		await this.mailService.sendResetCode(body.email, code);
+		return  { email: body.email};
+	}
+
 	async reset(body: ResetPasswordDto)
 	{
 		const user = await this.findByEmail(body.email);
@@ -254,14 +270,7 @@ export class UserService {
 		if (body.ConfirmPassword !== body.password)
     		throw new BadRequestException("Passwords do not match");
 
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-		await this.prismaService.users.update({ 
-			where: { id: user.id },
-			data: { resetCode : code, codeExpire: new Date(Date.now() + 5 * 60 * 1000), } 
-		});
-		await this.mailService.sendResetCode(user.email, code);
-		return  { email: user.email, password: body.password };
+		return await this.startPasswordReset(user.id, {email: body.email, password: body.password});
 	}
 
 	async resetCode (body : ResetCodeDto)
@@ -274,13 +283,14 @@ export class UserService {
 
         if (!user.codeExpire || user.codeExpire < new Date())
             throw new Error('Code expired');
-
-		const hashedPassword = await hash(body.password);
+		if (!user.pendingPassword)
+			throw new BadRequestException("NO pending password change");
 
 		await this.prismaService.users.update({
 			where: {id: user.id},
 			data: {
-				password: hashedPassword,
+				password: user.pendingPassword,
+				pendingPassword : null,
 				resetCode: null,
             	codeExpire: null,
 			}

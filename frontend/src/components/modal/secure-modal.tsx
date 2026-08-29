@@ -3,7 +3,6 @@
 import { fetchChangePassword } from "@/lib/auth-actions";
 import { apiFetch } from "@/lib/api-client";
 import { State } from "@/lib/definitions";
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ModalLayout from "./modal-layout";
 import ResetCode from "../reset/resetCode";
@@ -19,14 +18,10 @@ const initialState: State = {
     message: "",
     success: false,
 }
-interface changeType {
-    email: string;
-    password: string;
-}
 
 export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
     const [state, setState] = useState<State>(initialState);
-    const [code, setCode] =  useState<changeType | null>(null);
+    const [code, setCode] =  useState<string | null>(null);
     const LN = useTranslations("Profile.settings.change");
     if (!isOpen) return null;
 
@@ -49,7 +44,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 method: "POST",
                 body: JSON.stringify({ old: oldPass, new: newPass }),
             });
-            setCode({...res});
+            setCode(res.email);
         } catch (error) {
             if (error instanceof Error) {
                 setState(prev => ({ ...prev, message: LN("wakeP") }));
@@ -73,7 +68,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                         onClose()
                                     }} aria-label={LN("close")}>✕</button>
                                 </div>
-                                <ResetCode email={code.email} password={code.password}/>
+                                <ResetCode email={code}/>
                             </div>
                         ) :
                     (
