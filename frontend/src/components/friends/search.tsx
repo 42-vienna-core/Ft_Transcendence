@@ -6,6 +6,7 @@ import { apiFetch } from '@/lib/api-client';
 import { useProfile } from '@/providers/ProfileContext';
 import { Loader, Search, X } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
+import { useTranslations } from 'next-intl';
 
 interface Friend {
     id: number;
@@ -31,6 +32,7 @@ type AddStatus = 'idle' | 'loading' | 'done';
 
 function FriendCard({ friend, addFriend }: FriendCardProps) {
     const [status, setStatus] = useState<AddStatus>('idle');
+    const LN = useTranslations("friends.lists");
     const { id, name, avatar, isOnline } = friend;
     const av = (name && typeof name === 'string') ? name.slice(0, 2) : "";
     const isAvatar = !!avatar;
@@ -74,12 +76,12 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
                     className="cursor-pointer whitespace-nowrap text-sm text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
                     onClick={handleOnClick}
                 >
-                    + Add
+                    + {LN("add")}
                 </button>
             )}
 
             {status === 'done' && (
-                <p className="whitespace-nowrap text-sm text-text-tertiary">done</p>
+                <p className="whitespace-nowrap text-sm text-text-tertiary">{LN("done")}</p>
             )}
         </li>
     )
@@ -118,6 +120,7 @@ export default function FindFriends({
     const [result, setResult] = useState<Friend[]>([]);
     const [query, setQuery] = useState<string>("");
     const [isSuccess, setIsSuccess] = useState<boolean>(true);
+    const LN = useTranslations("friends.lists");
 
 
     const handleSearchRequest = useDebouncedCallback(async (value: string) => {
@@ -139,11 +142,11 @@ export default function FindFriends({
             }
 
             setResult([]);
-            setMessage("User not found");
+            setMessage(LN("error"));
 
         } catch (error) {
             setResult([]);
-            setMessage("Server error");
+            setMessage(LN("serverError"));
         }
     }, 300);
 
@@ -163,7 +166,7 @@ export default function FindFriends({
             });
 
             setIsSuccess(true);
-            setMessage("The user has been added");
+            setMessage(LN("addMessage"));
             return true;
         } catch (error) {
             setIsSuccess(false);
@@ -171,7 +174,7 @@ export default function FindFriends({
             if (error instanceof Error) {
                 setMessage(error.message);
             } else {
-                setMessage("An unknown error occurred");
+                setMessage(LN("addError"));
             }
             return false;
         }
@@ -188,11 +191,11 @@ export default function FindFriends({
     return (
         <div className={styles}>
             <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 className="!text-sm font-medium lowercase tracking-wide text-text-secondary">Find friends</h3>
+                <h3 className="!text-sm font-medium lowercase tracking-wide text-text-secondary">{LN("find")}</h3>
                 <button
                     type="button"
                     onClick={handleFindModal}
-                    aria-label="Close"
+                    aria-label={LN("close")}
                     className="-mr-1 -mt-1 cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-muted hover:text-text-primary lg:hidden"
                 >
                     <X className="h-4 w-4" />
@@ -203,7 +206,7 @@ export default function FindFriends({
                 <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-text-tertiary" />
                 <input
                     type="text"
-                    placeholder="username"
+                    placeholder={LN("name")}
                     value={query}
                     onChange={(e) => handleInputChange(e.target.value)}
                     className="w-full border-none bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
@@ -211,7 +214,7 @@ export default function FindFriends({
             </div>
 
             {isTooShort && !message && (
-                <p className="mb-1 text-xs text-text-tertiary">Keep typing… (min 3 characters)</p>
+                <p className="mb-1 text-xs text-text-tertiary">{LN("minChars")}</p>
             )}
 
             <FriendsList

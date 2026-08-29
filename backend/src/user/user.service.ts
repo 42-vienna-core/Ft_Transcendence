@@ -248,7 +248,6 @@ export class UserService {
 
 	async reset(body: ResetPasswordDto)
 	{
-		
 		const user = await this.findByEmail(body.email);
 		if (!user)
 			throw new NotFoundException(`User with email ${body.email} not found`);
@@ -258,8 +257,8 @@ export class UserService {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
 
 		await this.prismaService.users.update({ 
-			where: { id: user.id }, 
-			data: { resetCode : code, codeExpire: new Date(Date.now() + 5 * 60 * 100), } 
+			where: { id: user.id },
+			data: { resetCode : code, codeExpire: new Date(Date.now() + 5 * 60 * 1000), } 
 		});
 		await this.mailService.sendResetCode(user.email, code);
 		return  { email: user.email, password: body.password };

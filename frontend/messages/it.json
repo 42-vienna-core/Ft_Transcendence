@@ -3,8 +3,7 @@
         "a": "Arena",
         "f": "Amici",
         "si": "Accedi",
-        "su": "Registrati",
-        "rating" : "Valutazione"
+        "su": "Registrati"
     },
     "HomePage": {
         "title": "CREATO PER IL COMBATTIMENTO IN TEMPO REALE",
@@ -16,14 +15,61 @@
     "Profile": {
         "epBtn": "Modifica profilo",
         "sub": "Invia",
+        "joined": "iscritto",
+        "level": "Livello",
+        "formatInvalid": "Formato non valido. Carica un'immagine JPEG, PNG o WebP.",
+        "longFile": "Il file è troppo grande. La dimensione massima consentita è di 2 MB.",
         "settings": {
+            "settings": "Impostazioni",
             "lang": "Lingua",
             "ct": "Tema colore",
             "da": "Elimina account",
-            "lo": "Disconnetti",
+            "lo": "Esci",
+            "sound": "Suoni e musica",
+            "on": "Attivo",
+            "off": "Disattivo",
+            "controls": "Comandi",
+            "snakeColor": "Colore del serpente",
+            "text": "I cobra sono famosi serpenti velenosi, noti per i loro spettacolari cappucci sul collo. Il cobra reale è il serpente velenoso più lungo della Terra: può raggiungere i 5,5 metri di lunghezza e un singolo morso può uccidere un elefante o 20 persone. Alcuni cobra possono persino sputare veleno mirando agli occhi del bersaglio.",
             "secure": {
                 "label1": "Sicurezza",
-                "label2": "Cambia password, 2FA" 
+                "label2": "Cambia password, 2FA",
+                "label3": "Esci da tutti gli account"
+            },
+            "changeControl": "Cambia",
+            "arrow": "Frecce",
+            "WASD": "WASD",
+            "arrow + WASD": "Frecce + WASD",
+            "change": {
+                "changeP": "Cambia password",
+                "close": "Chiudi",
+                "OldP": "Vecchia password",
+                "NewP": "Nuova password",
+                "Atleast": "Almeno 8 caratteri",
+                "re-enter": "Reinserisci la password",
+                "cancel": "Annulla",
+                "save": "Salva",
+                "resetMessage": "Inserisci il codice di reimpostazione",
+                "placeholderAt": "Almeno 8 caratteri",
+                "placeholderThe": "Le password devono corrispondere",
+                "wakeP": "Password debole"
+            },
+            "delet": {
+                "type": "Digita",
+                "cancel": "Annulla",
+                "confirm": "per confermare",
+                "title": "Eliminare il tuo account?",
+                "warning": "Questa operazione cancellerà definitivamente il tuo profilo, la valutazione di 1.482, la cronologia delle partite e 42 amici. Non può essere annullata.",
+                "secondBtn": "Elimina account"
+            },
+            "color": { 
+                "neon-green": "verde neon", 
+                "electric-blue": "blu elettrico", 
+                "laser-pink": "rosa laser", 
+                "toxic-yellow": "giallo tossico", 
+                "plasma-purple": "viola plasma", 
+                "lava-orange": "arancione lava", 
+                "pearl-white": "bianco perlato" 
             }
         }
     },
@@ -284,6 +330,47 @@
         ]
         }
     },
+    "friends": {
+        "lists": {
+            "friends": "Amici",
+            "total": "Totale",
+            "online": "Online",
+            "playing": "In gioco",
+            "noFriends": "Non hai ancora amici",
+            "noOnline": "Nessun amico online",
+            "noPlaying": "Nessun amico sta giocando",
+            "add": "Aggiungi",
+            "name": "Nome utente",
+            "addMessage": "L'utente è stato aggiunto",
+            "addError": "Si è verificato un errore sconosciuto",
+            "error": "Utente non trovato",
+            "all": "Tutti",
+            "requests": "Richieste",
+            "find": "Trova amici",
+            "score": "punteggio",
+            "inMatch": "In partita",
+            "room": "Stanza",
+            "done": "fatto",
+            "serverError": "Errore del server",
+            "close": "Chiudi",
+            "minChars": "Continua a digitare… (minimo 3 caratteri)"
+        },
+        "dialog": {
+            "title": "Rimuovi",
+            "title+": "dagli amici?",
+            "warning": "Non potrà più vedere il tuo stato né invitarti alle partite. Potrai aggiungerlo di nuovo in qualsiasi momento.",
+            "secondBtn": "Rimuovi amico"
+        },
+        "request": {
+            "cancel": "Annulla",
+            "join": "Partecipa",
+            "pending": "Richieste in sospeso",
+            "invite": "Invita",
+            "accept": "Accetta",
+            "decline": "Rifiuta",
+            "noRequests": "Nessuna richiesta"
+        }
+    },
     "agreement": {
       "beforePlaying": "Prima di giocare",
       "readPlaying": "Leggi e accetta le condizioni per continuare a giocare a Snake.",
@@ -292,5 +379,17 @@
       "reject": "Rifiuta",
       "saving": "Salvataggio...",
       "accept": "Accetta e continua"
+    },
+    "leaderboard": { 
+        "leaderboard": "Classifica", 
+        "top": "Migliori giocatori per punteggio · di sempre", 
+        "me": "Io", 
+        "matches": "Partite", 
+        "lvl": "Liv.",
+        "level": "Livello", 
+        "score": "Punteggio", 
+        "joined": "Iscritto", 
+        "rank": "Posizione", 
+        "player": "Giocatore" 
     }
 }

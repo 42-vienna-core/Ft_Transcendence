@@ -34,6 +34,7 @@ function MatchItem({
 }) {
     const {title, expl, btnLabel, id} = card;
     const isAnyLoadingMode = loadingMode !== null;
+    const LN = useTranslations("Start_game")
 
     return (
         <li className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
@@ -44,7 +45,7 @@ function MatchItem({
             <p className="mb-auto text-xs leading-snug text-text-tertiary">{expl}</p>
 
             <p className="mt-1 flex items-center gap-1 text-xs text-success">
-                avg. wait ~8 s
+                {LN("wait_time")}
             </p>
 
             {loading && loadingMode === id? (

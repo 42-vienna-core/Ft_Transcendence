@@ -13,16 +13,63 @@
         "sBtn": "Start Playing"
     },
     "Profile": {
-        "epBtn": "edit profile",
-        "sub": "submit",
+        "epBtn": "Edit profile",
+        "sub": "Submit",
+        "joined": "joined",
+        "level": "Level",
+        "formatInvalid": "Invalid format. Please upload a JPEG, PNG, or WebP image.",
+        "longFile": "File is too large. Maximum size allowed is 2 MB.",
         "settings": {
-            "lang": "language",
-            "ct": "color theme",
-            "da": "delete account",
-            "lo": "logout",
+            "settings" :"Settings",
+            "lang": "Language",
+            "ct": "Color theme",
+            "da": "Delete account",
+            "lo": "Log out",
+            "sound": "Sound & Music",
+            "on": "On",
+            "off": "Off",
+            "controls": "Controls",
+            "snakeColor": "Snake color",
+            "text": "Cobras are famous venomous snakes known for their dramatic neck hoods. The king cobra is the longest venomous snake on Earth, growing up to 18 feet long, and a single bite can kill an elephant or 20 people. Some cobras can even spit venom at a target's eyes.",
             "secure": {
-                "label1": "secure",
-                "label2": "change password, 2FA" 
+                "label1": "Security",
+                "label2": "Change password, 2FA",
+                "label3": "Log out of all accounts"
+            },
+            "changeControl" : "Change",
+            "arrow": "Arrow",
+            "WASD": "WASD",
+            "arrow + WASD": "Arrow + WASD",
+            "change": {
+                "changeP": "Change Password",
+                "close": "Close",
+                "OldP": "Old password",
+                "NewP": "New password",
+                "Atleast": "At least 8 characters",
+                "re-enter": "Re-enter your password",
+                "cancel": "Cancel",
+                "save": "Save",
+                "resetMessage": "Enter reset code",
+                "placeholderAt": "At least 8 characters",
+                "placeholderThe": "The password must match",
+                "wakeP": "Weak password"
+            },
+            "delet": {
+                "type": "Type",
+                "cancel": "Cancel",
+                "confirm": "to confirm",
+                "title": "Delete your account ?",
+                "warning": "This permanently erases your profile, 1,482 rating, match history, and 42 friends. This can't be undone.",
+                "secondBtn": "Delete account"
+            },
+            "color": { 
+                "neon-green": "neon green", 
+                "electric-blue": "electric blue", 
+                "laser-pink": "laser pink", 
+                "toxic-yellow": "toxic yellow", 
+                "plasma-purple": "plasma purple", 
+                "lava-orange": "lava orange", 
+                "pearl-white": "pearl white" 
             }
         }
     },
@@ -291,37 +338,57 @@
       "saving": "Saving...",
       "accept": "Accept & Continue"
     },
-    "friends" : {
-        "lists" : {
-            "friends" : "Friends",
-            "total" : "total",
-            "online" : "online",
-            "playing" : "playing",
-            "noFriends" : "No friends yet",
-            "noOnline" : "No friends online",
-            "add" : "Add",
-            "name" : "username",
-            "addMessage" : "The user has been added",
-            "addError" : "An unknown error occurred",
-            "error" : "User not found"
+    "friends": {
+        "lists": {
+            "friends": "Friends",
+            "total": "Total",
+            "online": "Online",
+            "playing": "Playing",
+            "noFriends": "No friends yet",
+            "noOnline": "No friends online",
+            "noPlaying": "No friends are playing",
+            "add": "Add",
+            "name": "Username",
+            "addMessage": "The user has been added",
+            "addError": "An unknown error occurred",
+            "error": "User not found",
+            "all": "All",
+            "requests": "Requests",
+            "find": "Find friends",
+            "score": "score",
+            "inMatch": "In match",
+            "room": "Room",
+            "done": "done",
+            "serverError": "Server error",
+            "close": "Close",
+            "minChars": "Keep typing… (min 3 characters)"
         },
-        "request" : {
-            "censel" : "Cancel",
-            "join"   : "Join",
-            "pending" : "Pending requests",
-            "invite" : "Invite"
+        "dialog": {
+            "title": "Remove",
+            "title+": "from friends?",
+            "warning": "They'll no longer see your status or invite you to matches. You can add them back anytime.",
+            "secondBtn": "Remove friend"
+        },
+        "request": {
+            "cancel": "Cancel",
+            "join": "Join",
+            "pending": "Pending requests",
+            "invite": "Invite",
+            "accept": "Accept",
+            "decline": "Decline",
+            "noRequests": "No requests"
         }
     },
-     "leaderboard" : {
-        "leaderboard" : "Leaderboard",
-        "top" : "Top players by score · all time ",
-        "me" : "Me",
-        "matches" : "Matches",
-        "lvl" : "Lvl",
-        "level" : "Level",
-        "score" : "Score",
-        "joined" : "Joined",
-        "rank" : "Rank",
-        "player" : "Player"
+     "leaderboard": {
+        "leaderboard": "Leaderboard", 
+        "top": "Top players by score · all-time", 
+        "me": "Me", 
+        "matches": "Matches", 
+        "lvl": "Lvl", 
+        "level": "Level", 
+        "score": "Score", 
+        "joined": "Joined", 
+        "rank": "Rank", 
+        "player": "Player"
     }
 }

@@ -14,6 +14,7 @@ export function NavLinks () {
     const {status, username, avatar } = useProfile();
     const { gameNotification, beFriendNotification} = useNotificationListener();
     const t = useTranslations("Header");
+    const LN = useTranslations("leaderboard")
 
     return (
         <>
@@ -24,7 +25,7 @@ export function NavLinks () {
             />
             <CustomLink
                 url={"/leaderboard"}
-                label={"Leaderboard"}
+                label={LN("leaderboard")}
             />
             {
                 status === "authenticated" &&

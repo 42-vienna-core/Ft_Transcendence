@@ -3,9 +3,7 @@
         "a": "Arena",
         "f": "Freunde",
         "si": "Anmelden",
-        "su": "Registrieren",
-        "rating" : "Bewertung"
-
+        "su": "Registrieren"
     },
     "HomePage": {
         "title": "FÜR ECHTZEIT-KÄMPFE ENTWICKELT",
@@ -16,18 +14,66 @@
     },
     "Profile": {
         "epBtn": "Profil bearbeiten",
-        "sub": "Bestätigen",
+        "sub": "Absenden",
+        "joined": "beigetreten",
+        "level": "Level",
+        "formatInvalid": "Ungültiges Format. Bitte laden Sie ein JPEG-, PNG- oder WebP-Bild hoch.",
+        "longFile": "Die Datei ist zu groß. Die maximal zulässige Größe beträgt 2 MB.",
         "settings": {
+            "settings": "Einstellungen",
             "lang": "Sprache",
-            "ct": "Farbthema",
+            "ct": "Farbdesign",
             "da": "Konto löschen",
             "lo": "Abmelden",
+            "sound": "Ton & Musik",
+            "on": "Ein",
+            "off": "Aus",
+            "controls": "Steuerung",
+            "snakeColor": "Schlangenfarbe",
+            "text": "Kobras sind berühmte Giftschlangen, die für ihre eindrucksvollen Nackenhauben bekannt sind. Die Königskobra ist die längste Giftschlange der Erde und kann bis zu 5,5 Meter lang werden. Ein einziger Biss kann einen Elefanten oder 20 Menschen töten. Einige Kobras können ihr Gift sogar gezielt in die Augen ihres Ziels spritzen.",
             "secure": {
                 "label1": "Sicherheit",
-                "label2": "Passwort ändern, 2FA" 
+                "label2": "Passwort ändern, 2FA",
+                "label3": "Von allen Konten abmelden"
+            },
+            "changeControl": "Ändern",
+            "arrow": "Pfeiltasten",
+            "WASD": "WASD",
+            "arrow + WASD": "Pfeiltasten + WASD",
+            "change": {
+                "changeP": "Passwort ändern",
+                "close": "Schließen",
+                "OldP": "Altes Passwort",
+                "NewP": "Neues Passwort",
+                "Atleast": "Mindestens 8 Zeichen",
+                "re-enter": "Passwort erneut eingeben",
+                "cancel": "Abbrechen",
+                "save": "Speichern",
+                "resetMessage": "Reset-Code eingeben",
+                "placeholderAt": "Mindestens 8 Zeichen",
+                "placeholderThe": "Die Passwörter müssen übereinstimmen",
+                "wakeP": "Schwaches Passwort"
+            },
+            "delet": {
+                "type": "Eingeben",
+                "cancel": "Abbrechen",
+                "confirm": "zur Bestätigung",
+                "title": "Konto löschen?",
+                "warning": "Dadurch werden dein Profil, deine Bewertung von 1.482, dein Spielverlauf und deine 42 Freunde dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+                "secondBtn": "Konto löschen"
+            },
+            "color": { 
+                "neon-green": "Neongrün", 
+                "electric-blue": "Elektroblau", 
+                "laser-pink": "Laserrosa", 
+                "toxic-yellow": "Giftgelb", 
+                "plasma-purple": "Plasmaviolett", 
+                "lava-orange": "Lavaorange", 
+                "pearl-white": "Perlweiß" 
             }
         }
     },
+
     "Login": {
         "title": "Anmelden",
         "expla": "Melde dich an, um weiterzuspielen", 
@@ -134,7 +180,7 @@
                     }
                 }
     },
-      "Footer": {
+    "Footer": {
         "rights": "Alle Rechte vorbehalten.",
         "privacy": "Datenschutzerklärung",
         "terms": "Nutzungsbedingungen"
@@ -284,6 +330,47 @@
         ]
         }
     },
+    "friends": {
+        "lists": {
+            "friends": "Freunde",
+            "total": "Gesamt",
+            "online": "Online",
+            "playing": "Spielen",
+            "noFriends": "Noch keine Freunde",
+            "noOnline": "Keine Freunde online",
+            "noPlaying": "Keine Freunde spielen gerade",
+            "add": "Hinzufügen",
+            "name": "Benutzername",
+            "addMessage": "Der Benutzer wurde hinzugefügt",
+            "addError": "Ein unbekannter Fehler ist aufgetreten",
+            "error": "Benutzer nicht gefunden",
+            "all": "Alle",
+            "requests": "Anfragen",
+            "find": "Freunde finden",
+            "score": "Punkte",
+            "inMatch": "Im Match",
+            "room": "Raum",
+            "done": "fertig",
+            "serverError": "Serverfehler",
+            "close": "Schließen",
+            "minChars": "Weiter tippen… (mindestens 3 Zeichen)"
+        },
+        "dialog": {
+            "title": "Entfernen",
+            "title+": "aus den Freunden?",
+            "warning": "Die Person kann deinen Status nicht mehr sehen und dich nicht mehr zu Spielen einladen. Du kannst sie jederzeit wieder hinzufügen.",
+            "secondBtn": "Freund entfernen"
+        },
+        "request": {
+            "cancel": "Abbrechen",
+            "join": "Beitreten",
+            "pending": "Ausstehende Anfragen",
+            "invite": "Einladen",
+            "accept": "Annehmen",
+            "decline": "Ablehnen",
+            "noRequests": "Keine Anfragen"
+        }
+    },
     "agreement": {
       "beforePlaying": "Vor dem Spielen",
       "readPlaying": "Bitte lies die Bedingungen und stimme ihnen zu, um Snake weiterzuspielen.",
@@ -292,5 +379,17 @@
       "reject": "Ablehnen",
       "saving": "Wird gespeichert...",
       "accept": "Akzeptieren und fortfahren"
+    },
+    "leaderboard": { 
+        "leaderboard": "Rangliste", 
+        "top": "Beste Spieler nach Punkten · aller Zeiten", 
+        "me": "Ich", 
+        "matches": "Spiele", 
+        "lvl": "Lvl.", 
+        "level": "Level", 
+        "score": "Punkte", 
+        "joined": "Beigetreten", 
+        "rank": "Rang", 
+        "player": "Spieler"
     }
 }

@@ -21,13 +21,20 @@ export default function ResetCode ({email, password} : props) {
             <div className="w-full">
 
             <form className="space-y-4" onSubmit={ async (e) => {
-                    e.preventDefault();
-                    const res = await fetch(`/api/admin?path=/user/resetCode/`, {
-                        method: "POST", body: JSON.stringify({email, password, code})
-                    });
-                    setLoading(true);
-                    res.ok ?  router.push("/login") : setError(true);
-                }}
+            e.preventDefault();
+            setLoading(true);
+            setError(false);
+            try {
+                const res = await fetch(`/api/admin?path=/user/resetCode/`, {
+                    method: "POST", body: JSON.stringify({ email, password, code }),
+                });
+                if (res.ok) router.push("/login");
+                else setError(true);
+            } finally {
+                setLoading(false);
+            }
+        }}
+
             >
                 <div>
                     <label className="block text-sm font-medium mb-2 text-text-secondary"> {resetCode("Reset Code")} </label>
