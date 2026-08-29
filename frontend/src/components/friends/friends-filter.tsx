@@ -198,7 +198,7 @@ function FriendsFilter() {
                         style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}
                     >
                         <FindFriends
-                            styles={"absolute top-15 right-0 rounded-md max-w-md min-h-[200px] bg-bg-subtle px-3.5 py-3"}
+                            styles={"absolute top-15 right-0 rounded-md max-w-md bg-bg-subtle px-3.5 py-3"}
                             handleFindModal={handleFindModal}
                         />
                     </div>

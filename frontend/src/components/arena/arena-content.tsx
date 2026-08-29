@@ -1,28 +1,20 @@
 'use client'
 
-import { useFriendAndRoomID, useGameMode, usePlayerStore } from "@/components/store/useUserStore"
+import { usePlayerStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useState, useEffect, useRef, ReactNode } from "react";
 import type { Socket } from "socket.io-client";
-import { Loader, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
-import { ControlType, Direction, Game, GameState, RoomData, RoomStateType, RoomStatusType, TICK_MS } from "@/types/gameTypes";
+import { ControlType, Direction, Game } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
-import { useNotificationListener } from "../store/notification";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 import { getOrdinal } from "@/ui/utils";
 
-// function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
-//     if (!raw) return 'UNKNOWN';
-//     const s = raw.toUpperCase();
-//     if (s === 'WAITING') return 'WAITING';
-//     if (s === 'ABANDONED') return 'ABANDONED';
-//     if (s === 'FINISHED') return 'FINISHED';
-//     if (s === 'READY' || s === 'RUNNING' || s === 'PLAYING' || s === 'STARTED') return 'READY';
-//     return 'UNKNOWN';
-// }
+const tick_ms_str = process.env.TICK_MS;
+const TICK_MS = tick_ms_str ? Number(tick_ms_str) : 130;
 
 function formatTime(totalSeconds: number): string {
     if (!totalSeconds) return "00:00";
@@ -46,14 +38,12 @@ function Kbd({ children, active, activeClass = "text-accent-text" }: { children:
 }
 
 function ArenaContent() {
-    // const [ gameState, setGameState ] = useState<GameState | null>(null);
-    const [ gameDir, setGameDir ] = useState<Direction | null>(null);
-    const [ control, setControl ] = useState<ControlType>('arrow');
-    const [ tick, setTick ] = useState<number>(0);
+    const [gameDir, setGameDir] = useState<Direction | null>(null);
+    const [control, setControl] = useState<ControlType>('arrow');
+    const [tick, setTick] = useState<number>(0);
 
     const { isConnected, socket } = useGameSocket();
     const router = useRouter();
-
 
     const players = usePlayerStore((state) => state.players);
     const setPlayers = usePlayerStore((state) => state.setPlayers);
@@ -62,8 +52,8 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const {room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen} = useRoomDataBySocket();
-    const { playMusic, toggleMute, stopEffectMusic, stopBgMusic, playEffect} = useAudioStore();
+    const { room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen } = useRoomDataBySocket();
+    const { playMusic, toggleMute, stopBgMusic } = useAudioStore();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
@@ -124,8 +114,8 @@ function ArenaContent() {
 
         const setUpContol = () => {
             const controlLS = localStorage.getItem('controls') as ControlType;
-            if(controlLS) {
-                setControl(controlLS) ;
+            if (controlLS) {
+                setControl(controlLS);
             }
         }
 
@@ -153,10 +143,10 @@ function ArenaContent() {
 
     const maxLenRoomId = 10;
     const roomName = room && room.roomId.length > maxLenRoomId ?
-        room.roomId.slice(0, maxLenRoomId):
+        room.roomId.slice(0, maxLenRoomId) :
         room?.roomId;
 
-    const showOver = gameStatus === 'OVER' ;
+    const showOver = gameStatus === 'OVER';
     const showWin = gameStatus === 'WIN';
 
     return (
@@ -195,13 +185,14 @@ function ArenaContent() {
 
                     <div className="relative w-full">
                         {
-                            (roomStatus === 'PLAYING' || roomStatus === 'running')  && (
+                            (roomStatus === 'PLAYING' || roomStatus === 'running') && (
                                 <GameCanvas
                                     setGameDir={setGameDir}
                                     control={control}
+                                    tick={TICK_MS}
                                 />
-                        )}
-                        
+                            )}
+
                         {(showOver || showWin) && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center  bg-bg-overlay rounded-xl">
                                 <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>

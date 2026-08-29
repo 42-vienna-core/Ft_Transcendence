@@ -174,7 +174,7 @@ export default function FindFriends({
             });
 
             setIsSuccess(true);
-            setMessage("The user has been added");
+            setMessage("Request has been sent");
             return true;
         } catch (error) {
             setIsSuccess(false);
