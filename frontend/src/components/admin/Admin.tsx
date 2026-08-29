@@ -45,7 +45,7 @@ export default function Admin({ onClose }: { onClose?: () => void }) {
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-(--color-text-secondary) transition-colors hover:bg-(--color-border-default) hover:text-(--color-text-primary)"
-            aria-label="Close"
+            aria-label={adminData("close")}
           >
             <X size={16} />
           </button>
@@ -88,7 +88,7 @@ export default function Admin({ onClose }: { onClose?: () => void }) {
             {results.map((user) => {
               const isAdmin = user.role === "ADMIN";
               return (
-              <div key={user.id} title={isAdmin ? "Forbidden" : undefined}
+              <div key={user.id} title={isAdmin ? adminData("forbidden") : undefined}
                 aria-disabled={isAdmin}
                 className={`group flex w-full items-center gap-3 rounded-xl border border-transparent bg-(--color-bg-subtle) px-3 py-3 transition-all ${
                   isAdmin
@@ -156,7 +156,7 @@ export default function Admin({ onClose }: { onClose?: () => void }) {
                 type="button"
                 onClick={clearSelectedUser}
                 className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-(--color-text-secondary) transition-colors hover:bg-(--color-border-default) hover:text-(--color-text-primary)"
-                aria-label="Close"
+                aria-label={adminData("close")}
               >
                 <X size={16} />
               </button>

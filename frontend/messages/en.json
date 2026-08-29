@@ -15,6 +15,7 @@
     "Profile": {
         "epBtn": "Edit profile",
         "sub": "Submit",
+        "updating": "updating...",
         "joined": "joined",
         "level": "Level",
         "formatInvalid": "Invalid format. Please upload a JPEG, PNG, or WebP image.",
@@ -113,7 +114,9 @@
         "resetCode" : {
             "Reset Code": "Reset Code",
             "placeholder": "Enter 6-digit code",
-            "errorForm": "Failed to verify"
+            "errorForm": "Failed to verify",
+            "verifying": "Verifying...",
+            "verify": "Verify Code"
         }
     },
     "Validation": {
@@ -145,6 +148,8 @@
     },
     "Admin" : {
         "title": "Admin Panel",
+        "forbidden": "Forbidden",
+        "close": "Close",
         "searchPlaceholder": "Search by name or email",
         "searching": "Searching...",
         "search": "Search",
@@ -186,6 +191,7 @@
     },
     "Legal": {
         "back" : "Back to Snake",
+        "eyebrow": "Legal",
         "privacyPolicy": {
         "title": "Privacy Policy",
         "updated": "Last updated: August 24, 2026",
@@ -388,7 +394,40 @@
         "level": "Level", 
         "score": "Score", 
         "joined": "Joined", 
-        "rank": "Rank", 
+        "rank": "Rank",
         "player": "Player"
+    },
+    "common": {
+        "online": "online",
+        "offline": "offline",
+        "admin": "Admin"
+    },
+    "arena": {
+        "liveMatch": "live match · room",
+        "time": "time",
+        "players": "players",
+        "yourScore": "your score",
+        "startAfter": "Game will start after",
+        "win": "You Win!",
+        "gameOver": "Game Over",
+        "tryAgain": "Try Again",
+        "move": "move",
+        "yourPosition": "your position",
+        "of": "of"
+    },
+    "lobby": {
+        "host": "host",
+        "waiting": "waiting",
+        "title": "Waiting for friends",
+        "subtitle": "then start when you're ready",
+        "close": "Close",
+        "players": "players",
+        "joined": "joined",
+        "startingIn": "Starting in",
+        "second": "second",
+        "seconds": "seconds",
+        "stillJoin": "Friends can still join until it starts",
+        "cancel": "Cancel",
+        "noOne": "If no one joins, you'll play against the computer"
     }
 }

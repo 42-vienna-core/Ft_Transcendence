@@ -8,6 +8,7 @@ type keyType = "termsOfService" | "privacyPolicy";
 export default function Content ({nameKey} : {nameKey: keyType}) {
 
         const LEGAL = useTranslations(`Legal.${nameKey}`);
+        const LEGAL_ROOT = useTranslations("Legal");
         const FOOTR = useTranslations("Footer");
         const sections = LEGAL.raw("sections") as Array<{
             heading: string;
@@ -33,7 +34,7 @@ export default function Content ({nameKey} : {nameKey: keyType}) {
     return (
         <>
             <div>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">Legal</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">{LEGAL_ROOT("eyebrow")}</span>
                 <h1 className="display mt-1 text-2xl tracking-tight text-text-primary sm:text-3xl">{LEGAL("title")}</h1>
                 <p className="mt-2 text-xs font-medium text-text-tertiary">{LEGAL("updated")}</p>
             </div>

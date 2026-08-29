@@ -71,7 +71,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                     <button onClick={ () => {
                                         setCode(null);
                                         onClose()
-                                    }} aria-label="Close">✕</button>
+                                    }} aria-label={LN("close")}>✕</button>
                                 </div>
                                 <ResetCode email={code.email} password={code.password}/>
                             </div>

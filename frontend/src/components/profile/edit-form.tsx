@@ -20,7 +20,7 @@ function SubmitFormButton({ isActive }: {isActive: boolean}) {
             disabled={pending}
             type="submit"
         >
-            { pending ? "updating..."  : t("sub")}
+            { pending ? t("updating")  : t("sub")}
         </button>
     )
 }

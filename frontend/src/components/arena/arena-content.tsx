@@ -9,6 +9,7 @@ import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
 import { ControlType, Direction, Game, GameState, RoomData, RoomStateType, RoomStatusType, TICK_MS } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
+import { useTranslations } from "next-intl";
 import { useNotificationListener } from "../store/notification";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
@@ -62,6 +63,7 @@ function ArenaContent() {
     const joinedSocketRef = useRef<Socket | null>(null);
     const r = useRef<boolean>(false);
     const { id } = useProfile();
+    const LN = useTranslations("arena");
     const {room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen} = useRoomDataBySocket();
     const { playMusic, toggleMute, stopEffectMusic, stopBgMusic, playEffect} = useAudioStore();
 
@@ -166,22 +168,22 @@ function ArenaContent() {
                 <div className="flex flex-wrap items-center justify-between gap-y-2 py-4">
                     <div className="mr-[10px] rounded-full bg-success-soft px-2.5 py-1 ">
                         <p className="trancate items-center text-xs text-success-text">
-                            live match · room {roomName ?? '—'}
+                            {LN("liveMatch")} {roomName ?? '—'}
                         </p>
                     </div>
 
                     <div className="flex gap-[18px] text-xs text-text-secondary">
                         <div>
                             <p className="text-lg font-medium text-text-primary">{formatTime(elapsedSeconds)}</p>
-                            time
+                            {LN("time")}
                         </div>
                         <div>
                             <p className="text-lg font-medium text-text-primary">{players.length}</p>
-                            players
+                            {LN("players")}
                         </div>
                         <div>
                             <p className="text-lg font-medium text-text-primary">{myScore}</p>
-                            your score
+                            {LN("yourScore")}
                         </div>
                     </div>
                 </div>
@@ -189,7 +191,7 @@ function ArenaContent() {
                 <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
                     {roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
-                            <span>Game will start after</span>
+                            <span>{LN("startAfter")}</span>
                             <h2>{secondsLeft}</h2>
                         </div>
                     )}
@@ -206,13 +208,13 @@ function ArenaContent() {
                         {(showOver || showWin) && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center  bg-bg-overlay rounded-xl">
                                 <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
-                                    {showWin ? 'You Win!' : 'Game Over'}
+                                    {showWin ? LN("win") : LN("gameOver")}
                                 </h2>
                                 <button
                                     onClick={handleRestart}
                                     className="cursor-pointer rounded-lg bg-accent px-4 py-2 font-semibold text-text-inverse transition-colors duration-200 hover:bg-accent-hover active:bg-accent-active"
                                 >
-                                    Try Again
+                                    {LN("tryAgain")}
                                 </button>
                             </div>
                         )}
@@ -221,7 +223,7 @@ function ArenaContent() {
 
                 <div className="flex items-center justify-between py-4">
                     <div className="flex gap-1.5">
-                        <Kbd active={gameStatus === 'START'}>move</Kbd>
+                        <Kbd active={gameStatus === 'START'}>{LN("move")}</Kbd>
                         <Kbd active={gameDir === 'LEFT'} activeClass="text-warning-text">←</Kbd>
                         <Kbd active={gameDir === 'UP'} activeClass="text-warning-text">↑</Kbd>
                         <Kbd active={gameDir === 'DOWN'} activeClass="text-warning-text">↓</Kbd>
@@ -233,17 +235,17 @@ function ArenaContent() {
             <aside className="mt-4 lg:col-span-1 lg:mt-0 lg:h-[calc(100vh-150px)] border-t lg:border-l lg:border-t-0 border-border-default p-4 text-text-primary">
                 <div className="rounded-[10px] bg-info-soft px-3 py-2.5">
                     <div className="flex items-center gap-2 text-xs text-info-text">
-                        <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> your position
+                        <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> {LN("yourPosition")}
                     </div>
                     <div className="mt-1 flex items-baseline gap-1.5">
                         <span className="text-xl font-medium text-info-text">{ordinalPos}</span>
-                        <span className="text-xs text-info-text">of {players.length}</span>
+                        <span className="text-xs text-info-text">{LN("of")} {players.length}</span>
                     </div>
                 </div>
 
                 <div className="mt-3.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium lowercase tracking-wide text-text-secondary">players</span>
+                        <span className="text-xs font-medium lowercase tracking-wide text-text-secondary">{LN("players")}</span>
                         <span className="text-xs text-text-tertiary">{players.length}</span>
                     </div>
                     <ul>

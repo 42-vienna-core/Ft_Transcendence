@@ -5,6 +5,8 @@ import { Bot, Users, X, LoaderCircle } from "lucide-react";
 import ModalLayout from "./modal-layout";
 import { GameModeType, RoomData } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
+
+// import { useTranslations } from "next-intl";
 import { useRoomDataBySocket } from "../store/useRoomData";
 
 interface LobbyModalProps {
@@ -28,6 +30,7 @@ interface Player {
 }
 
 function FilledSlot({ player }: { player: Player }) {
+    // const LN = useTranslations("lobby");
     return (
         <div className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-xl border border-border-default bg-bg-subtle p-3">
             <div className={`grid size-9 place-items-center rounded-full text-sm font-medium capitalize ${player.avatar || 'bg-slate-700 text-white'}`}>
@@ -36,6 +39,7 @@ function FilledSlot({ player }: { player: Player }) {
             <span className="text-xs font-medium capitalize text-text-primary max-w-full truncate">{player.name}</span>
             {player.isOwner ? (
                 <span className="rounded-full bg-accent-soft px-2 py-px text-[10px] font-medium text-accent-text">
+                    {/* {LN("host")} */}
                     host
                 </span>
             ) : (
@@ -46,12 +50,13 @@ function FilledSlot({ player }: { player: Player }) {
 }
 
 function EmptySlot() {
+    // const LN = useTranslations("lobby");
     return (
         <div className="flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-default">
             <div className="grid size-9 place-items-center rounded-full text-text-disabled">
                 <LoaderCircle className="h-4 w-4 animate-spin text-center text-accent" />
             </div>
-            <span className="text-[11px] text-text-tertiary">waiting</span>
+            <span className="text-[11px] text-text-tertiary">{/* {LN("waiting")} */}waiting</span>
         </div>
     );
 }
@@ -64,6 +69,7 @@ export default function LobbyModal({
     onStartmatch,
 }: LobbyModalProps) {
     const { isTimeoutRun, setTimeoutRun } = useRoomDataBySocket();
+    // const LN = useTranslations("lobby");
     const [ secondsLeft, setSecondsLeft ] = useState<number>(TIMEOUT_SECONDS);
 
 useEffect(() => {
@@ -110,12 +116,15 @@ useEffect(() => {
             {/* header */}
             <div className="flex items-start justify-between gap-3">
                 <div>
+                    {/* <h2 className="!text-xl font-medium text-text-primary">{LN("title")}</h2> */}
                     <h2 className="!text-xl font-medium text-text-primary">Waiting for friends</h2>
+                    {/* <p className="mt-1 text-sm text-text-secondary">{LN("subtitle")}</p> */}
                     <p className="mt-1 text-sm text-text-secondary">then start when you're ready</p>
                 </div>
                 <button
                     type="button"
                     onClick={() => onClose(room.roomId)}
+                    // aria-label={LN("close")}
                     aria-label="Close"
                     className="cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"
                 >
@@ -127,9 +136,11 @@ useEffect(() => {
             <div className="mt-5 flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-tertiary">
                     <Users className="h-3.5 w-3.5" />
+                    {/* {LN("players")} */}
                     players
                 </span>
                 <span className="text-xs font-medium text-text-secondary">
+                    {/* {players.length} / {MAX_PLAYERS} {LN("joined")} */}
                     {players.length} / {MAX_PLAYERS} joined
                 </span>
             </div>
@@ -167,8 +178,10 @@ useEffect(() => {
                 </div>
                 <div className="min-w-0">
                     <div className="text-sm font-medium text-text-primary">
+                        {/* {LN("startingIn")} {secondsLeft} {secondsLeft !== 1 ? LN("seconds") : LN("second")} */}
                         Starting in {secondsLeft} second{secondsLeft !== 1 ? "s" : ""}
                     </div>
+                    {/* <div className="text-xs text-text-tertiary">{LN("stillJoin")}</div> */}
                     <div className="text-xs text-text-tertiary">Friends can still join until it starts</div>
                 </div>
             </div>
@@ -192,12 +205,14 @@ useEffect(() => {
                     className="cursor-pointer rounded-lg border border-border-default px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"
                     onClick={() => onClose(room.roomId)}
                 >
+                    {/* {LN("cancel")} */}
                     Cancel
                 </button>
             </div>
 
             <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-text-tertiary">
                 <Bot className="h-3.5 w-3.5" />
+                {/* {LN("noOne")} */}
                 If no one joins, you'll play against the computer
             </p>
         </ModalLayout>

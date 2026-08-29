@@ -15,6 +15,7 @@
     "Profile": {
         "epBtn": "Profil bearbeiten",
         "sub": "Absenden",
+        "updating": "wird aktualisiert...",
         "joined": "beigetreten",
         "level": "Level",
         "formatInvalid": "Ungültiges Format. Bitte laden Sie ein JPEG-, PNG- oder WebP-Bild hoch.",
@@ -84,7 +85,7 @@
         "forgot_password": "Passwort vergessen?",
         "no_account": "Noch kein Konto?",
         "register_link": "Registrieren",
-        "google" : "Mit Google fortfahre"
+        "google" : "Mit Google fortfahren"
     },
     "Register": {
         "title": "Registrierung",
@@ -114,7 +115,9 @@
           "resetCode" :{
             "Reset Code": "Code zurücksetzen",
             "placeholder": "6-stelligen Code eingeben",
-            "errorForm": "Überprüfung fehlgeschlagen"
+            "errorForm": "Überprüfung fehlgeschlagen",
+            "verifying": "Wird überprüft...",
+            "verify": "Code überprüfen"
           }
     },
     "Validation": {
@@ -146,6 +149,8 @@
     },
      "Admin": {
                 "title": "Admin-Bereich",
+                "forbidden": "Nicht erlaubt",
+                "close": "Schließen",
                 "searchPlaceholder": "Nach Name oder E-Mail suchen",
                 "searching": "Suche...",
                 "search": "Suchen",
@@ -187,6 +192,7 @@
     },
     "Legal": {
         "back" : "Zurück zu Snake",
+        "eyebrow": "Rechtliches",
         "privacyPolicy": {
         "title": "Datenschutzerklärung",
         "updated": "Zuletzt aktualisiert: 24. August 2026",
@@ -391,5 +397,38 @@
         "joined": "Beigetreten", 
         "rank": "Rang", 
         "player": "Spieler"
+    },
+    "common": {
+        "online": "online",
+        "offline": "offline",
+        "admin": "Admin"
+    },
+    "arena": {
+        "liveMatch": "Live-Match · Raum",
+        "time": "Zeit",
+        "players": "Spieler",
+        "yourScore": "dein Punktestand",
+        "startAfter": "Spiel startet in",
+        "win": "Du gewinnst!",
+        "gameOver": "Spiel vorbei",
+        "tryAgain": "Erneut versuchen",
+        "move": "Bewegen",
+        "yourPosition": "deine Position",
+        "of": "von"
+    },
+    "lobby": {
+        "host": "Host",
+        "waiting": "wartet",
+        "title": "Warten auf Freunde",
+        "subtitle": "dann starten, wenn du bereit bist",
+        "close": "Schließen",
+        "players": "Spieler",
+        "joined": "beigetreten",
+        "startingIn": "Beginnt in",
+        "second": "Sekunde",
+        "seconds": "Sekunden",
+        "stillJoin": "Freunde können bis zum Start noch beitreten",
+        "cancel": "Abbrechen",
+        "noOne": "Wenn niemand beitritt, spielst du gegen den Computer"
     }
 }

@@ -15,6 +15,7 @@
     "Profile": {
         "epBtn": "Modifica profilo",
         "sub": "Invia",
+        "updating": "aggiornamento...",
         "joined": "iscritto",
         "level": "Livello",
         "formatInvalid": "Formato non valido. Carica un'immagine JPEG, PNG o WebP.",
@@ -114,7 +115,9 @@
         "resetCode" : {
             "Reset Code": "Reimposta codice",
             "placeholder": "Inserisci il codice a 6 cifre",
-            "errorForm": "Verifica non riuscita"
+            "errorForm": "Verifica non riuscita",
+            "verifying": "Verifica in corso...",
+            "verify": "Verifica codice"
         }
     },
     "Validation": {
@@ -146,6 +149,8 @@
     },
     "Admin": {
         "title": "Pannello Admin",
+        "forbidden": "Vietato",
+        "close": "Chiudi",
         "searchPlaceholder": "Cerca per nome o email",
         "searching": "Ricerca in corso...",
         "search": "Cerca",
@@ -187,6 +192,7 @@
     },
     "Legal": {
         "back" : "Torna a Snake",
+        "eyebrow": "Note legali",
         "privacyPolicy": {
         "title": "Informativa sulla privacy",
         "updated": "Ultimo aggiornamento: 24 agosto 2026",
@@ -389,7 +395,40 @@
         "level": "Livello", 
         "score": "Punteggio", 
         "joined": "Iscritto", 
-        "rank": "Posizione", 
-        "player": "Giocatore" 
+        "rank": "Posizione",
+        "player": "Giocatore"
+    },
+    "common": {
+        "online": "online",
+        "offline": "offline",
+        "admin": "Admin"
+    },
+    "arena": {
+        "liveMatch": "partita dal vivo · stanza",
+        "time": "tempo",
+        "players": "giocatori",
+        "yourScore": "il tuo punteggio",
+        "startAfter": "La partita inizierà tra",
+        "win": "Hai vinto!",
+        "gameOver": "Partita finita",
+        "tryAgain": "Riprova",
+        "move": "muovi",
+        "yourPosition": "la tua posizione",
+        "of": "di"
+    },
+    "lobby": {
+        "host": "host",
+        "waiting": "in attesa",
+        "title": "In attesa di amici",
+        "subtitle": "poi inizia quando sei pronto",
+        "close": "Chiudi",
+        "players": "giocatori",
+        "joined": "uniti",
+        "startingIn": "Inizia tra",
+        "second": "secondo",
+        "seconds": "secondi",
+        "stillJoin": "Gli amici possono ancora unirsi fino all'inizio",
+        "cancel": "Annulla",
+        "noOne": "Se non si unisce nessuno, giocherai contro il computer"
     }
 }

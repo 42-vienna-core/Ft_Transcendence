@@ -1,4 +1,7 @@
+import { useTranslations } from "next-intl";
+
 export function OnlineStateItem({isOnline}: {isOnline:boolean}) {
+    const t = useTranslations("common");
     return  (
         <div className="flex items-center">
             <span className="relative flex h-1 w-1 mr-1">
@@ -19,7 +22,7 @@ export function OnlineStateItem({isOnline}: {isOnline:boolean}) {
                 isOnline ? 
                     'text-emerald-500' : 'text-[var(--color-text-muted)]'
                 }`}>
-                {isOnline ? "online" : "offline"}
+                {isOnline ? t("online") : t("offline")}
             </span>
         </div>
     )
