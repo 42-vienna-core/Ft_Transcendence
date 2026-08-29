@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGameRoomDto } from './dto/create-gameRoom.dto';
 import { CreatePrivateGameRoom } from './dto/create-private-gameRoom.dto';
-import { RoomStatus } from "@prisma/client";
+import { RoomStatus, Prisma } from "@prisma/client";
 import { Match } from './interfaces/room-update.interface';
 
 
@@ -48,8 +48,9 @@ export class GameRoomService {
     return res;
   }
 
-  async addUserToRoom(roomId: string, userId: number, socketId: string) {
-    return this.db.roomUser.upsert({
+  async addUserToRoom(roomId: string, userId: number, socketId: string, transaction?: Prisma.TransactionClient) {
+    const database = transaction ?? this.db;
+	return database.roomUser.upsert({
       where: { roomId_userId: { roomId, userId } },
       update: { socketId },
       create: { roomId, userId, socketId },
@@ -97,31 +98,43 @@ export class GameRoomService {
 	}
   }
 
-  async removeUserFromRoom(roomId: string, userId: number) {
-    return this.db.roomUser.deleteMany({
+  async removeUserFromRoom(roomId: string, userId: number, transaction?: Prisma.TransactionClient) {
+    const database = transaction ?? this.db;
+	return database.roomUser.deleteMany({
       where: { roomId, userId },
     });
   }
 
-  async getPlayerCount(roomId: string) {
-    return this.db.roomUser.count({ where: { roomId } });
+  async getPlayerCount(roomId: string, transaction?: Prisma.TransactionClient) {
+    const database = transaction ?? this.db;
+	return database.roomUser.count({ where: { roomId } });
   }
 
   async findBySocketId(socketId: string) {
     return this.db.roomUser.findFirst({
-      where: { socketId },
-	  select: {
-		roomId: true,
-		userId: true,
-		socketId: true,
+      where: {
+		socketId,
 		room: {
-			select: {
-				ownerId: true,
-				status: true,
-				type: true,
+			status: {
+				in: [
+					RoomStatus.WAITING,
+					RoomStatus.READY,
+					RoomStatus.PLAYING,
+				]
+			}
+		}},
+		select: {
+			roomId: true,
+			userId: true,
+			socketId: true,
+			room: {
+				select: {
+					ownerId: true,
+					status: true,
+					type: true,
+				},
 			},
-		},
-	  },
+		  },
     });
   }
 
@@ -186,8 +199,7 @@ export class GameRoomService {
 	});
   }
 
-  async changeOwner(roomId: string, ownerId: number){
-	return this.db.$transaction(async (transaction) => {
+  async changeOwner(roomId: string, ownerId: number, transaction: Prisma.TransactionClient){
 		const newOwner = await transaction.roomUser.findFirst({
 		where: {
 			roomId,
@@ -222,7 +234,6 @@ export class GameRoomService {
 			},
 		});
 		return true;
-	});
   }
 
 }

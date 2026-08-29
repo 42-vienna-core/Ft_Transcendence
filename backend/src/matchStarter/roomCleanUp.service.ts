@@ -4,7 +4,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { RedisService } from "src/redis/redis.service";
 import { MatchStarter } from "./matchStarter.service";
 
-const CLOSE_ROOMS = 5_000
+const CLOSE_ROOMS = 10_000
 
 @Injectable()
 export class RoomCleanUpService implements OnApplicationBootstrap, OnModuleDestroy{
@@ -18,8 +18,9 @@ export class RoomCleanUpService implements OnApplicationBootstrap, OnModuleDestr
 	){}
 
 	async onApplicationBootstrap() {
-		await this.cleanupRooms();
-		this.roomTimer = setInterval(() => {this.cleanUpExpiredRooms()}, CLOSE_ROOMS);
+		await this.cleanUpRooms();
+		this.roomTimer = setInterval(() => {this.cleanUpExpiredRooms().catch((error) =>
+		console.error('Rooms clean up failed', error))}, CLOSE_ROOMS);
 	}
 
 	async onModuleDestroy() {
@@ -27,7 +28,7 @@ export class RoomCleanUpService implements OnApplicationBootstrap, OnModuleDestr
 			clearInterval(this.roomTimer);
 	}
 
-	private async cleanupRooms(){
+	private async cleanUpRooms(){
 		const activeRooms = await this.prismaService.gameRoom.findMany({
 			where: {
 				status: {

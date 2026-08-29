@@ -17,19 +17,26 @@ export class GameGateway {
 
 	@SubscribeMessage('change-direction')
 	async handleChangeDirection(@MessageBody() data: changeDirectionPayload,){
-		const game = await this.redisService.getGameState(data.roomId);
-		if (!game)
+		const lockKey = `lock:game:${data.roomId}`;
+		const lockId = await this.redisService.acquireLockWithTime(lockKey, 2);
+		if (!lockId)
 			return {success: false};
-		const snake = game.snakes.find(s => s.id === data.userId);
-		if (!snake)
-			return {success: false};
-		if (!snake.alive)
-			return {success: false};
-		snake.newDirection = data.direction;
-		console.log(data);
-		await this.redisService.setGameWithTTL(game.roomId, game);
-
-		return {success: true};
+		try {
+			const game = await this.redisService.getGameState(data.roomId);
+			if (!game)
+				return {success: false};
+			const snake = game.snakes.find(s => s.id === data.userId);
+			if (!snake)
+				return {success: false};
+			if (!snake.alive)
+				return {success: false};
+			snake.newDirection = data.direction;
+			console.log(data);
+			await this.redisService.setGameWithTTL(game.roomId, game);
+			return {success: true};
+		} finally {
+			await this.redisService.releaseLock(lockKey, lockId);
+		}
 	}
 
 	async broadcastGameState(roomId: string, state: GameState){

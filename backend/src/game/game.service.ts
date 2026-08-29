@@ -300,6 +300,14 @@ export class GameService {
 		this.tickMs = tickMs;
 	};
 
+	private tickStarter(roomId: string){
+		setTimeout(() => {
+			void this.tick(roomId).catch((error) => {
+				console.error(`Game tick failed for room ${roomId}`, error);
+			});
+		}, this.tickMs);
+	}
+
 	async storeResults(game: GameState){
 		const updated = await this.prismaService.gameRoom.updateMany({
 			where: {
@@ -405,54 +413,67 @@ export class GameService {
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
 		await this.gameGateway.broadcastGameState(roomId, game);
-		setTimeout(() => this.tick(roomId), this.tickMs);
+		this.tickStarter(roomId);
 	}
 
 	async tick(roomId: string){
-		const room = await this.prismaService.gameRoom.findUnique({
-			where: { id: roomId },
-			select: {
-				status: true,
-				roomUsers: {
-					select: {
-						userId: true,
+		const lockKey = `lock:game:${roomId}`;
+		const lockId = await this.redisService.acquireLockWithTime(lockKey, 2);
+		if (!lockId){
+			this.tickStarter(roomId);
+			return;
+		}
+		let game : GameState | null = null;
+		try {
+			const room = await this.prismaService.gameRoom.findUnique({
+				where: { id: roomId },
+				select: {
+					status: true,
+					roomUsers: {
+						select: {
+							userId: true,
+						}
+					}
+				},
+			});
+			if (room === null || room.status !== RoomStatus.PLAYING){
+				await this.redisService.deleteGameState(roomId);
+				return ;
+			}
+			const activeUsers = new Set(room.roomUsers.map((roomUser) => roomUser.userId));
+			game = await this.redisService.getGameState(roomId);
+			if (!game)
+				return ;
+			if (game.status !== 'finished'){
+				for (const snake of game.snakes){
+					if (snake.player === 'human' && !activeUsers.has(snake.id))
+						snake.alive = false;
+				}
+				if (game.botPresent){
+					const map = this.aiBotService.createMap(game);
+					for (const snake of game.snakes){
+						if (snake.alive && snake.player === 'bot')
+							snake.newDirection = this.aiBotService.newBotDirection(snake, map);
 					}
 				}
-			},
-		});
-		if (room === null || room.status !== RoomStatus.PLAYING){
-			await this.redisService.deleteGameState(roomId);
-			return ;
+				newHeadPosition(game);
+				checkFood(game);
+				checkCollision(game);
+				updateFoodScore(game);
+				moveSnake(game);
+				game.tick++;
+				gameOver(game);
+			}
+			await this.redisService.setGameWithTTL(roomId, game);
+		} finally {
+			await this.redisService.releaseLock(lockKey, lockId);
 		}
-		const activeUsers = new Set(room.roomUsers.map((roomUser) => roomUser.userId));
-		const game = await this.redisService.getGameState(roomId);
 		if (!game)
-			return ;
-		if (game.status !== 'finished'){
-			for (const snake of game.snakes){
-				if (snake.player === 'human' && !activeUsers.has(snake.id))
-					snake.alive = false;
-			}
-			if (game.botPresent){
-				const map = this.aiBotService.createMap(game);
-				for (const snake of game.snakes){
-					if (snake.alive && snake.player === 'bot')
-						snake.newDirection = this.aiBotService.newBotDirection(snake, map);
-				}
-			}
-			newHeadPosition(game);
-			checkFood(game);
-			checkCollision(game);
-			updateFoodScore(game);
-			moveSnake(game);
-			game.tick++;
-			gameOver(game);
-		}
-		await this.redisService.setGameWithTTL(roomId, game);
+			return;
 		if (game.status === 'finished')
 			await this.storeResults(game);
 		else{
-			setTimeout(() => this.tick(roomId), this.tickMs);
+			this.tickStarter(roomId);
 		}
 		await this.gameGateway.broadcastGameState(roomId, game);
 	}
