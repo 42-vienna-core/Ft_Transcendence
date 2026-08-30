@@ -135,16 +135,15 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('leave-room')
-	async handleLeaveRoom(@ConnectedSocket() client: Socket, @MessageBody('roomId') roomId: string) {
+	async handleLeaveRoom(@ConnectedSocket() client: Socket) {
 		console.log("LEAVE ROOM CALLED");
 		const roomUser = await this.roomService.findBySocketId(client.id);
-		if (roomUser === null)
-			return { success: false };
-		if (roomId !== roomUser.roomId)
+		if (roomUser === null || roomUser.userId !== client.data.userId)
 			return { success: false };
 		const data = await this.matchStarter.removePlayerlock(roomUser.userId, roomUser.roomId);
 		if (data.success === false)
 			return { success: false };
+		delete client.data.roomId;
 		if (data.abandoned){
 			await this.matchStarter.updateAbandonedRoom(roomUser.roomId, true);
 			return { success: true };
