@@ -4,6 +4,7 @@ import { OnlineStateItem } from "@/ui/online-tracker";
 import { apiFetch } from "@/lib/api-client";
 import { useNotificationListener } from "../store/notification";
 import { ActiveFilterType, Request} from "@/types/gameTypes";
+import { useTranslations } from "next-intl";
 
 interface FriendRequestItemProps {
     request: Request;
@@ -29,6 +30,7 @@ function FriendRuquestItem({
     const {name, avatar, isOnline} = sender;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
     const isAvatar = !!avatar;
+    const LN = useTranslations("friends.request");
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
@@ -50,13 +52,13 @@ function FriendRuquestItem({
                     className="flex p-1.5 cursor-pointer items-center justify-center rounded-md border border-transparent bg-success-soft text-base text-success-text transition-colors duration-150 hover:bg-accent hover:text-text-inverse"
                     onClick={() => makeDecision(id, true)}
                 >
-                    Accept
+                    {LN("accept")}
                 </button>
                 <button
                     className="flex  p-1.5 cursor-pointer items-center justify-center rounded-md border border-border-default text-base text-text-secondary transition-colors duration-150 hover:border-danger hover:text-danger"
                     onClick={() => makeDecision(id, false)}
                 >
-                    Decline
+                    {LN("decline")}
                 </button>
             </div>
         </li>
@@ -88,6 +90,7 @@ function FriendRequests({
     getListOfFriends
 }: RequestContentProps) {
     const { removeRequestById } = useNotificationListener();
+    const LN = useTranslations("friends.request");
 
     async function makeDecision(id: string, isProv: boolean) {
         if (typeof id === 'string' && id.length === 0) return;
@@ -112,7 +115,7 @@ function FriendRequests({
     if (requests.length === 0) {
         return  (
             <div className="flex min-w-0 flex-col gap-2.5">
-                <p className="text-sm text-warning-text">No requests</p>
+                <p className="text-sm text-warning-text">{LN("noRequests")}</p>
             </div>
         )
     }

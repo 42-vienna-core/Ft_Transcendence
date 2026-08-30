@@ -3,9 +3,11 @@
 import { fetchChangePassword } from "@/lib/auth-actions";
 import { apiFetch } from "@/lib/api-client";
 import { State } from "@/lib/definitions";
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ModalLayout from "./modal-layout";
+import ResetCode from "../reset/resetCode";
+import { useTranslations } from "next-intl";
+
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -19,7 +21,8 @@ const initialState: State = {
 
 export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
     const [state, setState] = useState<State>(initialState);
-
+    const [code, setCode] =  useState<string | null>(null);
+    const LN = useTranslations("Profile.settings.change");
     if (!isOpen) return null;
 
     const resetState = () => setState(prev => ({ ...prev, error: false, message: "" }));
@@ -37,136 +40,151 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         const oldPass = formData.get("oldPassword");
         const newPass = formData.get("newPassword");
         try {
-            await apiFetch("auth/change-password", {
+            const res = await apiFetch("auth/change-password", {
                 method: "POST",
                 body: JSON.stringify({ old: oldPass, new: newPass }),
             });
-
-            await signIn("credentials", {
-                email: "qwerty@gmail.com",
-                password: newPass,
-            });
+            setCode(res.email);
         } catch (error) {
             if (error instanceof Error) {
-                setState(prev => ({ ...prev, message: error.message }));
+                setState(prev => ({ ...prev, message: LN("wakeP") }));
                 console.log(error.message);
             } else {
                 console.log(error);
             }
-            return;
+            return ;
         }
-
-        onClose();
     }
 
+  
     return (
-        <ModalLayout>
-            <div className="flex items-center justify-between border-b border-[var(--color-border-default)] pb-3 mb-4">
-                <h3
-                    className="font-medium"
-                    style={{ fontSize: "var(--text-lg)", color: "var(--color-text-primary)" }}
-                >
-                    Change Password
-                </h3>
-                <button
-                    onClick={onClose}
-                    className="cursor-pointer rounded-[var(--radius-sm)] p-1 transition-colors"
-                    style={{ color: "var(--color-text-secondary)" }}
-                    onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
-                    onMouseOut={e => (e.currentTarget.style.background = "transparent")}
-                    aria-label="Close"
-                >
-                    ✕
-                </button>
-            </div>
+            <ModalLayout>
+                {code != null ? ( 
+                            <div>
+                                  <div className="flex items-center justify-between border-b ... pb-3 mb-4">
+                                    <h3>{LN("resetMessage")}</h3>
+                                    <button onClick={ () => {
+                                        setCode(null);
+                                        onClose()
+                                    }} aria-label={LN("close")}>✕</button>
+                                </div>
+                                <ResetCode email={code}/>
+                            </div>
+                        ) :
+                    (
+                        <>
+                            <div className="flex items-center justify-between border-b border-[var(--color-border-default)] pb-3 mb-4">
+                                <h3
+                                    className="font-medium"
+                                    style={{ fontSize: "var(--text-lg)", color: "var(--color-text-primary)" }}
+                                >
+                                    {LN("changeP")}
+                                </h3>
+                                <button
+                                    onClick={onClose}
+                                    className="cursor-pointer rounded-[var(--radius-sm)] p-1 transition-colors"
+                                    style={{ color: "var(--color-text-secondary)" }}
+                                    onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
+                                    onMouseOut={e => (e.currentTarget.style.background = "transparent")}
+                                    aria-label={LN("close")}
+                                >
+                                    ✕
+                                </button>
+                            </div>
 
-            <form action={handleChangePassword} className="space-y-4">
-                <div className="space-y-1">
-                    <label
-                        className="block font-medium"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                    >
-                        Old password
-                    </label>
-                    <input
-                        name="oldPassword"
-                        type="password"
-                        onChange={resetState}
-                        required
-                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                    />
-                </div>
+                            <form action={handleChangePassword} className="space-y-4">
+                                <div className="space-y-1">
+                                    <label
+                                        className="block font-medium"
+                                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                                    >
+                                       {LN("OldP")}
+                                    </label>
+                                    <input
+                                        autoComplete="off"
+                                        name="oldPassword"
+                                        type="password"
+                                        onChange={resetState}
+                                        required
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
+                                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
+                                    />
+                                </div>
 
-                <div className="space-y-1">
-                    <label
-                        className="block font-medium"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                    >
-                        New password
-                    </label>
-                    <input
-                        name="newPassword"
-                        type="password"
-                        onChange={resetState}
-                        required
-                        placeholder="At least 8 characters"
-                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                    />
-                </div>
+                                <div className="space-y-1">
+                                    <label
+                                        className="block font-medium"
+                                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                                    >
+                                         {LN("NewP")}
+                                    </label>
+                                    <input
+                                        autoComplete="off"
+                                        name="newPassword"
+                                        type="password"
+                                        onChange={resetState}
+                                        required
+                                        placeholder={LN("placeholderAt")}
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
+                                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
+                                    />
+                                </div>
 
-                <div className="space-y-1">
-                    <label
-                        className="block font-medium"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                    >
-                        Re-enter your password
-                    </label>
-                    <input
-                        name="confirmPassword"
-                        type="password"
-                        required
-                        placeholder="The password must match"
-                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
-                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
-                    />
-                </div>
+                                <div className="space-y-1">
+                                    <label
+                                        className="block font-medium"
+                                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                                    >
+                                         {LN("re-enter")}
+                                    </label>
+                                    <input
+                                        autoComplete="off"
+                                        name="confirmPassword"
+                                        type="password"
+                                        required
+                                        placeholder={LN("placeholderThe")}
+                                        className="w-full rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-text-primary)]"
+                                        style={{ fontSize: "var(--text-md)", color: "var(--color-text-primary)" }}
+                                    />
+                                </div>
 
-                <div className="h-4">
-                    {state.message && (
-                        <p style={{ fontSize: "var(--text-sm)", color: "var(--color-danger)" }}>
-                            {state.message}
-                        </p>
-                    )}
-                </div>
+                                <div className="h-4">
+                                    {state.message && (
+                                        <p style={{ fontSize: "var(--text-sm)", color: "var(--color-danger)" }}>
+                                            {state.message}
+                                        </p>
+                                    )}
+                                </div>
 
-                <div className="flex justify-end gap-3 border-t border-[var(--color-border-default)] pt-4 mt-2">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-[var(--color-border-default)] transition-colors"
-                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
-                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
-                        onMouseOut={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-transparent transition-colors"
-                        style={{
-                            fontSize: "var(--text-sm)",
-                            background: "var(--color-accent)",
-                            color: "var(--color-text-inverse)",
-                        }}
-                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-accent-hover)")}
-                        onMouseOut={e => (e.currentTarget.style.background = "var(--color-accent)")}
-                    >
-                        Save
-                    </button>
-                </div>
-            </form>
-        </ModalLayout>
-    );
+                                <div className="flex justify-end gap-3 border-t border-[var(--color-border-default)] pt-4 mt-2">
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-[var(--color-border-default)] transition-colors"
+                                        style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}
+                                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-bg-muted)")}
+                                        onMouseOut={e => (e.currentTarget.style.background = "transparent")}
+                                    >
+                                        {LN("cancel")}
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="cursor-pointer rounded-[var(--radius-md)] px-4 py-2 font-medium border border-transparent transition-colors"
+                                        style={{
+                                            fontSize: "var(--text-sm)",
+                                            background: "var(--color-accent)",
+                                            color: "var(--color-text-inverse)",
+                                        }}
+                                        onMouseOver={e => (e.currentTarget.style.background = "var(--color-accent-hover)")}
+                                        onMouseOut={e => (e.currentTarget.style.background = "var(--color-accent)")}
+                                    >
+                                       {LN("save")}
+                                    </button>
+                                </div>
+                            </form>
+                        </>
+                    ) 
+                }
+            </ModalLayout>
+        )
 }

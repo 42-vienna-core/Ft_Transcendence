@@ -11,6 +11,8 @@ declare module 'next-auth' {
             username: string;
             avatar: string | null;
             role: "ADMIN" | "PLAYER";
+            termsAcceptedAt: string | null;
+
         };
     }
     interface User {
@@ -19,6 +21,7 @@ declare module 'next-auth' {
         refreshToken: string;
         accessTokenExpiry: number;
         role: "ADMIN" | "PLAYER" ;
+        termsAcceptedAt: string | null;
     }
 }
 
@@ -28,6 +31,7 @@ declare module 'next-auth/jwt' {
         refreshToken: string;
         accessTokenExpiry: number;
         role: "ADMIN" | "PLAYER";
+        termsAcceptedAt?: string | null;
         error?: string;
     }
 }

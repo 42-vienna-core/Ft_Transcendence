@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { AdminUpdateUserDto } from 'src/admin/dto/admin-update-user.dto';
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class AdminService {
@@ -12,21 +13,22 @@ export class AdminService {
     ) {}
 
   async searchUsers(query: string) {
+    const q = (query ?? '').trim();
 
-    if (query === '')
-    {
-      const users = await this.usersService.searchUsers(query ?? '');
-      if (users.length > 20)
-      {
-        const players = users.filter((user) => user.role != "BOT" && user.role != "ADMIN");
-        if (players.length > 20)
-          return players.slice(0, 10);
-        return players;
-      }
-    }
-      
-    const users = await this.prismaService.users.findMany();
-    return users.filter((item) => item.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+    return this.prismaService.users.findMany({
+      where: {
+        role: { not: "BOT" },
+        ...(q && {
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { email: { contains: q, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
   }
 
   async findOne(id: number) {
@@ -36,7 +38,7 @@ export class AdminService {
   async update(id: number, body : AdminUpdateUserDto) {
     const user = await this.usersService.findById(id);
     if (!user || user.role === "ADMIN")
-        throw new Error();
+      throw new ForbiddenException('Cannot update admin');
     if (body.password) {
       body.password = await bcrypt.hash(body.password, 10);
     }
@@ -44,6 +46,11 @@ export class AdminService {
   }
 
   async remove(id: number) {
+    const user = await this.usersService.findById(id);
+    if (!user)
+        throw new NotFoundException("Not found")
+    if (user.role === "ADMIN")
+        throw new ForbiddenException('Cannot delete admin');
     return this.usersService.deleteUser(id);
   }
   

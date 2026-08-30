@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import Footer from "@/components/Footer/Footer";
+import LegalModal from "@/components/Legal/LegalModal";
 
 export default async function LangLayout({
     children,
@@ -22,6 +24,8 @@ export default async function LangLayout({
             locale={locale}
         >
             {children}
+        <LegalModal />
+        <Footer />
         </NextIntlClientProvider>
     );
 }

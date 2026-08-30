@@ -8,6 +8,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { UserModule } from '../user/user.module';
 import { RedisModule } from 'src/redis/redis.module';
+import { GoogleStrategy } from 'src/common/strategies/google.strategy';
 
 @Module({
   imports: [
@@ -16,11 +17,12 @@ import { RedisModule } from 'src/redis/redis.module';
     UserModule,
     SessionModule,
     TokenModule,
-    RedisModule
+    RedisModule,
   ],
   providers: [
     AuthService,
-    JwtStrategy
+    JwtStrategy,
+    GoogleStrategy
   ],
   controllers: [AuthController],
 })

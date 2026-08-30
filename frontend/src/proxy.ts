@@ -145,7 +145,7 @@ const authMiddleware = withAuth(
                 // console.log("authorized callback: ",token);
                 const path = req.nextUrl.pathname;
                 if (path.startsWith('/api/auth')) return true;
-                const isPublicPath = /^\/(ru|en|de|it)?\/?(login|register|reset-password)?$/.test(path);
+                const isPublicPath = /^\/(ru|en|de|it)?\/?(login|register|reset-password|privacy|terms)?$/.test(path);
                 if (isPublicPath) return true;
                 return !!token;
             }
