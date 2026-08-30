@@ -169,13 +169,13 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
     }, [socket, isConnected, id, setGameStatus, setGameDir]);
 
     function advanceSnake(socket: Socket, dir: Direction) {
-        const room = currRef.current?.roomId;
-        if (!room) return;
+        //const room = currRef.current?.roomId;
+        //if (!room) return;
 
         socket.emit('change-direction', { 
             direction: dir, 
-            roomId: room, 
-            userId: id 
+        //    roomId: room, 
+        //    userId: id 
         });
     }
 

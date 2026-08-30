@@ -173,6 +173,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.client.eval(luaScript, 1, key, lockId);
   }
 
+  async acquireLockWithTime(key: string, ttlSeconds: number): Promise<string | null> {
+    const timeout = 250;
+    const endRetry = Date.now() + timeout;
+    while (Date.now() < endRetry){
+      const lockId = await this.acquireLock(key, ttlSeconds);
+      if (lockId)
+        return lockId;
+      await new Promise((resolve) =>setTimeout(resolve, 5));
+    }
+    return null;
+  }
+
   async waitForCache(key: string, timeoutMs: number): Promise<string | null> {
     const interval = 100;
     const steps = Math.ceil(timeoutMs / interval);

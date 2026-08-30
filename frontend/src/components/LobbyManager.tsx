@@ -19,12 +19,13 @@ export default function GlobalLobbyManager() {
         router.push("/arena");
         router.refresh();
     };
+	//I dont need you to send me roomId anymore, so i commented it out here, 
+	// but you schould chekc if it needs to be removed somewhere else when you call this function
+    const handleCloseLobby = (/* roomId: string */) => {
+        if (!socket /* || !roomId */) return;
 
-    const handleCloseLobby = (roomId: string) => {
-        if (!socket || !roomId) return;
-
-        console.log("emit('leave-room', {roomId:",roomId, "}");
-        socket.emit('leave-room', {roomId});
+        console.log("emit('leave-room");
+        socket.emit('leave-room'/* , {roomId} */);
         clearGameData();
     };
 

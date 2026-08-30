@@ -1,16 +1,8 @@
-import {Direction} from './game-state'
-
-export interface joinRoomPayload { //client to server
-	roomId: string;
-	userId: number; //or get it from JWT?
-}
-
-export interface startGamePayload { //client to server
-	roomId: string;
-}
-
-export interface changeDirectionPayload { //client to server
-	direction: Direction;
+export interface joinRoomPayload {
 	roomId: string;
 	userId: number;
+}
+
+export interface startGamePayload {
+	roomId: string;
 }
