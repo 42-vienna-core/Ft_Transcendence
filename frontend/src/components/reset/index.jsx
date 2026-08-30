@@ -12,7 +12,7 @@ export default function ResetPass() {
     const router = useRouter();    
     const [code , setCode] = useState(false);
     const [error, setError] = useState(false);
-    const [request, setRequest] = useState({email: "", password: ""});
+    const [request, setRequest] = useState({email: ""});
 
     const t = useTranslations("Reset");
 
@@ -62,7 +62,7 @@ export default function ResetPass() {
                   </button>
                 </div>
             </form>
-            ) : ( <ResetCode email={request.email} password={request.password}/> )}
+            ) : ( <ResetCode email={request.email} /> )}
       </>
         );
 }

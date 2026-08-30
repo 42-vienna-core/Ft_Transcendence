@@ -9,6 +9,7 @@ import { useGameSocket } from '@/providers/SocketProvider';
 import { Friend } from '@/types/gameTypes';
 import { useRoomDataBySocket } from '../store/useRoomData';
 import { useNotificationListener } from '../store/notification';
+import { useTranslations } from 'next-intl';
 
 interface FriendCardProps {
     friend: Friend;
@@ -37,7 +38,8 @@ const rowActionBtn =
 
 function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCardProps) {
     const { gameNotification, gameRequests, playFriends, status} = useNotificationListener();
-    
+    const LN_L = useTranslations("friends.request")
+    const LN_C = useTranslations("friends.lists")
     const {id, name, avatar, isOnline, score} = friend;
     const av = name && typeof name === "string" ? name.slice(0, 2) : "";
     const isAvatar =  !!avatar;
@@ -70,9 +72,9 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                     <OnlineStateItem
                         isOnline={isOnline}
                     />
-                    { isPlaying && <span>{"In match"} {`· Room ${playingRoom?.id.slice(0, 8)}`} </span>}
+                    { isPlaying && <span>{LN_C("inMatch")} {`· ${LN_C("room")} ${playingRoom?.id.slice(0, 8)}`} </span>}
                     <span className="text-text-disabled">·</span>
-                    <span className="font-medium text-text-primary">score {score}</span>
+                    <span className="font-medium text-text-primary">{LN_C("score")} {score}</span>
                 </div>
             </div>
             <div className="ml-auto flex min-w-[76px] flex-col items-stretch gap-1">
@@ -94,7 +96,7 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
                             `}
                             onClick={() => handleGameAction(roomId)}
                         >
-                            join
+                            {LN_L("join")}
                         </button>
                 }
             </div>
@@ -126,6 +128,9 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const { socket, isConnected } = useGameSocket();
     const { setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
     const { playFriends, status} = useNotificationListener();
+    const LN_L = useTranslations("friends.lists");
+    const LN_D = useTranslations("friends.dialog");
+
 
     let newFriends: Friend[] = [];
 
@@ -176,19 +181,19 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     if (newFriends.length === 0 && filter === 'All')
         return  (
             <div className="flex min-w-0 flex-col gap-2.5">
-                <p className="text-sm text-warning-text">No friends yet</p>
+                <p className="text-sm text-warning-text"> {LN_L("noFriends")}</p>
             </div>)
 
     if (newFriends.length === 0 && filter === 'Online')
         return  (
             <div className="flex min-w-0 flex-col gap-2.5">
-                <p className="text-sm text-warning-text">No friends online</p>
+                <p className="text-sm text-warning-text">{LN_L("noOnline")}</p>
             </div>)
     
     if (newFriends.length === 0 && filter === 'Playing')
         return  (
             <div className="flex min-w-0 flex-col gap-2.5">
-                <p className="text-sm text-warning-text">No playing friends</p>
+                <p className="text-sm text-warning-text">{LN_L("noPlaying")}</p>
             </div>)
 
     return (
@@ -202,9 +207,9 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
             <DialogModal
                 isOpen={isOpen}
                 type={'REMOVE_FRIEND'}
-                title={`Remove ${user?.name} from friends?`}
-                warning="They'll no longer see your status or invite you to matches. You can add them back anytime."
-                secondBtn="Remove friend"
+                title={`${LN_D("title")}  ${user?.name}  ${LN_D("title+")}`}
+                warning={LN_D("warning")}
+                secondBtn={LN_D("secondBtn")}
                 handleConfirmation={handleConfirmationRequest}
             >
                 <UserRoundX className="w-4 h-4" />

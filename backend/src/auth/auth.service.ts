@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
@@ -8,6 +8,9 @@ import { hash, verify } from 'argon2';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from 'src/redis/redis.service';
+import { OAuthProfileType } from 'src/common/strategies/google.strategy';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +20,8 @@ export class AuthService {
         private readonly tokenService: TokenService,
         private readonly sessionService: SessionService,
         private readonly configService: ConfigService,
-        private readonly redis: RedisService
+        private readonly redis: RedisService,
+        private readonly DB: PrismaService,
     ) { }
 
     public async register(dto: RegisterRequest) {
@@ -60,6 +64,7 @@ export class AuthService {
                 avatar: user.avatar ? avatarsUrl + user.avatar : null,
                 score: user.score,
                 role: user.role,
+                termsAcceptedAt: user.termsAcceptedAt,
             }
         };
     }
@@ -124,19 +129,43 @@ export class AuthService {
         return count;
     }
 
-    public async changePassword(userId: number, dto: ChangePasswordDto) {
+    async changePassword(userId: number, dto: ChangePasswordDto) {
+
         const user = await this.userService.findById(userId);
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
+        if (user.provider)
+            throw new BadRequestException("Password change is not available for accounts linked to google");
+
         const isPasswordValid = await verify(user.password, dto.old);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        const passwordHash = await hash(dto.new);
+        return await this.userService.startPasswordReset(user.id, {email: user.email, password: dto.new})
+    }
 
-        await this.userService.updatePassword(userId, passwordHash);
-        await this.sessionService.deleteAllUserSessions(userId);
-        return { success: true };
+    async oauthLogin(profile: OAuthProfileType) {
+        let user = await this.userService.findByProvider(profile.provider, profile.providerId);
+
+        if (!user) {
+            const existing = await this.DB.users.findUnique({ where: { email: profile.email } });
+            user = existing
+                ? await this.DB.users.update({
+                    where: { id: existing.id },
+                    data: { provider: profile.provider, providerId: profile.providerId },
+                })
+                : await this.userService.createOAuthUser({
+                    email: profile.email,
+                    name: profile.username,
+                    provider: profile.provider,
+                    providerId: profile.providerId,
+                    passwordHash: await hash(randomBytes(32).toString('hex')),
+                });
+        }
+        const refreshToken = await this.tokenService.generateRefreshToken();
+        const session = await this.sessionService.createSession(user.id, refreshToken);
+        const accessToken = await this.tokenService.generateAccessToken(user.id, session.id);
+        return {accessToken, refreshToken, user};
     }
 }

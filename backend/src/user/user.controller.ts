@@ -86,6 +86,13 @@ export class UserController {
 	return this.userService.updateColor(userId, dto.color);
   }
 
+  @Authorization()
+  @HttpCode(HttpStatus.OK)
+  @Patch('me/terms')
+  public async acceptTerms(@Authorized('userId') userId: number) {
+    return this.userService.acceptTerms(userId);
+  }
+  
   @Post("resetCode")
   async resetCode(@Body() body: ResetCodeDto)
   {

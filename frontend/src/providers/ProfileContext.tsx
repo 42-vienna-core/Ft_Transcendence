@@ -11,7 +11,7 @@ interface ProfileContextType {
     avatar: string;
     status: 'loading' | 'authenticated' | 'unauthenticated';
     role: "ADMIN" | "PLAYER";
-    
+    termsAcceptedAt: string | null;
     updateNameOnChange: (name: string) => void;
     updateSessionUsername: () => Promise<void>;
     updateAvatar: (newUrl: string) => Promise<void>;
@@ -41,6 +41,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const email = session?.user?.email ?? "";
     const avatar = session?.user?.avatar ?? "/png/default_avatar.png";
     const role = session?.user?.role ?? "PLAYER";
+    const termsAcceptedAt = session?.user?.termsAcceptedAt ?? null
 
     const updateSessionUsername = async () => {
         if (!session?.user) return;
@@ -75,6 +76,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
             nameOnChange,
             status,
             role,
+            termsAcceptedAt,
             updateSession,
             updateSessionUsername, 
             updateAvatar,

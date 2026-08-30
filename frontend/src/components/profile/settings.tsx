@@ -35,28 +35,6 @@ const langArr: ArrValue[] = [{
     value: 'it', 
 }];
 
-const controlArr: ArrValue[] = [{
-    id: "1",
-    value: "arrow"
-},
-{
-    id: "2",
-    value: "WASD"
-},
-{
-    id: "3",
-    value: "arrow + WASD"
-}];
-
-const snakeColors: ArrValue[]  = [
-  { id: 'neon-green',  value: '#39FF14'},
-  { id: 'electric-blue', value: '#00E5FF'},
-  { id: 'laser-pink',   value: '#FF007F'},
-  { id: 'toxic-yellow', value: '#FFEA00'},
-  { id: 'plasma-purple', value: '#9D00FF'},
-  { id: 'lava-orange',  value: '#FF5E00',},
-  { id: 'pearl-white',  value: '#FFFFFF',}
-];
 
 function SettingBtnContainer({ children }: { children: React.ReactNode }) {
     return (
@@ -131,6 +109,7 @@ export function ModalList({
     modalRef: RefObject<HTMLDivElement | null>;
 }) {
 
+    
     if (!isOpen) return null; 
 
     return (
@@ -175,6 +154,7 @@ export function ModalList({
 
 
 export default function ProfileSettingsContent() {
+    
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
     const [pending, setPending] = useState<boolean>(false);
@@ -188,7 +168,23 @@ export default function ProfileSettingsContent() {
 
     const router = useRouter();
     const pathName = usePathname();
-    const t = useTranslations("Profile.settings");
+    const LN = useTranslations("Profile.settings");
+    const CO = useTranslations("Profile.settings.color")
+
+    const controlArr: ArrValue[] = [
+    {
+        id: "1",
+        value: LN("arrow")
+    },
+    {
+        id: "2",
+        value: LN("WASD")
+    },
+    {
+        id: "3",
+        value:  LN("arrow + WASD")
+    }];
+
 
     const [isOpen, setIsOpen] = useState(false);
     const [isOpenControl, setIsOpenControl] = useState(false);
@@ -330,32 +326,34 @@ export default function ProfileSettingsContent() {
         }
     };
 
+    
+    const snakeColors: ArrValue[]  = [
+        { id: CO("neon-green"),  value: '#39FF14'},
+        { id: CO("electric-blue"), value: '#00E5FF'},
+        { id: CO("laser-pink"),   value: '#FF007F'},
+        { id: CO("toxic-yellow"), value: '#FFEA00'},
+        { id: CO("plasma-purple"), value: '#9D00FF'},
+        { id: CO("lava-orange"),  value: '#FF5E00',},
+        { id: CO("pearl-white"),  value: '#FFFFFF',}
+    ];
+
     return (
         <>
             <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-[1.3fr_1fr]">
                 <div className="rounded-md border border-border-default bg-bg-surface px-4 py-3.5" aria-label="Settings">
-                <h3 className="mb-3 !text-sm font-medium lowercase tracking-wide text-text-secondary">settings</h3>
+                <h3 className="mb-3 !text-sm font-medium lowercase tracking-wide text-text-secondary">{LN("settings")}</h3>
 
                 {/* Languages */}
                 <SettingBtnContainer>
-                    <SettingBatton
-                        labelF={t("lang")}
-                        labelS={lang}
-                        onClick={toggleLangMenu}
-                    >
+                    <SettingBatton labelF={LN("lang")} labelS={lang} onClick={toggleLangMenu} >
                     </SettingBatton>
-                    <ModalList 
-                        isOpen={isOpen}
-                        listArr={langArr} 
-                        modalRef={modalLangRef}
-                        handleOnClick={selectLanguage}
-                    />
+                    <ModalList  isOpen={isOpen} listArr={langArr}  modalRef={modalLangRef} handleOnClick={selectLanguage} />
                 </SettingBtnContainer>
 
                 {/* Theme */}
                 <SettingBtnContainer>
                     <ToggleSwitch
-                        title={t("ct")}
+                        title={LN("ct")}
                         label={isThemeDark ? "☀️" : "🌙"}
                         onToggle={togleTheme}
                         checked={isThemeDark}
@@ -364,10 +362,7 @@ export default function ProfileSettingsContent() {
 
                 {/* Snake colors */}
                 <SettingBtnContainer>
-                    <SettingBatton
-                        labelF={"snake color"}
-                        onClick={togleSnakeColorMenu}
-                    >
+                    <SettingBatton labelF={LN("snakeColor")} onClick={togleSnakeColorMenu} >
                         <PaintBucket size={18} color={`${snakeColor}`}/>
                     </SettingBatton>
                     <ModalList 
@@ -381,8 +376,8 @@ export default function ProfileSettingsContent() {
                 {/* Sounds */}
                 <SettingBtnContainer>
                     <ToggleSwitch
-                        title={"sound & music"}
-                        label={soundEnabled ? "on" : "off"}
+                        title={LN("sound")}
+                        label={soundEnabled ? LN('on') : LN('off')}
                         onToggle={toggleSoundSwitch}
                         checked={soundEnabled}
                     />
@@ -391,10 +386,11 @@ export default function ProfileSettingsContent() {
                 {/* Control */}
                 <SettingBtnContainer>
                     <SettingBatton
-                        labelF={"controls"}
-                        labelS={control}
+                        labelF={LN('controls')}
+                        labelS={LN("changeControl")}
                         onClick={() => toggleControlMenu()}
                     />
+                    
                     <ModalList 
                         isOpen={isOpenControl}
                         listArr={controlArr} 
@@ -405,17 +401,16 @@ export default function ProfileSettingsContent() {
 
                 <SettingBtnContainer>
                     <SettingBatton
-                        labelF={t("secure.label1")}
-                        labelS={t("secure.label2")}
+                        labelF={LN("secure.label1")}
+                        labelS={LN("secure.label2")}
                         onClick={() => setIsModalOpen(true)}
                     />
                 </SettingBtnContainer>
 
-
                 {/* Logout */}
                 <SettingBtnContainer>
                     <SettingBatton
-                        labelF={t("lo")}
+                        labelF={LN("lo")}
                         onClick={handleLogout}
                         disabled={pending}
                     />
@@ -424,14 +419,14 @@ export default function ProfileSettingsContent() {
                 {/* Logout of all accounts */}
                 <SettingBtnContainer>
                     <SettingBatton
-                        labelF={"log out of all accounts"}
+                        labelF={LN('secure.label3')}
                     />
                 </SettingBtnContainer>
 
                 {/* Delete accounts */}
                 <SettingBtnContainer>
                     <SettingBatton
-                        labelF={t("da")}
+                        labelF={LN("da")}
                         onClick={() => setIsConfirmModalOpen(true)}
                         disabled={pending}
                     />
@@ -441,7 +436,7 @@ export default function ProfileSettingsContent() {
             <div className="flex flex-col ">
                 <div className="rounded-md border border-border-default bg-bg-surface px-4 py-3.5" aria-label="Friends">
                     <p className="mb-13 text-sm text-text-secondary">
-                        Cobras are famous venomous snakes known for their dramatic neck hoods. The king cobra is the longest venomous snake on Earth, growing up to 18 feet, and a single bite can kill an elephant or 20 people. Some cobras can even spit venom at a target's eyes.
+                        {LN('text')}
                     </p>
                     <img className="object-contain" 
                         alt="Magnific Snake" 
@@ -460,10 +455,11 @@ export default function ProfileSettingsContent() {
             />
             <DialogModal
                 isOpen={isConfirmModalOpen}
-                type={'DELETE_ACCOUNT'}
-                title="Delete your account?"
-                warning="This permanently erases your profile, 1 482 rating, match history, and 42 friends. This can't be undone."
-                secondBtn="Delete account"
+                type={"DELETE_ACCOUNT"}
+                title={LN("delet.title")}
+                warning={LN("delet.warning")}
+                secondBtn={LN("delet.secondBtn")}
+                
                 handleConfirmation={handleAccountRemoving}
             >
                 <Trash2 className="w-4 h-4" />

@@ -1,7 +1,5 @@
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { Erica_One } from "next/font/google";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from 'next/server';
 
 async function getAccessTokenFromCookie() {

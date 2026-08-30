@@ -14,6 +14,7 @@ export function NavLinks () {
     const {status, username, avatar } = useProfile();
     const { gameNotification, beFriendNotification} = useNotificationListener();
     const t = useTranslations("Header");
+    const LN = useTranslations("leaderboard")
 
     return (
         <>
@@ -24,7 +25,7 @@ export function NavLinks () {
             />
             <CustomLink
                 url={"/leaderboard"}
-                label={"Leaderboard"}
+                label={LN("leaderboard")}
             />
             {
                 status === "authenticated" &&
@@ -70,6 +71,7 @@ export function NavAuthLinks () {
 
 export default function Nav({children}:{children: React.ReactNode}) {
     const { role } = useProfile();
+    const common = useTranslations("common");
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     return (
         <nav className="sticky top-0 z-[100] flex items-center justify-between gap-3 px-4 py-3 shadow-[0_8px_24px_0_var(--color-bg-muted)] backdrop-blur-xl after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:animate-[headerBorderShift_8s_ease-in-out_infinite] after:bg-[length:300%_100%] after:bg-[linear-gradient(90deg,var(--color-snake-you),var(--color-snake-1),var(--color-snake-3),var(--color-snake-2))] after:opacity-65 after:content-[''] sm:px-8 sm:py-[18px]">
@@ -82,7 +84,7 @@ export default function Nav({children}:{children: React.ReactNode}) {
                                 onClick={() => setIsAdminOpen((open) => !open)}
                                 className="cursor-pointer rounded-full px-4 py-1.5 text-xs font-semibold transition-transform bg-(--color-accent) text-white"
                             >
-                                Admin
+                                {common("admin")}
                             </button>
                                 {isAdminOpen && <Admin onClose={() => setIsAdminOpen(false)} />}
                             </>
