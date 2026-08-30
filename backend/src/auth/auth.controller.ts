@@ -8,6 +8,7 @@ import { Authorized } from '../common/decorators/authorized.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { GoogleAuthGuard } from 'src/common/guards/google-auth.guard';
 import { OAuthProfileType } from 'src/common/strategies/google.strategy';
+import { Throttle } from '@nestjs/throttler';
 
 interface RequestWithOAuthProfileType {
     user : OAuthProfileType;
@@ -17,6 +18,7 @@ interface RequestWithOAuthProfileType {
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
+  @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   public async register(
@@ -26,6 +28,7 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   public async login(
@@ -36,6 +39,7 @@ export class AuthController {
     return this.authService.login(dto, req.headers['user-agent'], req.ip);
   }
 
+  @Throttle({ long: { ttl: 60000, limit: 10 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   public async refresh( @Body('refreshToken') refreshToken: string ) {
@@ -60,7 +64,7 @@ export class AuthController {
     const count = await this.authService.logoutAll(userId);
     return { success: true, count };
   }
-
+  @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   @Authorization()
