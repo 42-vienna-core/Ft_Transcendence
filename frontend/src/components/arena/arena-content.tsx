@@ -188,15 +188,22 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {roomStatus === 'READY' && (
-                        <div className="flex flex-col items-center gap-3 text-text-tertiary">
-                            <span>{LN("startAfter")}</span>
-                            <h2>{secondsLeft}</h2>
-                        </div>
-                    )}
+                <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex items-center justify-center overflow-hidden">
+                    {/* The playfield grid is square, so the board is a centered square that
+                        fills the available area (max-width tracks the container height for
+                        each breakpoint). This keeps the board exactly the canvas size from
+                        the countdown onward, with no game-field colour bleeding past it. */}
+                    <div
+                        id="game-board"
+                        className="relative flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl aspect-square w-full max-w-[60vh] sm:max-w-[65vh] lg:max-w-[calc(100vh-250px)]"
+                    >
+                        {roomStatus === 'READY' && (
+                            <div className="flex flex-col items-center gap-3 text-text-tertiary">
+                                <span>{LN("startAfter")}</span>
+                                <h2>{secondsLeft}</h2>
+                            </div>
+                        )}
 
-                    <div className="relative w-full">
                         {
                             (roomStatus === 'PLAYING' || roomStatus === 'running')  && (
                                 <GameCanvas
@@ -204,7 +211,7 @@ function ArenaContent() {
                                     control={control}
                                 />
                         )}
-                        
+
                         {(showOver || showWin) && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center  bg-bg-overlay rounded-xl">
                                 <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>

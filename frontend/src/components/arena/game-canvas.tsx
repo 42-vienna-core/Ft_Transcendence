@@ -137,7 +137,7 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
 
         let rafId: number;
 
-        const container = document.getElementById('canvas-container');
+        const container = document.getElementById('game-board');
         if (!container) return;
 
         const resizeObserver = new ResizeObserver((entries) => {
@@ -198,18 +198,20 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
         const mySnake = snakes.find(s => String(s.id) === String(id));
         if (!mySnake || mySnake.body.length === 0) return;
 
-        const prevMy = prev?.snakes.find(s => String(s.id) === String(id));
-        const prevHead = prevMy?.body[0] ?? mySnake.body[0];
-        const myHeadX = lerp(prevHead.x, mySnake.body[0].x, alpha) * CELL + CELL / 2;
-        const myHeadY = lerp(prevHead.y, mySnake.body[0].y, alpha) * CELL + CELL / 2;
-
-        const cameraX = myHeadX - SCREEN_WIDTH / 2;
-        const cameraY = myHeadY - SCREEN_HEIGHT / 2;
+        // Fit the whole world into the available screen area instead of following
+        // the snake head with a camera, so the view never scrolls while playing.
+        const worldScale = Math.min(
+            SCREEN_WIDTH / WORLD_WIDTH,
+            SCREEN_HEIGHT / WORLD_HEIGHT,
+        );
+        const worldOffsetX = (SCREEN_WIDTH - WORLD_WIDTH * worldScale) / 2;
+        const worldOffsetY = (SCREEN_HEIGHT - WORLD_HEIGHT * worldScale) / 2;
 
         ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         ctx.save();
-        ctx.translate(-cameraX, -cameraY);
+        ctx.translate(worldOffsetX, worldOffsetY);
+        ctx.scale(worldScale, worldScale);
 
         ctx.strokeStyle = '#1e2224';
         ctx.lineWidth = 8;
@@ -221,14 +223,9 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
         ctx.fillStyle = ('#1e2224');
         ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-        const tileStartX = Math.max(0, Math.floor(cameraX / CELL) * CELL);
-        const tileEndX = Math.min(WORLD_WIDTH, cameraX + SCREEN_WIDTH + CELL);
-        const tileStartY = Math.max(0, Math.floor(cameraY / CELL) * CELL);
-        const tileEndY = Math.min(WORLD_HEIGHT, cameraY + SCREEN_HEIGHT + CELL);
-
         // drowing floor
-        for (let x = tileStartX; x < tileEndX; x += CELL) {
-            for (let y = tileStartY; y < tileEndY; y += CELL) {
+        for (let x = 0; x < WORLD_WIDTH; x += CELL) {
+            for (let y = 0; y < WORLD_HEIGHT; y += CELL) {
                 ctx.fillStyle = '#0b0f19';
                 ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
 
@@ -386,6 +383,6 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
     }
 
     return (
-        <canvas ref={canvasRef} className="rounded-xl cursor-none" />
+        <canvas ref={canvasRef} className="block mx-auto rounded-xl cursor-none" />
     );
 }
