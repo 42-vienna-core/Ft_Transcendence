@@ -198,9 +198,9 @@ function ArenaContent() {
                         className="relative flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl aspect-square w-full max-w-[60vh] sm:max-w-[65vh] lg:max-w-[calc(100vh-250px)]"
                     >
                         {roomStatus === 'READY' && (
-                            <div className="flex flex-col items-center gap-3 text-text-tertiary">
-                                <span>{LN("startAfter")}</span>
-                                <h2>{secondsLeft}</h2>
+                            <div className="flex flex-col items-center gap-3 text-text-primary">
+                                <span className="text-sm font-medium">{LN("startAfter")}</span>
+                                <h2 className="text-5xl font-bold tabular-nums">{secondsLeft}</h2>
                             </div>
                         )}
 
