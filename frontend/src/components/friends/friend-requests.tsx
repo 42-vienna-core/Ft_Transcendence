@@ -36,9 +36,9 @@ function FriendRuquestItem({
         <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
             <div>
                 { isAvatar ? (
-                    <img className="size-[32px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
+                    <img className="size-8 rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
                 ) : (
-                    <div className="flex size-[32px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
                         {av}
                     </div>
                 )}

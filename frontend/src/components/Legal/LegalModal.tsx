@@ -79,11 +79,11 @@ export default function LegalModal() {
                 <div className="flex flex-col gap-4 border-t border-border-default px-6 py-5 sm:px-8">
                     <div className="flex flex-col gap-2.5">
                         <label className="flex cursor-grab items-start gap-2.5 text-sm leading-relaxed text-text-secondary">
-                            <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 cursor-grab accent-accent" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} />
+                            <input autoComplete="off" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 cursor-grab accent-accent" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} />
                             <span>{LN("readPolicy")}</span>
                         </label>
                         <label className="flex cursor-grab items-start gap-2.5 text-sm leading-relaxed text-text-secondary">
-                            <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 cursor-grab accent-accent" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />
+                            <input autoComplete="off" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 cursor-grab accent-accent" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />
                             <span>{LN("readTerms")}</span>
                         </label>
                     </div>

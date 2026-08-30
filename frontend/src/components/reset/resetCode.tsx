@@ -41,6 +41,7 @@ export default function ResetCode ({email} : {email: string}) {
                             onChange={(e) => setCode(e.currentTarget.value)}
                             placeholder={resetCode("placeholder")}
                             maxLength={6}
+                            autoComplete="off"
                     />
                 </div>
 

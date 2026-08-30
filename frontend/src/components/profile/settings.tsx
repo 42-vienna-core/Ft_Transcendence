@@ -54,7 +54,7 @@ function ToggleSwitch({ title, label, checked, onToggle }: {title: string; label
             </span>
 
             <label htmlFor={switchId} className="relative inline-flex items-center cursor-pointer select-none gap-2 text-sm text-text-primary">
-                <input
+                <input autoComplete="off"
                     id={switchId}
                     type="checkbox"
                     onChange={() => onToggle(!checked)}

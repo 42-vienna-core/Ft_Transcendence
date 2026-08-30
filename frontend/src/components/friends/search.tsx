@@ -205,6 +205,7 @@ export default function FindFriends({
             <div className="relative mb-2 flex items-center gap-2 rounded-md border border-border-default bg-bg-surface py-1.5 pl-8 pr-2.5 transition-colors duration-200 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-soft">
                 <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-text-tertiary" />
                 <input
+                    autoComplete="off"
                     type="text"
                     placeholder={LN("name")}
                     value={query}
