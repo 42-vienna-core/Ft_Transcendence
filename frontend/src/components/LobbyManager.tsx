@@ -5,6 +5,7 @@ import LobbyModal from './modal/lobby-modal';
 import { useRoomDataBySocket } from './store/useRoomData';
 import { useGameSocket } from '@/providers/SocketProvider';
 import { useAudioStore } from './store/useAudioStore';
+import { SocketResponse } from '@/types/socketTypes';
 
 export default function GlobalLobbyManager() {
     const router = useRouter();
@@ -25,8 +26,11 @@ export default function GlobalLobbyManager() {
         if (!socket /* || !roomId */) return;
 
         console.log("emit('leave-room");
-        socket.emit('leave-room'/* , {roomId} */);
-        clearGameData();
+        socket.timeout(5000).emit('leave-room', (timeoutError: Error | null, response?: SocketResponse) => {
+			if (timeoutError || !response?.success)
+				return;
+			clearGameData();
+		});
     };
 
     return (

@@ -5,9 +5,13 @@ import { GameState } from './interfaces/game-state';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { ChangeDirectionDto } from './dto/change-direction.dto';
 import { Socket } from 'socket.io';
+import { SocketResponse } from 'src/socket/interfaces/socket-response';
+import { UseFilters } from '@nestjs/common';
+import { SocketExceptionFilter } from 'src/socket/filters/socket-exception.filter';
 
 
 @WebSocketGateway()
+@UseFilters(SocketExceptionFilter)
 export class GameGateway {
 	@WebSocketServer() server!: Server;
 	
@@ -17,23 +21,23 @@ export class GameGateway {
 	){}
 
 	@SubscribeMessage('change-direction')
-	async handleChangeDirection(@MessageBody() data: ChangeDirectionDto, @ConnectedSocket() client: Socket){
+	async handleChangeDirection(@MessageBody() data: ChangeDirectionDto, @ConnectedSocket() client: Socket) : Promise<SocketResponse>{
 		const roomUser = await this.gameRoom.findBySocketId(client.id);
 		if (!roomUser || roomUser.userId !== client.data.userId)
-			return {success: false};
+			return {success: false, error: 'Room user not found'};
 		const lockKey = `lock:game:${roomUser.roomId}`;
 		const lockId = await this.redisService.acquireLockWithTime(lockKey, 2);
 		if (!lockId)
-			return {success: false};
+			return {success: false, error: 'Game is busy, could not acquire lock'};
 		try {
 			const game = await this.redisService.getGameState(roomUser.roomId);
 			if (!game)
-				return {success: false};
+				return {success: false, error: 'Game not found'};
 			const snake = game.snakes.find(s => s.id === roomUser.userId);
 			if (!snake)
-				return {success: false};
+				return {success: false, error: 'Player not found in the game'};
 			if (!snake.alive)
-				return {success: false};
+				return {success: false, error: 'Player is inactive or died'};
 			snake.newDirection = data.direction;
 			await this.redisService.setGameWithTTL(game.roomId, game);
 			return {success: true};

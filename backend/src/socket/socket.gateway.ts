@@ -9,15 +9,19 @@ import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { setTimeout as wait } from 'node:timers/promises';
 import { TokenService } from 'src/token/token.service';
 import { SessionService } from 'src/session/session.service';
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, UseFilters } from '@nestjs/common';
 import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import type { Match } from 'src/gameRoom/interfaces/room-update.interface';
 import type { friendRequestData } from 'src/friends/interfaces/friend-request-data.interface';
+import type { SocketResponse } from './interfaces/socket-response';
+import { SocketExceptionFilter } from './filters/socket-exception.filter';
 
+type PlayingFriends = Awaited<ReturnType<FriendsService['getPlayingFriends']>>;
 const COUNTDOWN = 3; // seconds
 
 @WebSocketGateway({ cors: { origin: '*' } })
+@UseFilters(SocketExceptionFilter)
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer() server!: Server;
 	constructor(
@@ -37,7 +41,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const token = client.handshake.auth.token;
 			if (!token)
 				throw new UnauthorizedException("Unauthorized");
-
 			const payload = await this.tokenService.verifyAccessToken(token);
 			const session = await this.sessionService.findSessionById(payload.sessionId);
 			if (!session)
@@ -53,7 +56,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			client.data.user = user;
 
 			await client.join(`user:${payload.userId}`);
-
 			await this.redisService.addOnline(user, session.id);
 		} catch (e) {
 			console.log(e);
@@ -64,9 +66,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handleDisconnect(client: Socket){
 		try {
 			console.log("🟣 SOCKET handleDisconnect");
-
 			await this.redisService.removeOnline(client.data.userId, client.data.sessionId);
-
 			const roomUser = await this.roomService.findBySocketId(client.id);
 			if (!roomUser)
 				return ;
@@ -85,22 +85,18 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	@SubscribeMessage("get-online-users")
+/* 	@SubscribeMessage("get-online-users")
 	async getOnlineUsers(client: Socket) {
-		console.log("get_online-users: ", client.id);
 		const onlineUsers = await this.redisService.getOnlineUsers();
 		this.server.emit("online-users", onlineUsers);
-	}
+	} */
 
 	@SubscribeMessage('join-match')
-	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto){
-
+	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto) : Promise<SocketResponse<Match>>{
 		if (!client.data.user) {
-			console.log("ERROR !client.data.user || client.data.user === undefined");
 			client.disconnect();
-			return;
+			return {success: false, error: 'Client not found, authentication required'};
 		}
-
 		const match = await this.matchStarter.prepareMatch(
 			client.data.user.id, 
 			client.id, data
@@ -109,40 +105,37 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			const res = await this.matchStarter.removePlayerlock(client.data.user.id, match.roomId);
 			if (res.abandoned)
 				await this.matchStarter.updateAbandonedRoom(match.roomId, true);
-			return ;
+			return {success: false, error: 'Socket disconnected during the game'};
 		}
 		client.data.roomId = match.roomId;
 		await client.join(match.roomId);
-
 		const curMatch = await this.roomService.getRoomUpdate(match.roomId);
 		if (curMatch.roomStatus === RoomStatus.ABANDONED){
 			client.emit('room-update', curMatch);
 			await this.roomService.removeUserFromRoom(curMatch.roomId, client.data.user.id);
 			await client.leave(match.roomId);
 			delete client.data.roomId;
-			return curMatch;
+			return {success: false, error: 'Match has been abandoned'};
 		}
-
 		this.server.to(client.data.roomId).emit('room-update', curMatch);
-
 		if (curMatch.roomStatus === RoomStatus.READY){
 			this.server.to(curMatch.roomId).emit('countdown', {roomId: curMatch.roomId, countdown: COUNTDOWN});
 			await wait(COUNTDOWN * 1000);
 			await this.matchStarter.startMatch(curMatch.roomId);
 		}
 		console.log("ROOM STATUS: ", match.roomStatus);
-		return curMatch;
+		return {success: true, data: curMatch};
 	}
 
 	@SubscribeMessage('leave-room')
-	async handleLeaveRoom(@ConnectedSocket() client: Socket) {
+	async handleLeaveRoom(@ConnectedSocket() client: Socket) : Promise<SocketResponse> {
 		console.log("LEAVE ROOM CALLED");
 		const roomUser = await this.roomService.findBySocketId(client.id);
 		if (roomUser === null || roomUser.userId !== client.data.userId)
-			return { success: false };
+			return {success: false, error: 'Room user not found'};
 		const data = await this.matchStarter.removePlayerlock(roomUser.userId, roomUser.roomId);
 		if (data.success === false)
-			return { success: false };
+			return {success: false, error: 'Leaving room failed'};
 		delete client.data.roomId;
 		if (data.abandoned){
 			await this.matchStarter.updateAbandonedRoom(roomUser.roomId, true);
@@ -152,7 +145,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.eventEmitter.emit('playing-friends.changed', {userIds: [roomUser.userId]});
 		const match = await this.roomService.getRoomUpdate(roomUser.roomId);
 		this.server.to(roomUser.roomId).emit('room-update', match);
-
 		return { success: true };
 	}
 
@@ -216,9 +208,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('get-playing-friends')
-		async getPlayingFriends(@ConnectedSocket() client: Socket){
-		console.log("get playing friends");
-		return this.friendsService.getPlayingFriends(client.data.user.id);
+		async getPlayingFriends(@ConnectedSocket() client: Socket) : Promise<SocketResponse<PlayingFriends>>{
+		if (!client.data.user)
+			return {success: false, error: 'User not found, authentication required'};
+		const rooms = await this.friendsService.getPlayingFriends(client.data.user.id);
+		return {success: true, data: rooms};
 	}
 
 }

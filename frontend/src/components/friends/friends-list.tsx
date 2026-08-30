@@ -10,6 +10,7 @@ import { Friend } from '@/types/gameTypes';
 import { useRoomDataBySocket } from '../store/useRoomData';
 import { useNotificationListener } from '../store/notification';
 import { useTranslations } from 'next-intl';
+import { SocketResponse } from '@/types/socketTypes';
 
 interface FriendCardProps {
     friend: Friend;
@@ -126,7 +127,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
     const [ isOpen, setIsOpen ] = useState<boolean>(false);
     const [ user, setUser ] = useState<Friend | null>(null);
     const { socket, isConnected } = useGameSocket();
-    const { setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
+    const { setIsLobbyOpen, setGameMode, clearStatus, clearGameData} = useRoomDataBySocket();
     const { playFriends, status} = useNotificationListener();
     const LN_L = useTranslations("friends.lists");
     const LN_D = useTranslations("friends.dialog");
@@ -170,7 +171,11 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
 
         clearStatus();
 
-        socket.emit('join-match', {mode: 'FRIENDS_JOIN', roomId});
+        //socket.emit('join-match', {mode: 'FRIENDS_JOIN', roomId});
+		socket.timeout(10000).emit('join-match', {mode: 'FRIENDS_JOIN', roomId},(timeoutError: Error | null, response?: SocketResponse<unknown>) => {
+			if (timeoutError || !response?.success)
+				clearGameData();
+		});
 
         setGameMode('FRIENDS_JOIN');
         setIsLobbyOpen(true);
