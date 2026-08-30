@@ -1,9 +1,10 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket} from '@nestjs/websockets';
 import { Server} from 'socket.io';
-import type { changeDirectionPayload } from "./interfaces/events";
 import { RedisService } from "src/redis/redis.service";
 import { GameState } from './interfaces/game-state';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
+import { ChangeDirectionDto } from './dto/change-direction.dto';
+import { Socket } from 'socket.io';
 
 
 @WebSocketGateway()
@@ -16,22 +17,24 @@ export class GameGateway {
 	){}
 
 	@SubscribeMessage('change-direction')
-	async handleChangeDirection(@MessageBody() data: changeDirectionPayload,){
-		const lockKey = `lock:game:${data.roomId}`;
+	async handleChangeDirection(@MessageBody() data: ChangeDirectionDto, @ConnectedSocket() client: Socket){
+		const roomUser = await this.gameRoom.findBySocketId(client.id);
+		if (!roomUser || roomUser.userId !== client.data.userId)
+			return {success: false};
+		const lockKey = `lock:game:${roomUser.roomId}`;
 		const lockId = await this.redisService.acquireLockWithTime(lockKey, 2);
 		if (!lockId)
 			return {success: false};
 		try {
-			const game = await this.redisService.getGameState(data.roomId);
+			const game = await this.redisService.getGameState(roomUser.roomId);
 			if (!game)
 				return {success: false};
-			const snake = game.snakes.find(s => s.id === data.userId);
+			const snake = game.snakes.find(s => s.id === roomUser.userId);
 			if (!snake)
 				return {success: false};
 			if (!snake.alive)
 				return {success: false};
 			snake.newDirection = data.direction;
-			console.log(data);
 			await this.redisService.setGameWithTTL(game.roomId, game);
 			return {success: true};
 		} finally {
