@@ -1,5 +1,5 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { MatchStarter } from '../matchStarter/matchStarter.service';
@@ -14,11 +14,11 @@ import { FriendsService } from 'src/friends/friends.service';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import type { Match } from 'src/gameRoom/interfaces/room-update.interface';
 import type { friendRequestData } from 'src/friends/interfaces/friend-request-data.interface';
-import type { SocketResponse } from './interfaces/socket-response';
+import type { AuthenticatedSocket, SocketResponse } from './interfaces/socket';
 import { SocketExceptionFilter } from './filters/socket-exception.filter';
 
 type PlayingFriends = Awaited<ReturnType<FriendsService['getPlayingFriends']>>;
-const COUNTDOWN = 3; // seconds
+const COUNTDOWN = 3;
 
 @WebSocketGateway({ cors: { origin: '*' } })
 @UseFilters(SocketExceptionFilter)
@@ -35,11 +35,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private readonly friendsService: FriendsService,
 	) { }
 
-	async handleConnection(client: Socket) {
+	async handleConnection(client: AuthenticatedSocket) {
 		console.log('🟣 SOCKET handleConnection');
 		try {
-			const token = client.handshake.auth.token;
-			if (!token)
+			const token : unknown = client.handshake.auth.token;
+			if (!token || typeof token !== 'string')
 				throw new UnauthorizedException("Unauthorized");
 			const payload = await this.tokenService.verifyAccessToken(token);
 			const session = await this.sessionService.findSessionById(payload.sessionId);
@@ -63,9 +63,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	async handleDisconnect(client: Socket){
+	async handleDisconnect(client: AuthenticatedSocket){
 		try {
 			console.log("🟣 SOCKET handleDisconnect");
+			if (client.data.userId === undefined || client.data.sessionId === undefined)
+				return ;
 			await this.redisService.removeOnline(client.data.userId, client.data.sessionId);
 			const roomUser = await this.roomService.findBySocketId(client.id);
 			if (!roomUser)
@@ -85,15 +87,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-/* 	@SubscribeMessage("get-online-users")
-	async getOnlineUsers(client: Socket) {
-		const onlineUsers = await this.redisService.getOnlineUsers();
-		this.server.emit("online-users", onlineUsers);
-	} */
-
 	@SubscribeMessage('join-match')
-	async handleJointMatch(@ConnectedSocket() client: Socket, @MessageBody() data: MatchRequestDto) : Promise<SocketResponse<Match>>{
-		if (!client.data.user) {
+	async handleJointMatch(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() data: MatchRequestDto) : Promise<SocketResponse<Match>>{
+		if (!client || !client.data.user) {
 			client.disconnect();
 			return {success: false, error: 'Client not found, authentication required'};
 		}
@@ -128,7 +124,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('leave-room')
-	async handleLeaveRoom(@ConnectedSocket() client: Socket) : Promise<SocketResponse> {
+	async handleLeaveRoom(@ConnectedSocket() client: AuthenticatedSocket) : Promise<SocketResponse> {
 		console.log("LEAVE ROOM CALLED");
 		const roomUser = await this.roomService.findBySocketId(client.id);
 		if (roomUser === null || roomUser.userId !== client.data.userId)
@@ -208,7 +204,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('get-playing-friends')
-		async getPlayingFriends(@ConnectedSocket() client: Socket) : Promise<SocketResponse<PlayingFriends>>{
+		async getPlayingFriends(@ConnectedSocket() client: AuthenticatedSocket) : Promise<SocketResponse<PlayingFriends>>{
 		if (!client.data.user)
 			return {success: false, error: 'User not found, authentication required'};
 		const rooms = await this.friendsService.getPlayingFriends(client.data.user.id);

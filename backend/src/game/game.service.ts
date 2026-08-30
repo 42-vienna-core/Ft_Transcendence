@@ -103,8 +103,8 @@ function checkCollision(state: GameState){
 			continue;
 		if (snake.newPosition === null)
 			continue;
-		let x = snake.newPosition.x;
-		let y = snake.newPosition.y;
+		const x = snake.newPosition.x;
+		const y = snake.newPosition.y;
 		if (x < 0 || x >= state.gridWidth)
 			snake.alive = false;
 		if (y < 0 || y >= state.gridHeight)
@@ -254,7 +254,7 @@ function initGame(id: string, users: Player[]) : GameState{
 
 function gameOver(game : GameState) : GameState{
 	let alive : number = 0;
-	let winners : number[] = [];
+	const winners : number[] = [];
 	if (game.botPresent){
 		for (const snake of game.snakes){
 			if (snake.alive && snake.player != 'bot')
@@ -412,7 +412,7 @@ export class GameService {
 		const game : GameState = initGame(roomId, users);
 		game.status = 'running';
 		await this.redisService.setGameWithTTL(roomId, game);
-		await this.gameGateway.broadcastGameState(roomId, game);
+		this.gameGateway.broadcastGameState(roomId, game);
 		this.tickStarter(roomId);
 	}
 
@@ -475,6 +475,6 @@ export class GameService {
 		else{
 			this.tickStarter(roomId);
 		}
-		await this.gameGateway.broadcastGameState(roomId, game);
+		this.gameGateway.broadcastGameState(roomId, game);
 	}
 }

@@ -23,7 +23,7 @@ export class RoomCleanUpService implements OnApplicationBootstrap, OnModuleDestr
 		console.error('Rooms clean up failed', error))}, CLOSE_ROOMS);
 	}
 
-	async onModuleDestroy() {
+	onModuleDestroy() {
 		if (this.roomTimer)
 			clearInterval(this.roomTimer);
 	}

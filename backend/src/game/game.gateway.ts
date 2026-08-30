@@ -4,8 +4,8 @@ import { RedisService } from "src/redis/redis.service";
 import { GameState } from './interfaces/game-state';
 import { GameRoomService } from 'src/gameRoom/gameRoom.service';
 import { ChangeDirectionDto } from './dto/change-direction.dto';
-import { Socket } from 'socket.io';
-import { SocketResponse } from 'src/socket/interfaces/socket-response';
+import { SocketResponse } from 'src/socket/interfaces/socket';
+import type { AuthenticatedSocket } from 'src/socket/interfaces/socket';
 import { UseFilters } from '@nestjs/common';
 import { SocketExceptionFilter } from 'src/socket/filters/socket-exception.filter';
 
@@ -21,7 +21,7 @@ export class GameGateway {
 	){}
 
 	@SubscribeMessage('change-direction')
-	async handleChangeDirection(@MessageBody() data: ChangeDirectionDto, @ConnectedSocket() client: Socket) : Promise<SocketResponse>{
+	async handleChangeDirection(@MessageBody() data: ChangeDirectionDto, @ConnectedSocket() client: AuthenticatedSocket) : Promise<SocketResponse>{
 		const roomUser = await this.gameRoom.findBySocketId(client.id);
 		if (!roomUser || roomUser.userId !== client.data.userId)
 			return {success: false, error: 'Room user not found'};
@@ -46,7 +46,7 @@ export class GameGateway {
 		}
 	}
 
-	async broadcastGameState(roomId: string, state: GameState){
+	broadcastGameState(roomId: string, state: GameState){
 		this.server.to(roomId).emit('game-state', state);
 	}
 
