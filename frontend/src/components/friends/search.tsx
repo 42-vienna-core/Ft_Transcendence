@@ -116,7 +116,6 @@ export default function FindFriends({
     styles,
     handleFindModal
 }: { styles: string, handleFindModal: () => void }) {
-    //const userContext = useProfile();
     const [message, setMessage] = useState<string>("");
     const [result, setResult] = useState<SearchingData[]>([]);
     const [query, setQuery] = useState<string>("");
@@ -152,16 +151,14 @@ export default function FindFriends({
     }, 300);
 
     async function addFriend(id: number): Promise<boolean> {
-        //const senderId = userContext.id;
         const receiverId = id;
 
-        if (/* !senderId || */ !receiverId) return false;
+        if (!receiverId) return false;
 
         try {
             await apiFetch('friends/request', {
                 method: 'POST',
                 body: JSON.stringify({
-                    //senderId,
                     receiverId
                 })
             });
