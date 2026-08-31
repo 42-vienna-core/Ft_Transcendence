@@ -13,7 +13,7 @@ interface LobbyModalProps {
     isOpen: boolean;
     room: RoomData | null;
     onStartmatch: () => void;
-    onClose: (roomId: string) => void;
+    onClose: () => void;
     gameMode: GameModeType | null;
 }
 
@@ -123,7 +123,7 @@ useEffect(() => {
                 </div>
                 <button
                     type="button"
-                    onClick={() => onClose(room.roomId)}
+                    onClick={() => onClose()}
                     // aria-label={LN("close")}
                     aria-label="Close"
                     className="cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"
@@ -203,7 +203,7 @@ useEffect(() => {
                 <button
                     type="button"
                     className="cursor-pointer rounded-lg border border-border-default px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"
-                    onClick={() => onClose(room.roomId)}
+                    onClick={() => onClose()}
                 >
                     {/* {LN("cancel")} */}
                     Cancel

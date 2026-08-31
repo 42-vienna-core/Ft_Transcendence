@@ -2,6 +2,7 @@
 
 import { useNotificationListener } from "@/components/store/notification";
 import { useRoomDataBySocket } from "@/components/store/useRoomData";
+import { SocketResponse } from "@/types/socketTypes";
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -53,8 +54,21 @@ export const SocketProvider = ({
                 setIsConnected(false);
             };
 
+			const onSocketException = (response: SocketResponse) => {
+				if (!response.success)
+					console.log("Socket error: ", response.error);
+			};
+
+			const onConnectError = (error: Error) => {
+				console.log("Socket connection error: ", error.message);
+				setIsConnected(false);
+			};
+
             socketInstance.on("connect", onConnect);
             socketInstance.on("disconnect", onDisconnect);
+
+            socketInstance.on("exception", onSocketException);
+            socketInstance.on("connect_error", onConnectError);
 
             setSocket(socketInstance);
             openNotificationListener(socketInstance);
@@ -66,6 +80,7 @@ export const SocketProvider = ({
 
         return () => {
             if (socketInstance) {
+				socketInstance.removeAllListeners();
                 socketInstance.disconnect();
             }
             setSocket(null);

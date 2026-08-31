@@ -1,4 +1,5 @@
 import {  Friend, GameRequestData, Request, RoomStatusType } from '@/types/gameTypes';
+import { SocketResponse } from '@/types/socketTypes';
 import { Socket } from 'socket.io-client';
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware';
@@ -106,8 +107,13 @@ export const useNotificationListener = create<NotificationState>()(
             });
 
             socket.on('playing-friends-changed', () => {
-                socket.emit('get-playing-friends', (data: PlayingFriendRoom[]) => {
-                    console.log("get-playing-friends", data);
+                socket.emit('get-playing-friends', (response: SocketResponse<PlayingFriendRoom[]>) => {
+                    if (!response.success)
+						return;
+					let data: PlayingFriendRoom[] = [];
+					if (response.data !== undefined && response.data !== null)
+						data = response.data;
+					console.log("get-playing-friends", data);
 
                     const arr = get().playFriends;
 

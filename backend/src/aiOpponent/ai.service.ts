@@ -114,7 +114,7 @@ function bfs(head: Position, map: string[][]): Position{
 export class AiBotService{
 	
 	createMap(game: GameState) : string[][]{
-		let map: string[][] = Array.from({ length: game.gridWidth}, () => Array(game.gridHeight).fill('0'));
+		const map: string[][] = Array.from({ length: game.gridWidth}, () => Array<string>(game.gridHeight).fill('0'));
 		for (const snake of game.snakes){
 			for (const pos of snake.body){
 				map[pos.x][pos.y] = '1';

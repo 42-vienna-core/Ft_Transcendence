@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
-import { useProfile } from '@/providers/ProfileContext';
+//import { useProfile } from '@/providers/ProfileContext';
 import { Loader, Search, X } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
 import { useTranslations } from 'next-intl';
@@ -115,7 +115,7 @@ export default function FindFriends({
     styles,
     handleFindModal
 }: { styles: string, handleFindModal: () => void }) {
-    const userContext = useProfile();
+    //const userContext = useProfile();
     const [message, setMessage] = useState<string>("");
     const [result, setResult] = useState<Friend[]>([]);
     const [query, setQuery] = useState<string>("");
@@ -151,16 +151,16 @@ export default function FindFriends({
     }, 300);
 
     async function addFriend(id: number): Promise<boolean> {
-        const senderId = userContext.id;
+        //const senderId = userContext.id;
         const receiverId = id;
 
-        if (!senderId || !receiverId) return false;
+        if (/* !senderId || */ !receiverId) return false;
 
         try {
             await apiFetch('friends/request', {
                 method: 'POST',
                 body: JSON.stringify({
-                    senderId,
+                    //senderId,
                     receiverId
                 })
             });
