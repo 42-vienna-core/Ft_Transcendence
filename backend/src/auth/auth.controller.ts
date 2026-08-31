@@ -14,6 +14,22 @@ interface RequestWithOAuthProfileType {
     user : OAuthProfileType;
 }
 
+interface OAuthRedirectUserType {
+    id: number;
+    name: string;
+    role: string;
+    avatar: string | null;
+    termsAcceptedAt: Date | null;
+    createdAt: Date;
+}
+
+interface RedirectWithTokensParamsType {
+    res: Response;
+    accessToken: string;
+    refreshToken: string;
+    user: OAuthRedirectUserType;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -64,6 +80,7 @@ export class AuthController {
     const count = await this.authService.logoutAll(userId);
     return { success: true, count };
   }
+  
   @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
@@ -73,12 +90,7 @@ export class AuthController {
     return this.authService.changePassword(userId, dto);
   }
 
-  private redirectWithTokens(
-    res: Response,
-    accessToken: string,
-    refreshToken: string,
-    user: { id: number; name: string; role: string; avatar: string | null; termsAcceptedAt: Date | null; createdAt: Date },
-  ) {
+  private redirectWithTokens({ res, accessToken, refreshToken, user }: RedirectWithTokensParamsType) {
     const redirectUrl = new URL('/api/auth/oauth-callback', process.env.FRONTEND_URL || 'https://localhost');
     redirectUrl.searchParams.set('accessToken', accessToken);
     redirectUrl.searchParams.set('refreshToken', refreshToken);
@@ -99,6 +111,6 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleCallback(@Req() req: RequestWithOAuthProfileType, @Res() res: Response) {
     const { accessToken, refreshToken, user } = await this.authService.oauthLogin(req.user);
-    this.redirectWithTokens(res, accessToken, refreshToken, user);
+    this.redirectWithTokens({ res, accessToken, refreshToken, user });
   }
 }
