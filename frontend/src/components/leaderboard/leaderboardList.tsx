@@ -1,6 +1,7 @@
 import { useProfile } from "@/providers/ProfileContext";
 import { LeaderboardData } from "@/types/gameTypes"
 import { Avatar } from "@/ui/ava";
+import { dateConvertor } from "@/ui/utils";
 import { useTranslations } from "next-intl";
 
 interface LeaderboardItemProps{
@@ -9,7 +10,7 @@ interface LeaderboardItemProps{
 }
 
 function LeaderboardItem({p, me}: LeaderboardItemProps) {
-    const dateCreated = new Date(p.createdAt).toLocaleDateString(undefined, {month: 'short', year: 'numeric'});
+    const dateCreated = dateConvertor(p.createdAt);
     const LN = useTranslations("leaderboard")
 
     return (

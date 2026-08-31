@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
                 if (!res.ok) throw new Error('Error: while logining');
                 const data = await res.json();
 
+                console.log(data);
                 return {
                     id: data.user.id,
                     name: data.user.name,
@@ -47,22 +48,26 @@ export const authOptions: NextAuthOptions = {
                     refreshToken: data.refreshToken,
                     accessTokenExpiry: createExpiredTime(),
                     termsAcceptedAt: data.user.termsAcceptedAt,
+                    createdAt: data.user.createdAt,
+                    level: data.user.level
                 }
             },
         })
     ],
     callbacks: {
-        async jwt({token, user, account, trigger, session}) {
+        async jwt({token, user, trigger, session}) {
             console.log("=================JWT CALLBACK=======================")
             if (user) {
                 token.sub = user.id;
                 token.name = user.name;
                 token.email = user.email;
                 token.picture = user.avatar;
+                token.level = user.level;
+                token.role = user.role;
+                token.createdAt = user.createdAt;
                 token.accessToken = user.accessToken;
                 token.refreshToken = user.refreshToken;
                 token.accessTokenExpiry = user.accessTokenExpiry;
-                token.role = user.role;
                 token.termsAcceptedAt = user.termsAcceptedAt ?? null;
             } else if (!token.role) {
                 token.role = "PLAYER";
@@ -86,6 +91,8 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = Number(token.sub);
                 session.user.username = token.name as string;
                 session.user.avatar = token.picture as string | null;
+                session.user.level = token.level as number;
+                session.user.createdAt = token.createdAt as string | null;;
                 session.user.role = token.role;
                 session.user.termsAcceptedAt = (token.termsAcceptedAt ?? null) as string | null;
             }
