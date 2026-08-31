@@ -12,6 +12,7 @@ import { useNotificationListener } from '../store/notification';
 import { NotificationSign } from '@/ui/link';
 import FriendRequests from './friend-requests';
 import { FriendsContentSkeleton, SkeletonBlock } from '@/ui/skeletons';
+import { useTranslations } from 'next-intl';
 
 interface SharedBtnProps {
     label: ActiveFilterType;
@@ -20,7 +21,6 @@ interface SharedBtnProps {
     onClick: (compType: ActiveFilterType) => void;
 }
 
-
 export function SharedBtn({
     label,
     friendsNumber,
@@ -28,6 +28,7 @@ export function SharedBtn({
     active,
 }: SharedBtnProps) {
     const { gameNotification, beFriendNotification } = useNotificationListener();
+    const LN = useTranslations("friends.lists");
     const isActive = active === label;
 
     return (
@@ -53,7 +54,7 @@ export function SharedBtn({
                         positionCss={"absolute left-0 bottom-5"}
                     />
                 }
-                {label}
+                {LN(label.toLowerCase())}
                 <span className={`text-xs ${isActive ? 'opacity-80' : 'opacity-70'}`}>{friendsNumber}</span>
             </button>
         </li>
@@ -67,6 +68,7 @@ function FriendsFilter() {
     const [isFindOpen, setIsFindOpen] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const { gameRequests, friendRequests, playFriends, status } = useNotificationListener();
+    const LN = useTranslations("friends.lists");
 
     useEffect(() => {
         async function getAllFriends() {
@@ -131,14 +133,14 @@ function FriendsFilter() {
         <>
             <div className="mb-3.5 flex items-end justify-between">
                 <div>
-                    <h1 className="m-0 !text-2xl font-medium">Friends</h1>
+                    <h1 className="m-0 !text-2xl font-medium">{LN("friends")}</h1>
                     {isLoading ? (
                         <SkeletonBlock className="mt-1.5 h-3.5 w-40 rounded-sm bg-bg-muted" />
                     ) : (
                         <div className="mt-1 text-sm text-text-secondary">
-                            {friendsAll} total ·{" "}
-                            <span className="text-success">{friensOnline} online</span> ·{" "}
-                            <span className="text-danger">{totalPlayingFriends} playing</span>
+                            {friendsAll} {LN("total")} ·{" "}
+                            <span className="text-success">{friensOnline} {LN("online")}</span> ·{" "}
+                            <span className="text-danger">{totalPlayingFriends} {LN("playing")}</span>
                         </div>
                     )}
                 </div>
@@ -148,7 +150,7 @@ function FriendsFilter() {
                     className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:border-accent hover:text-accent-hover active:text-accent-active lg:hidden"
                 >
                     <Search className="h-3.5 w-3.5" />
-                    Find friends
+                    {LN("find")}
                 </button>
             </div>
             <div className="mb-3.5 flex items-center justify-between">

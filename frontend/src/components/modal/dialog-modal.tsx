@@ -1,14 +1,15 @@
 import { useState } from "react";
 import ModalLayout from "./modal-layout";
 import { useProfile } from "@/providers/ProfileContext";
+import { useTranslations } from "next-intl";
 
 interface ModalProps {
 	isOpen: boolean;
-	type: 'DELETE_ACCOUNT' | 'REMOVE_FRIEND'
-    title: string;
-    warning: string;
+	type: 'DELETE_ACCOUNT' | 'REMOVE_FRIEND',
+	title: string;
+	warning: string;
+	secondBtn: string;
     firstBtn?: string;
-    secondBtn: string;
     children: React.ReactNode;
     handleConfirmation: (confirm: boolean) => void;
 }
@@ -16,15 +17,16 @@ interface ModalProps {
 export default function DialogModal({
 	isOpen,
 	type,
+	title,
+	warning,
+	secondBtn,
     children, 
-    title, 
-    warning, 
     firstBtn, 
-    secondBtn,
     handleConfirmation
 }: ModalProps) {
 	const [matches, setMatches] = useState<boolean>(false);
 	const {username} = useProfile();
+	const LN = useTranslations("Profile.settings.delet")
 
     function handleModalAction(confirm: boolean) {
         if (confirm) {
@@ -55,7 +57,7 @@ export default function DialogModal({
 				{type === 'DELETE_ACCOUNT' && (
 					<div className="mt-3.5">
     			  		<label className="text-xs text-[var(--color-text-primary)] mb-1.5 block">
-    			    		Type <b className="font-mono text-[var(--color-warning)]">{username}</b> to confirm
+    			    		{LN("type")} <b className="font-mono text-[var(--color-warning)]">{username}</b> {LN("confirm")}
     			  		</label>
     			  		<input
 							type="text"
@@ -71,7 +73,7 @@ export default function DialogModal({
         				className="text-[13px] font-medium px-4 py-2 rounded-md border border-[var(--color-border-default)]" autoFocus 
         				onClick={()=> handleModalAction(false)}
     				>
-        				{firstBtn ?  firstBtn : "Cancel"}
+        				{firstBtn ?  firstBtn : LN("cancel")}
     				</button>
     				<button
     				  	disabled={(type === 'DELETE_ACCOUNT' && !matches)}

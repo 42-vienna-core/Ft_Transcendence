@@ -22,7 +22,7 @@ function SubmitFormButton({ isActive }: {isActive: boolean}) {
             disabled={pending}
             type="submit"
         >
-            { pending ? "updating..."  : t("sub")}
+            { pending ? t("updating")  : t("sub")}
         </button>
     )
 }
@@ -56,14 +56,14 @@ export default function EditProfileForm () {
 
         if (file && file.size > 0) {
             if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-                setError('Invalid format. Please upload a JPEG, PNG, or WebP image.');
-                toast.error('Invalid format. Please upload a JPEG, PNG, or WebP image.');
+                setError(t("formatInvalid"));
+                toast.error(t("formatInvalid"));
                 return;
             }
 
             if (file.size > MAX_FILE_SIZE) {
-                setError('File is too large. Maximum size allowed is 2MB.');
-                toast.error('File is too large. Maximum size allowed is 2MB.');
+                setError(t("longFile"));
+                toast.error(t("longFile"));
                 return;
             }
 
@@ -117,6 +117,7 @@ export default function EditProfileForm () {
                                 <label className={`${isActive ? 'flex': 'hidden'} absolute bottom-0 right-0 h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-border-default bg-accent text-text-inverse shadow-lg transition-colors duration-200 hover:bg-accent-hover`}>
                                     <span className="text-xs leading-none">+</span>
                                     <input
+                                        autoComplete="off"
                                         type="file"
                                         name="avatar"
                                         onChange={handleAvatar}
@@ -141,10 +142,12 @@ export default function EditProfileForm () {
                                     {username}
                                 </div>
                                 <div className="mt-0.5 text-sm text-text-secondary">
-                                    joined Apr 2024
+                                    {t("joined")} Apr 2024
                                 </div>
                                 <div className="mt-2 flex gap-1.5">
-                                    <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] text-success-text">level 12</span>
+                                    <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] text-success-text">
+                                        {t("level")} 12
+                                    </span>
                                 </div>
                             </div>
                         </>

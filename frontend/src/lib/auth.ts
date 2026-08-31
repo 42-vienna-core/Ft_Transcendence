@@ -45,7 +45,8 @@ export const authOptions: NextAuthOptions = {
                     role: data.user.role,
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
-                    accessTokenExpiry: createExpiredTime()
+                    accessTokenExpiry: createExpiredTime(),
+                    termsAcceptedAt: data.user.termsAcceptedAt,
                 }
             },
         })
@@ -62,6 +63,7 @@ export const authOptions: NextAuthOptions = {
                 token.refreshToken = user.refreshToken;
                 token.accessTokenExpiry = user.accessTokenExpiry;
                 token.role = user.role;
+                token.termsAcceptedAt = user.termsAcceptedAt ?? null;
             } else if (!token.role) {
                 token.role = "PLAYER";
             }
@@ -72,6 +74,8 @@ export const authOptions: NextAuthOptions = {
 
                 if (newUsername) token.name = newUsername;
                 if (newAvatar) token.picture = newAvatar;
+                if (session.termsAcceptedAt !== undefined)
+                    token.termsAcceptedAt = session.termsAcceptedAt;
             }
 
             return token;
@@ -83,6 +87,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.username = token.name as string;
                 session.user.avatar = token.picture as string | null;
                 session.user.role = token.role;
+                session.user.termsAcceptedAt = (token.termsAcceptedAt ?? null) as string | null;
             }
 
             session.accessToken = token.accessToken as string;

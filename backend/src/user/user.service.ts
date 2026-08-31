@@ -50,7 +50,6 @@ export class UserService {
 		return user;
 	}
 
-
 	public async getUser(id: number) {
 		console.log("~~~~~~~~~~~~~~~~~~~~ getUser me");
 		const user = await this.prismaService.users.findUnique({
@@ -247,23 +246,31 @@ export class UserService {
 		return users;
 	}
 
+	async startPasswordReset (id : number, body : {email: string, password: string}) {
+		const code = Math.floor(100000 + Math.random() * 900000).toString();
+		const pendingPassword = await hash(body.password);
+
+		await this.prismaService.users.update({ 
+			where: { id },
+			data: {
+				pendingPassword,
+				resetCode : code, 
+				codeExpire: new Date(Date.now() + 5 * 60 * 1000), 
+			} 
+		});
+		await this.mailService.sendResetCode(body.email, code);
+		return  { email: body.email};
+	}
+
 	async reset(body: ResetPasswordDto)
 	{
-		
 		const user = await this.findByEmail(body.email);
 		if (!user)
 			throw new NotFoundException(`User with email ${body.email} not found`);
 		if (body.ConfirmPassword !== body.password)
     		throw new BadRequestException("Passwords do not match");
 
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-		await this.prismaService.users.update({ 
-			where: { id: user.id }, 
-			data: { resetCode : code, codeExpire: new Date(Date.now() + 5 * 60 * 100), } 
-		});
-		await this.mailService.sendResetCode(user.email, code);
-		return  { email: user.email, password: body.password };
+		return await this.startPasswordReset(user.id, {email: body.email, password: body.password});
 	}
 
 	async resetCode (body : ResetCodeDto)
@@ -276,13 +283,14 @@ export class UserService {
 
         if (!user.codeExpire || user.codeExpire < new Date())
             throw new Error('Code expired');
-
-		const hashedPassword = await hash(body.password);
+		if (!user.pendingPassword)
+			throw new BadRequestException("NO pending password change");
 
 		await this.prismaService.users.update({
 			where: {id: user.id},
 			data: {
-				password: hashedPassword,
+				password: user.pendingPassword,
+				pendingPassword : null,
 				resetCode: null,
             	codeExpire: null,
 			}
@@ -316,5 +324,34 @@ export class UserService {
 			rank: index + 1,
 		}));
 		return leaderboard;
+	}
+
+	async createOAuthUser(data: { email: string; name: string; provider: string; providerId: string; passwordHash: string }) {
+		const res = await this.prismaService.users.create({
+			data: {
+				email: data.email,
+				name: data.name,
+				provider: data.provider,
+				providerId: data.providerId,
+				password: data.passwordHash,
+				role: "PLAYER",
+			},
+		});
+		return res;
+	}
+
+	async acceptTerms(userId: number) {
+		const user = await this.prismaService.users.update({
+			where: { id: userId },
+			data: { termsAcceptedAt: new Date() },
+			select: { termsAcceptedAt: true },
+		});
+		return { termsAcceptedAt: user.termsAcceptedAt };
+	}
+
+	async findByProvider(provider: string, providerId: string) {
+		return await this.prismaService.users.findUnique({
+			where: { provider_providerId: { provider, providerId } },
+		});
 	}
 }

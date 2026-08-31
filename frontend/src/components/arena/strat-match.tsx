@@ -34,6 +34,7 @@ function MatchItem({
 }) {
     const {title, expl, btnLabel, id} = card;
     const isAnyLoadingMode = loadingMode !== null;
+    const LN = useTranslations("Start_game")
 
     return (
         <li className="flex flex-col gap-2 rounded-md border border-border-default bg-bg-surface p-3.5 transition-all duration-200 hover:border-accent/40 hover:shadow-lg hover:shadow-accent-soft">
@@ -44,7 +45,7 @@ function MatchItem({
             <p className="mb-auto text-xs leading-snug text-text-tertiary">{expl}</p>
 
             <p className="mt-1 flex items-center gap-1 text-xs text-success">
-                avg. wait ~8 s
+                {LN("wait_time")}
             </p>
 
             {loading && loadingMode === id? (
@@ -76,6 +77,7 @@ function MatchList({
 }) {
     const cpu_t = useTranslations("Start_game.cards.cpu");
     const quick_t = useTranslations("Start_game.cards.quick");
+    const quick_f = useTranslations("Start_game.cards.friend")
 
     const cards =  [{
             id: 'CPU' as GameModeType,
@@ -93,9 +95,9 @@ function MatchList({
         },
         {
             id: 'FRIENDS' as GameModeType,
-            title: "Match with friends",
-            expl: "A room for playing with friends.",
-            btnLabel: "Create match",
+            title: quick_f("title"),
+            expl: quick_f("expl"),
+            btnLabel: quick_f("label"),
             child: <Globe/>
         },
     ];

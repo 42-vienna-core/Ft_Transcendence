@@ -15,14 +15,62 @@
     "Profile": {
         "epBtn": "Modifica profilo",
         "sub": "Invia",
+        "updating": "aggiornamento...",
+        "joined": "iscritto",
+        "level": "Livello",
+        "formatInvalid": "Formato non valido. Carica un'immagine JPEG, PNG o WebP.",
+        "longFile": "Il file è troppo grande. La dimensione massima consentita è di 2 MB.",
         "settings": {
+            "settings": "Impostazioni",
             "lang": "Lingua",
             "ct": "Tema colore",
             "da": "Elimina account",
-            "lo": "Disconnetti",
+            "lo": "Esci",
+            "sound": "Suoni e musica",
+            "on": "Attivo",
+            "off": "Disattivo",
+            "controls": "Comandi",
+            "snakeColor": "Colore del serpente",
+            "text": "I cobra sono famosi serpenti velenosi, noti per i loro spettacolari cappucci sul collo. Il cobra reale è il serpente velenoso più lungo della Terra: può raggiungere i 5,5 metri di lunghezza e un singolo morso può uccidere un elefante o 20 persone. Alcuni cobra possono persino sputare veleno mirando agli occhi del bersaglio.",
             "secure": {
                 "label1": "Sicurezza",
-                "label2": "Cambia password, 2FA" 
+                "label2": "Cambia password, 2FA",
+                "label3": "Esci da tutti gli account"
+            },
+            "changeControl": "Cambia",
+            "arrow": "Frecce",
+            "WASD": "WASD",
+            "arrow + WASD": "Frecce + WASD",
+            "change": {
+                "changeP": "Cambia password",
+                "close": "Chiudi",
+                "OldP": "Vecchia password",
+                "NewP": "Nuova password",
+                "Atleast": "Almeno 8 caratteri",
+                "re-enter": "Reinserisci la password",
+                "cancel": "Annulla",
+                "save": "Salva",
+                "resetMessage": "Inserisci il codice di reimpostazione",
+                "placeholderAt": "Almeno 8 caratteri",
+                "placeholderThe": "Le password devono corrispondere",
+                "wakeP": "Password debole"
+            },
+            "delet": {
+                "type": "Digita",
+                "cancel": "Annulla",
+                "confirm": "per confermare",
+                "title": "Eliminare il tuo account?",
+                "warning": "Questa operazione cancellerà definitivamente il tuo profilo, la valutazione di 1.482, la cronologia delle partite e 42 amici. Non può essere annullata.",
+                "secondBtn": "Elimina account"
+            },
+            "color": { 
+                "neon-green": "verde neon", 
+                "electric-blue": "blu elettrico", 
+                "laser-pink": "rosa laser", 
+                "toxic-yellow": "giallo tossico", 
+                "plasma-purple": "viola plasma", 
+                "lava-orange": "arancione lava", 
+                "pearl-white": "bianco perlato" 
             }
         }
     },
@@ -35,7 +83,9 @@
         "loading": "Accesso in corso...",
         "forgot_password": "Password dimenticata?",
         "no_account": "Non hai ancora un account?",
-        "register_link": "Registrati"
+        "register_link": "Registrati",
+        "google" : "Continua con Google"
+
     },
     "Register": {
         "title": "Registrazione",
@@ -65,7 +115,9 @@
         "resetCode" : {
             "Reset Code": "Reimposta codice",
             "placeholder": "Inserisci il codice a 6 cifre",
-            "errorForm": "Verifica non riuscita"
+            "errorForm": "Verifica non riuscita",
+            "verifying": "Verifica in corso...",
+            "verify": "Verifica codice"
         }
     },
     "Validation": {
@@ -74,25 +126,31 @@
         "invalid_password": "La password deve contenere almeno 8 caratteri",
         "password_mismatch": "Le password non corrispondono"
     },
-    "Start_game": {
-        "title": "Scegli come vuoi giocare",
-        "cards": {
-            "cpu": {
-                "title": "vs Computer",
-                "expl": "Partita veloce in singolo. Nessuna attesa.",
-                "label": "Inizia partita",
-                "wait_time": "attesa media ~3 s"
-            },
-            "quick": {
-                "title": "Partita veloce",
-                "expl": "Matchmaking online, bilanciato in base al punteggio.",
-                "label": "Trova partita",
-                "wait_time": "attesa media ~34 s"
-            }
+     "Start_game": {
+      "title": "Scegli come vuoi giocare",
+      "wait_time": "Attesa media: ~8 s",
+      "cards": {
+        "cpu": {
+          "title": "Contro il computer",
+          "expl": "Partita in solitaria. Nessuna attesa.",
+          "label": "Inizia partita"
+        },
+        "quick": {
+          "title": "Partita rapida",
+          "expl": "Abbinamento online bilanciato in base al punteggio.",
+          "label": "Trova partita"
+        },
+        "friend": {
+          "title": "Gioca con gli amici",
+          "expl": "Una stanza per giocare con gli amici.",
+          "label": "Crea partita"
         }
+      }
     },
     "Admin": {
         "title": "Pannello Admin",
+        "forbidden": "Vietato",
+        "close": "Chiudi",
         "searchPlaceholder": "Cerca per nome o email",
         "searching": "Ricerca in corso...",
         "search": "Cerca",
@@ -126,7 +184,251 @@
                 "deleteFailed": "Impossibile eliminare l'utente"
             }
         }
+    },
+    "Footer": {
+        "rights": "Tutti i diritti riservati.",
+        "privacy": "Informativa sulla privacy",
+        "terms": "Termini di servizio"
+    },
+    "Legal": {
+        "back" : "Torna a Snake",
+        "eyebrow": "Note legali",
+        "privacyPolicy": {
+        "title": "Informativa sulla privacy",
+        "updated": "Ultimo aggiornamento: 24 agosto 2026",
+        "intro": "Snake (“il Progetto”, “noi”) è un gioco multiplayer in tempo reale sviluppato come progetto didattico per il curriculum 42 (ft_transcendence). Questa informativa spiega quali dati raccogliamo quando utilizzi l'applicazione, perché li raccogliamo e quali scelte hai a disposizione.",
+        "sections": [
+            {
+            "heading": "1. Informazioni che raccogliamo",
+            "items": [
+                {
+                "label": "Dati dell'account:",
+                "text": "indirizzo email, nome utente e una password salata e sottoposta a hash (se ti registri con email/password)."
+                },
+                {
+                "label": "Dati OAuth:",
+                "text": "se accedi con Google o GitHub, riceviamo l'ID del tuo account presso quel provider e le informazioni di profilo di base (nome, email, avatar) che il provider condivide con noi."
+                },
+                {
+                "label": "Dati di gioco:",
+                "text": "risultati delle partite, punteggi, vittorie/sconfitte, le stanze di gioco a cui partecipi e la tua lista amici."
+                },
+                {
+                "label": "Preferenze:",
+                "text": "lingua scelta, tema chiaro/scuro, avatar e colore del serpente."
+                },
+                {
+                "label": "Dati di sessione:",
+                "text": "token di accesso e di aggiornamento di breve durata, memorizzati come cookie HTTP-only, usati esclusivamente per mantenerti connesso."
+                },
+                {
+                "label": "Messaggi che ci invii:",
+                "text": "il contenuto inviato tramite il modulo di contatto nell'app."
+                }
+            ]
+            },
+            {
+            "heading": "2. Come utilizziamo le tue informazioni",
+            "text": "Utilizziamo i dati sopra indicati per: autenticarti e mantenere sicura la tua sessione; gestire il matchmaking e il gioco in tempo reale tramite WebSocket; mostrare il tuo profilo, le statistiche, la cronologia delle partite e lo stato online ai tuoi amici; ricordare le tue preferenze di lingua e tema; inviare via email i codici per il reset della password; e rispondere ai messaggi inviati tramite il modulo di contatto."
+            },
+            {
+            "heading": "3. Cookie e token",
+            "text": "Utilizziamo due cookie HTTP-only — un token di accesso e un token di aggiornamento — per mantenerti connesso tra una richiesta e l'altra. Questi cookie non vengono utilizzati per pubblicità o tracciamento cross-site. I token di aggiornamento sono memorizzati lato server e possono essere revocati in qualsiasi momento effettuando il logout."
+            },
+            {
+            "heading": "4. Servizi di terze parti",
+            "text": "Se scegli di accedere con Google o GitHub, quel provider elabora la tua autenticazione secondo la propria informativa sulla privacy. Riceviamo solo le informazioni di profilo minime necessarie per creare o abbinare il tuo account. Non utilizziamo tracker pubblicitari o di analisi di terze parti."
+            },
+            {
+            "heading": "5. Condivisione delle informazioni",
+            "text": "Non vendiamo né affittiamo i tuoi dati personali. Alcune informazioni sono visibili ad altri utenti come parte delle funzionalità principali dell'app — il tuo nome utente, avatar, stato online e i risultati delle partite/classifiche sono visibili agli amici e, ove applicabile, agli altri giocatori in una stanza di gioco."
+            },
+            {
+            "heading": "6. Conservazione ed eliminazione dei dati",
+            "text": "Conserviamo i dati del tuo account e di gioco per tutto il tempo in cui il tuo account esiste. Puoi aggiornare la maggior parte dei tuoi dati autonomamente dalle impostazioni del profilo. Per richiedere l'eliminazione del tuo account e dei dati associati, contattaci tramite il modulo di contatto nell'app; elaboreremo la richiesta entro un tempo ragionevole."
+            },
+            {
+            "heading": "7. Sicurezza",
+            "text": "Le password vengono sottoposte a hash e salatura prima della memorizzazione. Tutta la comunicazione tra il tuo browser e il nostro backend è crittografata con HTTPS. L'accesso alle funzioni amministrative è limitato agli account con ruolo di amministratore."
+            },
+            {
+            "heading": "8. Privacy dei minori",
+            "text": "Il Progetto è un progetto software realizzato da studenti e non è rivolto a minori di 16 anni. Non raccogliamo consapevolmente dati personali da minori di tale età."
+            },
+            {
+            "heading": "9. Modifiche a questa informativa",
+            "text": "Potremmo aggiornare questa informativa con l'evolversi del Progetto. Le modifiche sostanziali saranno riflesse aggiornando la data “Ultimo aggiornamento” sopra indicata."
+            },
+            {
+            "heading": "10. Contatti",
+            "text": "Le domande su questa informativa o sui tuoi dati possono essere inviate in qualsiasi momento tramite il pulsante Contatto disponibile in basso a destra nell'app, oppure consulta i nostri {link}."
+            }
+        ]
+        },
+        "termsOfService": {
+        "title": "Termini di servizio",
+        "updated": "Ultimo aggiornamento: 24 agosto 2026",
+        "intro": "Questi Termini regolano l'utilizzo di Snake (“il Progetto”), un gioco multiplayer in tempo reale sviluppato come progetto didattico per il curriculum 42 (ft_transcendence). Creando un account o utilizzando l'app, accetti questi Termini.",
+        "sections": [
+            {
+            "heading": "1. Progetto didattico",
+            "text": "Il Progetto è sviluppato da studenti nell'ambito di un percorso scolastico. Viene fornito a scopo didattico e dimostrativo, non come prodotto commerciale, ed è offerto “così com'è” senza garanzie di alcun tipo."
+            },
+            {
+            "heading": "2. Il tuo account",
+            "items": [
+                {
+                "text": "Devi fornire informazioni di registrazione accurate e mantenere riservate le tue credenziali."
+                },
+                {
+                "text": "Sei responsabile di tutte le attività che avvengono tramite il tuo account."
+                },
+                {
+                "text": "Un account per persona. Non creare account per impersonare qualcun altro."
+                },
+                {
+                "text": "Puoi eliminare il tuo account in qualsiasi momento dalle impostazioni del profilo."
+                }
+            ]
+            },
+            {
+            "heading": "3. Uso consentito",
+            "text": "Utilizzando il Progetto, ti impegni a non:",
+            "items": [
+                {
+                "text": "Utilizzare script automatizzati, bot o exploit per ottenere un vantaggio sleale nelle partite (l'avversario IA integrato è l'unico giocatore non umano consentito)."
+                },
+                {
+                "text": "Molestare, abusare o impersonare altri giocatori tramite profili, richieste di amicizia o messaggi."
+                },
+                {
+                "text": "Tentare di aggirare l'autenticazione, i limiti di velocità o altri controlli di sicurezza, oppure accedere all'account di un altro utente senza autorizzazione."
+                },
+                {
+                "text": "Caricare o inviare contenuti illeciti, offensivi o lesivi di diritti altrui attraverso qualsiasi parte dell'app."
+                }
+            ]
+            },
+            {
+            "heading": "4. Moderazione e applicazione",
+            "text": "Gli account con ruolo di amministratore possono esaminare, modificare o rimuovere account che violano questi Termini. Possiamo sospendere o terminare l'accesso al Progetto per qualsiasi account riscontrato in violazione della sezione 3."
+            },
+            {
+            "heading": "5. Contenuti e proprietà intellettuale",
+            "text": "Il codice sorgente, il design e le risorse del Progetto appartengono ai suoi autori studenti e sono utilizzati qui a fini di valutazione didattica. Mantieni la proprietà di qualsiasi contenuto tu invii (come il nome utente scelto o un messaggio inviato tramite il modulo di contatto), e ci concedi una licenza limitata per memorizzarlo e visualizzarlo secondo necessità per il funzionamento del Progetto."
+            },
+            {
+            "heading": "6. Disponibilità",
+            "text": "In quanto progetto studentesco, il Progetto può essere modificato, interrotto o messo offline in qualsiasi momento senza preavviso, anche per valutazione o manutenzione. Non garantiamo una disponibilità ininterrotta."
+            },
+            {
+            "heading": "7. Limitazione di responsabilità",
+            "text": "Nella misura massima consentita dalla legge applicabile, gli autori del Progetto non sono responsabili per danni indiretti, incidentali o consequenziali derivanti dall'uso dell'app."
+            },
+            {
+            "heading": "8. Modifiche a questi Termini",
+            "text": "Potremmo aggiornare questi Termini con l'evolversi del Progetto. L'uso continuato dell'app dopo la pubblicazione delle modifiche costituisce accettazione dei Termini rivisti."
+            },
+            {
+            "heading": "9. Contatti",
+            "text": "Le domande su questi Termini possono essere inviate tramite il pulsante Contatto disponibile in basso a destra nell'app, oppure consulta la nostra {link}."
+            }
+        ]
+        }
+    },
+    "friends": {
+        "lists": {
+            "friends": "Amici",
+            "total": "Totale",
+            "online": "Online",
+            "playing": "In gioco",
+            "noFriends": "Non hai ancora amici",
+            "noOnline": "Nessun amico online",
+            "noPlaying": "Nessun amico sta giocando",
+            "add": "Aggiungi",
+            "name": "Nome utente",
+            "addMessage": "La richiesta è stata inviata",
+            "addError": "Si è verificato un errore sconosciuto",
+            "error": "Utente non trovato",
+            "all": "Tutti",
+            "requests": "Richieste",
+            "find": "Trova amici",
+            "score": "punteggio",
+            "inMatch": "In partita",
+            "room": "Stanza",
+            "done": "fatto",
+            "serverError": "Errore del server",
+            "close": "Chiudi",
+            "minChars": "Continua a digitare… (minimo 3 caratteri)"
+        },
+        "dialog": {
+            "title": "Rimuovi",
+            "title+": "dagli amici?",
+            "warning": "Non potrà più vedere il tuo stato né invitarti alle partite. Potrai aggiungerlo di nuovo in qualsiasi momento.",
+            "secondBtn": "Rimuovi amico"
+        },
+        "request": {
+            "cancel": "Annulla",
+            "join": "Partecipa",
+            "pending": "Richieste in sospeso",
+            "invite": "Invita",
+            "accept": "Accetta",
+            "decline": "Rifiuta",
+            "noRequests": "Nessuna richiesta"
+        }
+    },
+    "agreement": {
+      "beforePlaying": "Prima di giocare",
+      "readPlaying": "Leggi e accetta le condizioni per continuare a giocare a Snake.",
+      "readPolicy": "Ho letto e accetto l'Informativa sulla privacy",
+      "readTerms": "Ho letto e accetto i Termini di servizio",
+      "reject": "Rifiuta",
+      "saving": "Salvataggio...",
+      "accept": "Accetta e continua"
+    },
+    "leaderboard": { 
+        "leaderboard": "Classifica", 
+        "top": "Migliori giocatori per punteggio · di sempre", 
+        "me": "Io", 
+        "matches": "Partite", 
+        "lvl": "Liv.",
+        "level": "Livello", 
+        "score": "Punteggio", 
+        "joined": "Iscritto", 
+        "rank": "Posizione",
+        "player": "Giocatore"
+    },
+    "common": {
+        "online": "online",
+        "offline": "offline",
+        "admin": "Admin"
+    },
+    "arena": {
+        "liveMatch": "partita dal vivo · stanza",
+        "time": "tempo",
+        "players": "giocatori",
+        "yourScore": "il tuo punteggio",
+        "startAfter": "La partita inizierà tra",
+        "win": "Hai vinto!",
+        "gameOver": "Partita finita",
+        "tryAgain": "Riprova",
+        "move": "muovi",
+        "yourPosition": "la tua posizione",
+        "of": "di"
+    },
+    "lobby": {
+        "host": "host",
+        "waiting": "in attesa",
+        "title": "In attesa di amici",
+        "subtitle": "poi inizia quando sei pronto",
+        "close": "Chiudi",
+        "players": "giocatori",
+        "joined": "uniti",
+        "startingIn": "Inizia tra",
+        "second": "secondo",
+        "seconds": "secondi",
+        "stillJoin": "Gli amici possono ancora unirsi fino all'inizio",
+        "cancel": "Annulla",
+        "noOne": "Se non si unisce nessuno, giocherai contro il computer"
     }
-
-
 }

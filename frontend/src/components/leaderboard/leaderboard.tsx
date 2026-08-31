@@ -7,9 +7,12 @@ import { apiFetch } from "@/lib/api-client";
 import { getErrorMessage } from "@/lib/error";
 import { toast } from "sonner";
 import { LeaderboardData } from "@/types/gameTypes";
+import { useTranslations } from "next-intl";
 
 export default function LeaderboardComponent() {
+
     const [leaderboard, setLeaderboard] = useState<LeaderboardData[]>([]);
+    const LN_LBoard = useTranslations("leaderboard");
 
     useEffect(() => {
         async function fetchAllLeaderBoard() {
@@ -20,7 +23,6 @@ export default function LeaderboardComponent() {
                 toast.error(getErrorMessage(error, "Couldn't load the leaderboard."));
             }
         }
-
         fetchAllLeaderBoard();
     }, [])
 
@@ -32,8 +34,10 @@ export default function LeaderboardComponent() {
         <div className="px-5 pt-[18px] pb-[22px]">
             <div className="mb-4 flex items-end justify-between">
                 <div>
-                    <h1 className="m-0 !text-[22px] font-medium text-text-primary">Leaderboard</h1>
-                    <div className="mt-1 text-xs text-text-secondary">top players by score · all time </div>
+                    <h1 className="m-0 !text-[22px] font-medium text-text-primary">{LN_LBoard("leaderboard")}</h1>
+                    <div className="mt-1 text-xs text-text-secondary">
+                        {LN_LBoard("top")}
+                    </div>
                 </div>
             </div>
             <TopThreePodium 

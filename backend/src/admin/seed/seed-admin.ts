@@ -65,6 +65,7 @@ async function main() {
           email: admin.email,
           password: hashedPassword,
           role: Role.ADMIN,
+          termsAcceptedAt: new Date(),
         },
       });
       console.log(` ✅ Created admin #${created.id} (${created.email}).`);

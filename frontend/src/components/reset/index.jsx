@@ -12,7 +12,7 @@ export default function ResetPass() {
     const router = useRouter();
     const [code, setCode] = useState(false);
     const [error, setError] = useState(false);
-    const [request, setRequest] = useState({ email: "", password: "" });
+    const [request, setRequest] = useState({ email: "" });
 
     const t = useTranslations("Reset");
 
@@ -32,6 +32,7 @@ export default function ResetPass() {
                         setError(true);
                 }}
                 >
+
                     <div className="relative">
                         <input className="peer w-full rounded-xl border border-border-default bg-bg-subtle/50 px-4 pt-5 pb-2 pr-11 text-base text-text-primary autofill:text-text-primary outline-none transition-colors duration-200 focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent-soft"
                             required id="email" type="email" name="email" placeholder=" "
@@ -61,7 +62,7 @@ export default function ResetPass() {
                         </button>
                     </div>
                 </form>
-            ) : (<ResetCode email={request.email} password={request.password} />)}
+            ) : (<ResetCode email={request.email} />)}
         </>
     );
 }

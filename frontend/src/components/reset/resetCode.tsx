@@ -4,11 +4,8 @@ import { AlertCircle } from "lucide-react";
 
 import { useState } from "react";
 
-type props = {
-    email: string, password: string
-}
 
-export default function ResetCode({ email, password }: props) {
+export default function ResetCode({ email }: { email: string }) {
 
     const resetCode = useTranslations("Reset.resetCode");
     const [code, setCode] = useState("");
@@ -22,12 +19,19 @@ export default function ResetCode({ email, password }: props) {
 
                 <form className="space-y-4" onSubmit={async (e) => {
                     e.preventDefault();
-                    const res = await fetch(`/api/admin?path=/user/resetCode/`, {
-                        method: "POST", body: JSON.stringify({ email, password, code })
-                    });
                     setLoading(true);
-                    res.ok ? router.push("/login") : setError(true);
+                    setError(false);
+                    try {
+                        const res = await fetch(`/api/admin?path=/user/resetCode/`, {
+                            method: "POST", body: JSON.stringify({ email, code }),
+                        });
+                        if (res.ok) router.push("/login");
+                        else setError(true);
+                    } finally {
+                        setLoading(false);
+                    }
                 }}
+
                 >
                     <div>
                         <label className="block text-sm font-medium mb-2 text-text-secondary"> {resetCode("Reset Code")} </label>
@@ -42,7 +46,7 @@ export default function ResetCode({ email, password }: props) {
 
                     <button type="submit" disabled={loading || code.length < 6}
                         className="w-full cursor-pointer rounded-xl bg-accent px-4 py-3 text-center text-base font-semibold text-text-inverse shadow-md shadow-accent-soft transition-all duration-200 hover:bg-accent-hover hover:shadow-lg hover:shadow-accent-soft active:translate-y-0 active:bg-accent-active disabled:cursor-not-allowed disabled:opacity-60" >
-                        {loading ? "Verifying..." : "Verify Code"}
+                        {loading ? resetCode("verifying") : resetCode("verify")}
                     </button>
 
                 </form>

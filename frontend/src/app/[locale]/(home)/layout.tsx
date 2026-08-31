@@ -2,6 +2,7 @@ import Nav, { NavAuthLinks, NavLinks } from "@/ui/nav";
 import { ReactNode } from "react";
 import { getServerSession } from 'next-auth';
 import { authOptions } from "@/lib/auth";
+import Footer from "@/components/Footer/Footer";
 
 async function HomeLayout({ children }: { children: ReactNode }) {
     let isAuthorized: boolean = false;
@@ -12,20 +13,18 @@ async function HomeLayout({ children }: { children: ReactNode }) {
         <>
             <header className="bg-[var(--color-bg-base)]">
                 <Nav>
-                    {
-                        isAuthorized ? (
-                            <NavLinks/>
-                        ):(
-                            <NavAuthLinks/>
-                        )
+                    {isAuthorized 
+                        ? <NavLinks />
+                        : <NavAuthLinks />
                     }
                 </Nav>
             </header>
             <main>
                 {children}
             </main>
+            <Footer />
         </>
- );
+    );
 }
 
 export default HomeLayout;

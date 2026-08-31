@@ -6,6 +6,8 @@ import { apiFetch } from '@/lib/api-client';
 import { useProfile } from '@/providers/ProfileContext';
 import { Loader, Search, X } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
+import { useTranslations } from 'next-intl';
+import { Avatar } from '@/ui/ava';
 
 interface SearchingData{
     id: number;
@@ -33,8 +35,7 @@ type AddStatus = 'idle' | 'loading' | 'done';
 function FriendCard({ friend, addFriend }: FriendCardProps) {
     const [status, setStatus] = useState<AddStatus>('idle');
     const { id, name, avatar, isOnline, friendStatus } = friend;
-    const av = (name && typeof name === 'string') ? name.slice(0, 2) : "";
-    const isAvatar = !!avatar;
+    const LN = useTranslations("friends.lists");
 
     async function handleOnClick() {
         if (status !== 'idle') return;
@@ -46,15 +47,7 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-center gap-2 py-1.5 text-sm">
-            <div>
-                {isAvatar ? (
-                    <img className="size-[26px] shrink-0 rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
-                ) : (
-                    <div className="flex size-[26px] shrink-0 items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
-                        {av}
-                    </div>
-                )}
-            </div>
+            <Avatar name={name} avatar={avatar} style={"size-[26px]"}/>
 
             <div className="min-w-0">
                 <p className="truncate text-base font-medium">{name}</p>
@@ -73,7 +66,7 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
                     className="cursor-pointer whitespace-nowrap text-sm text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
                     onClick={handleOnClick}
                 >
-                    + Add
+                    + {LN("add")}
                 </button>
             )}
 
@@ -90,7 +83,7 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
             )}
 
             {status === 'done' && (
-                <p className="whitespace-nowrap text-sm text-text-tertiary">Requested</p>
+                <p className="whitespace-nowrap text-sm text-text-tertiary">{LN("done")}</p>
             )}
         </li>
     )
@@ -129,6 +122,7 @@ export default function FindFriends({
     const [result, setResult] = useState<SearchingData[]>([]);
     const [query, setQuery] = useState<string>("");
     const [isSuccess, setIsSuccess] = useState<boolean>(true);
+    const LN = useTranslations("friends.lists");
 
 
     const handleSearchRequest = useDebouncedCallback(async (value: string) => {
@@ -150,11 +144,11 @@ export default function FindFriends({
             }
 
             setResult([]);
-            setMessage("User not found");
+            setMessage(LN("error"));
 
         } catch (error) {
             setResult([]);
-            setMessage("Server error");
+            setMessage(LN("serverError"));
         }
     }, 300);
 
@@ -174,7 +168,7 @@ export default function FindFriends({
             });
 
             setIsSuccess(true);
-            setMessage("Request has been sent");
+            setMessage(LN("addMessage"));
             return true;
         } catch (error) {
             setIsSuccess(false);
@@ -182,7 +176,7 @@ export default function FindFriends({
             if (error instanceof Error) {
                 setMessage(error.message);
             } else {
-                setMessage("An unknown error occurred");
+                setMessage(LN("addError"));
             }
             return false;
         }
@@ -199,11 +193,11 @@ export default function FindFriends({
     return (
         <div className={styles}>
             <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 className="!text-sm font-medium lowercase tracking-wide text-text-secondary">Find friends</h3>
+                <h3 className="!text-sm font-medium lowercase tracking-wide text-text-secondary">{LN("find")}</h3>
                 <button
                     type="button"
                     onClick={handleFindModal}
-                    aria-label="Close"
+                    aria-label={LN("close")}
                     className="-mr-1 -mt-1 cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-muted hover:text-text-primary lg:hidden"
                 >
                     <X className="h-4 w-4" />
@@ -214,7 +208,7 @@ export default function FindFriends({
                 <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-text-tertiary" />
                 <input
                     type="text"
-                    placeholder="username"
+                    placeholder={LN("name")}
                     value={query}
                     onChange={(e) => handleInputChange(e.target.value)}
                     className="w-full border-none bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
@@ -222,7 +216,7 @@ export default function FindFriends({
             </div>
 
             {isTooShort && !message && (
-                <p className="mb-1 text-xs text-text-tertiary">Keep typing… (min 3 characters)</p>
+                <p className="mb-1 text-xs text-text-tertiary">{LN("minChars")}</p>
             )}
 
             <FriendsList
