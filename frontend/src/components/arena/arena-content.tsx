@@ -1,29 +1,21 @@
 'use client'
 
-import { useFriendAndRoomID, useGameMode, usePlayerStore } from "@/components/store/useUserStore"
+import { usePlayerStore } from "@/components/store/useUserStore"
 import { useGameSocket } from "@/providers/SocketProvider";
 import { useState, useEffect, useRef, ReactNode } from "react";
 import type { Socket } from "socket.io-client";
-import { Loader, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
-import { ControlType, Direction, Game, GameState, RoomData, RoomStateType, RoomStatusType, TICK_MS } from "@/types/gameTypes";
+import { ControlType, Direction, Game } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
 import { useTranslations } from "next-intl";
-import { useNotificationListener } from "../store/notification";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 import { getOrdinal } from "@/ui/utils";
 
-// function normalizeRoomStatus(raw: RoomStatusType | undefined): RoomStatusType | 'UNKNOWN'{
-//     if (!raw) return 'UNKNOWN';
-//     const s = raw.toUpperCase();
-//     if (s === 'WAITING') return 'WAITING';
-//     if (s === 'ABANDONED') return 'ABANDONED';
-//     if (s === 'FINISHED') return 'FINISHED';
-//     if (s === 'READY' || s === 'RUNNING' || s === 'PLAYING' || s === 'STARTED') return 'READY';
-//     return 'UNKNOWN';
-// }
+const tick_ms_str = process.env.TICK_MS;
+const TICK_MS = tick_ms_str ? Number(tick_ms_str) : 130;
 
 function formatTime(totalSeconds: number): string {
     if (!totalSeconds) return "00:00";
@@ -47,25 +39,24 @@ function Kbd({ children, active, activeClass = "text-accent-text" }: { children:
 }
 
 function ArenaContent() {
-    // const [ gameState, setGameState ] = useState<GameState | null>(null);
-    const [ gameDir, setGameDir ] = useState<Direction | null>(null);
-    const [ control, setControl ] = useState<ControlType>('arrow');
-    const [ tick, setTick ] = useState<number>(0);
+    const [gameDir, setGameDir] = useState<Direction | null>(null);
+    const [control, setControl] = useState<ControlType>('arrow');
+    const [tick, setTick] = useState<number>(0);
 
     const { isConnected, socket } = useGameSocket();
     const router = useRouter();
-
 
     const players = usePlayerStore((state) => state.players);
     const setPlayers = usePlayerStore((state) => state.setPlayers);
     const resetPlayers = usePlayerStore((state) => state.resetPlayers);
 
     const joinedSocketRef = useRef<Socket | null>(null);
+    
+    const LN = useTranslations("arena");
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const LN = useTranslations("arena");
-    const {room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen} = useRoomDataBySocket();
-    const { playMusic, toggleMute, stopEffectMusic, stopBgMusic, playEffect} = useAudioStore();
+    const { room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen } = useRoomDataBySocket();
+    const { playMusic, toggleMute, stopBgMusic } = useAudioStore();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
@@ -114,7 +105,6 @@ function ArenaContent() {
         if (!socket || !isConnected) return;
 
         const handleGameState = (data: Game) => {
-            // console.log("game-state", data);
             setPlayers(data.snakes);
             setTick(data.tick);
         }
@@ -127,8 +117,8 @@ function ArenaContent() {
 
         const setUpContol = () => {
             const controlLS = localStorage.getItem('controls') as ControlType;
-            if(controlLS) {
-                setControl(controlLS) ;
+            if (controlLS) {
+                setControl(controlLS);
             }
         }
 
@@ -156,10 +146,10 @@ function ArenaContent() {
 
     const maxLenRoomId = 10;
     const roomName = room && room.roomId.length > maxLenRoomId ?
-        room.roomId.slice(0, maxLenRoomId):
+        room.roomId.slice(0, maxLenRoomId) :
         room?.roomId;
 
-    const showOver = gameStatus=== 'OVER' ;
+    const showOver = gameStatus === 'OVER';
     const showWin = gameStatus === 'WIN';
 
     return (
@@ -198,13 +188,14 @@ function ArenaContent() {
 
                     <div className="relative w-full">
                         {
-                            (roomStatus === 'PLAYING' || roomStatus === 'running')  && (
+                            (roomStatus === 'PLAYING' || roomStatus === 'running') && (
                                 <GameCanvas
                                     setGameDir={setGameDir}
                                     control={control}
+                                    tick={TICK_MS}
                                 />
-                        )}
-                        
+                            )}
+
                         {(showOver || showWin) && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center  bg-bg-overlay rounded-xl">
                                 <h2 className={`text-3xl font-bold mb-4 ${showWin ? '!text-success' : '!text-danger'}`}>
@@ -221,7 +212,7 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between py-4">
+                <div className="flex items-center justify-between py-4 hidden lg:block">
                     <div className="flex gap-1.5">
                         <Kbd active={gameStatus === 'START'}>{LN("move")}</Kbd>
                         <Kbd active={gameDir === 'LEFT'} activeClass="text-warning-text">←</Kbd>
@@ -232,7 +223,7 @@ function ArenaContent() {
                 </div>
             </div>
 
-            <aside className="mt-4 lg:col-span-1 lg:mt-0 lg:h-[calc(100vh-150px)] border-t lg:border-l lg:border-t-0 border-border-default p-4 text-text-primary">
+            <aside className="hidden lg:block mt-4 lg:col-span-1 lg:mt-0 lg:h-[calc(100vh-150px)] border-t lg:border-l lg:border-t-0 border-border-default p-4 text-text-primary">
                 <div className="rounded-[10px] bg-info-soft px-3 py-2.5">
                     <div className="flex items-center gap-2 text-xs text-info-text">
                         <UserRound className="h-3.5 w-3.5" aria-hidden="true" /> {LN("yourPosition")}

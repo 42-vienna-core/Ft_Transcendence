@@ -2,7 +2,7 @@
 
 interface AvatarProps {
     name: string;
-    avatar: string | null;
+    avatar: string | null | undefined;
     style: string;
     bgColor?: string | false | null | undefined;
 }

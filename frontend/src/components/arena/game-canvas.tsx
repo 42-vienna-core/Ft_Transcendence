@@ -7,14 +7,11 @@ import { Socket } from 'socket.io-client';
 import { useRouter } from "next/navigation";
 import { useGameMode } from "@/components/store/useUserStore";
 import { useGameControls } from "@/hooks/useGameControls";
-import { ControlType, Direction, Game, GameState, TICK_MS } from "@/types/gameTypes";
+import { ControlType, Direction, Game} from "@/types/gameTypes";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 
 const CELL = 20;
-const STEP = TICK_MS / 1000;
-
-type SoundEffectType = 'eat' | 'gameover' | 'win';
 
 interface FitCanvasProps {
     canvas: HTMLCanvasElement | null;
@@ -25,7 +22,7 @@ interface FitCanvasProps {
 
 interface GameProps {
     control: ControlType;
-    // setGameState: Dispatch<SetStateAction<GameState>>;
+    tick: number;
     setGameDir: (state: Direction) => void;
 }
 
@@ -44,28 +41,18 @@ const lerp = (start: number, end: number, alpha: number): number => {
     return start + (end - start) * alpha;
 };
 
-export default function GameCanvas({control, setGameDir }: GameProps) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-    const currentDirection = useRef<Direction>('RIGHT');
-    // const bgMusicRef = useRef<HTMLAudioElement | null>(null);
-    // const gameoverSound = useRef<HTMLAudioElement | null>(null);
-    // const gameoverSecondSound = useRef<HTMLAudioElement | null>(null);
-    // const winSound = useRef<HTMLAudioElement | null>(null);
-    // const eatSound = useRef<HTMLAudioElement | null>(null);
-
-    // const isMuted = useRef<boolean>(false);
-
+export default function GameCanvas({control, setGameDir, tick }: GameProps) {
     const { id } = useProfile();
     const { setGameStatus, gameStatus } = useRoomDataBySocket();
     const { playMusic, playEffect ,stopBgMusic, stopEffectMusic} = useAudioStore();
-
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
     const currRef = useRef<Game | null>(null);
     const stateTimeRef = useRef<number>(0);
-
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+    const currentDirection = useRef<Direction>('RIGHT');
     const alphaRef = useRef<number>(0);
     const stepRef = useRef<boolean>(false);
     const screenRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
@@ -151,7 +138,7 @@ export default function GameCanvas({control, setGameDir }: GameProps) {
 
         resizeObserver.observe(container);
 
-        const TICK = currRef.current ? currRef.current.tick : STEP;
+        const TICK = currRef.current ? currRef.current.tick : (tick / 1000);
         const frame = (now: number) => {
             const elapsed = (now - stateTimeRef.current) / 1000;
             alphaRef.current = Math.min(elapsed / TICK, 1);

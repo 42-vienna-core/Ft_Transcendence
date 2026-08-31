@@ -4,7 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 const env = process.env;
 const rawAccessTTL = env.JWT_ACCESS_TTL?.match(/\d+/)?.[0] || '15';
 const JWT_ACCESS_TTL = Number(rawAccessTTL);
-const REFRESH_AGE = (JWT_ACCESS_TTL - 1) * 60 * 1000;
+const REFRESH_AGE = (JWT_ACCESS_TTL - 2) * 60 * 1000;
 
 const URL = `${env.INTERNAL_API_URL}/auth`;
 
@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
                 if (!res.ok) throw new Error('Error: while logining');
                 const data = await res.json();
 
+                console.log(data);
                 return {
                     id: data.user.id,
                     name: data.user.name,
@@ -47,24 +48,26 @@ export const authOptions: NextAuthOptions = {
                     refreshToken: data.refreshToken,
                     accessTokenExpiry: createExpiredTime(),
                     termsAcceptedAt: data.user.termsAcceptedAt,
+                    createdAt: data.user.createdAt,
+                    level: data.user.level
                 }
             },
         })
     ],
     callbacks: {
-        async jwt({token, user, account, trigger, session}) {
+        async jwt({token, user, trigger, session}) {
             console.log("=================JWT CALLBACK=======================")
-            // console.log(" jwt calback: ",token);
-
             if (user) {
                 token.sub = user.id;
                 token.name = user.name;
                 token.email = user.email;
                 token.picture = user.avatar;
+                token.level = user.level;
+                token.role = user.role;
+                token.createdAt = user.createdAt;
                 token.accessToken = user.accessToken;
                 token.refreshToken = user.refreshToken;
                 token.accessTokenExpiry = user.accessTokenExpiry;
-                token.role = user.role;
                 token.termsAcceptedAt = user.termsAcceptedAt ?? null;
             } else if (!token.role) {
                 token.role = "PLAYER";
@@ -84,13 +87,12 @@ export const authOptions: NextAuthOptions = {
         },
         async session({session, token}) {
             console.log("=================SESSION CALLBACK=======================")
-
-            // console.log(" session calback: ",token);
-
             if (session.user) {
                 session.user.id = Number(token.sub);
                 session.user.username = token.name as string;
                 session.user.avatar = token.picture as string | null;
+                session.user.level = token.level as number;
+                session.user.createdAt = token.createdAt as string | null;;
                 session.user.role = token.role;
                 session.user.termsAcceptedAt = (token.termsAcceptedAt ?? null) as string | null;
             }
@@ -105,7 +107,6 @@ export const authOptions: NextAuthOptions = {
         error: '/login'
     },
     session: {strategy: 'jwt'},
-    // debug: true,
     secret: process.env.NEXTAUTH_SECRET
 }
 

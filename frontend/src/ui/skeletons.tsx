@@ -62,13 +62,13 @@ export function FriendsContentSkeleton({friendNumber}: {friendNumber:number}) {
                 {friendsPlaceholder.map((_, index) => (
                     <li
                         key={index}
-                        className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5"
+                        className="grid min-h-0 grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5"
                     >
                         <div className="size-8 shrink-0 rounded-full bg-bg-muted" />
                         <div className="min-w-0 pt-px">
                             <div className="h-3.5 w-24 rounded-sm bg-bg-muted" />
                             <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-bg-muted" />
+                                <div className="h-2.5 w-2.5 m-1.5 shrink-0 rounded-full bg-bg-muted" />
                                 <div className="h-3 w-12 rounded-sm bg-bg-muted" />
                                 <div className="h-3 w-1 rounded-sm bg-bg-muted" />
                                 <div className="h-3 w-16 rounded-sm bg-bg-muted" />
@@ -82,7 +82,7 @@ export function FriendsContentSkeleton({friendNumber}: {friendNumber:number}) {
             </ul>
 
             <aside className="hidden min-w-0 flex-col gap-[10px] lg:flex">
-                <div className="rounded-md h-[198px] bg-bg-subtle px-3.5 py-3">
+                <div className="rounded-md bg-bg-subtle px-3.5 py-3">
                     <div className="mb-2 h-3.5 w-24 rounded-sm bg-bg-muted" />
                     <div className="h-8 w-full rounded-md border border-border-default bg-bg-surface" />
                     <div className="max-h-[45vh]"/>

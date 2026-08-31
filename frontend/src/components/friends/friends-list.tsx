@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
+import { getErrorMessage } from '@/lib/error';
+import { toast } from 'sonner';
 import { UserRoundX } from 'lucide-react';
 import DialogModal from '../modal/dialog-modal';
 import { OnlineStateItem } from '@/ui/online-tracker';
 import { useGameSocket } from '@/providers/SocketProvider';
-import { Friend } from '@/types/gameTypes';
+import { ActiveFilterType, Friend } from '@/types/gameTypes';
 import { useRoomDataBySocket } from '../store/useRoomData';
 import { useNotificationListener } from '../store/notification';
+import { Avatar } from '@/ui/ava';
 import { useTranslations } from 'next-intl';
 import { SocketResponse } from '@/types/socketTypes';
 
@@ -26,7 +29,6 @@ interface ListOfFriendsProps {
     handleGameAction: (roomId: string) => void;
 }
 
-type ActiveFilterType = 'All' | 'Online' | 'Playing' | 'Requests';
 
 interface FriendsContentProps {
     friends: Friend[];
@@ -42,8 +44,6 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
     const LN_L = useTranslations("friends.request")
     const LN_C = useTranslations("friends.lists")
     const {id, name, avatar, isOnline, score} = friend;
-    const av = name && typeof name === "string" ? name.slice(0, 2) : "";
-    const isAvatar =  !!avatar;
 
     const filtredInviter = gameRequests?.filter((it) => it.inviter.id === id); 
     const isHost = filtredInviter && filtredInviter.length > 0;
@@ -54,17 +54,8 @@ function FriendCard({friend, filter, removeFriend, handleGameAction}: FriendCard
     const isShowBtn = filter === 'Online' && isHost && status !== 'PLAYING' && status !== 'READY';
 
     return (
-        <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
-            <div>
-                { isAvatar ? (
-                    <img className="size-8 shrink-0 rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
-                ) : (
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-snake-1 text-sm font-medium capitalize text-info-text">
-                        {av}
-                    </div>
-                )}
-            </div>
-
+        <li className="grid grid-cols-[32px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
+            <Avatar name={name} avatar={avatar} style={"size-8"}/>
             <div className="min-w-0 pt-px">
                 <div className="flex min-w-0 items-center gap-1.5">
                     <span className="text-sm font-medium">{name}</span>
@@ -162,7 +153,7 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
 
             removeFriendCard(user?.id? user?.id: 0);
         } catch (error) {
-            console.log("ERROR deleting a friend: ", error);
+            toast.error(getErrorMessage(error, "Couldn't remove this friend."));
         }
     }
 
