@@ -1,13 +1,13 @@
-import { IsString, IsEmpty, IsEnum, IsNumber } from 'class-validator';
+import { IsString, IsEnum, IsNumber, IsNotEmpty } from 'class-validator';
 export class CreateGameRoomDto {
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   'name': string;
   
   @IsNumber()
   'maxUsers': number;
 
-  @IsEmpty()
+  @IsNotEmpty()
   @IsEnum(['PRIVATE', 'PUBLIC'], {
     message: 'Valid role required',
   })

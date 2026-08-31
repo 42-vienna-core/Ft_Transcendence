@@ -7,5 +7,5 @@ export class SearchUserDto {
     @IsString()
     @MinLength(3)
     @MaxLength(40)
-    name!: string;
+    "name": string;
 }

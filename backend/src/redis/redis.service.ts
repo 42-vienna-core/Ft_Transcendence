@@ -14,9 +14,7 @@ interface OnlineUsersData {
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly client: Redis;
 
-  constructor(
-    // private readonly configService: ConfigService,
-  ) {
+  constructor() {
     const url = process.env.REDIS_URL || 'redis://redis:6379';
     this.client = new Redis(url);
 

@@ -49,7 +49,7 @@ export default function RegisterForm() {
         <form action={formAction} className="space-y-4">
             {/* Username */}
             <div className="relative w-full group">
-                <input
+                <input autoComplete="on"
                     required
                     id="username"
                     type="text"
@@ -68,7 +68,7 @@ export default function RegisterForm() {
 
             {/* Email */}
             <div className="relative">
-                <input
+                <input autoComplete="on"
                     required
                     id="email"
                     type="email"

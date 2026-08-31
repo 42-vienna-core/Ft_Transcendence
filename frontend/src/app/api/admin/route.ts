@@ -12,43 +12,53 @@ const backendUrl = process.env.INTERNAL_API_URL;
 
 export async function DELETE (request: NextRequest) {
 
-    const path = request.nextUrl.searchParams.get("path") ?? "";
-    const accessToken = await getAccessTokenFromCookie();
+    try {
+        const path = request.nextUrl.searchParams.get("path") ?? "";
+        const accessToken = await getAccessTokenFromCookie();
 
-    if (!accessToken)
-        return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!accessToken)
+            return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const res = await fetch(backendUrl + path, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-    });
-    return Response.json(res.ok);
+        const res = await fetch(backendUrl + path, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+        });
+        return Response.json(res.ok);
+    }
+    catch {
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
 }
 
 export async function PUT (request: NextRequest) {
 
-    const body = await request.json();
-    const path = request.nextUrl.searchParams.get("path") ?? "";
-    const session = await getServerSession(authOptions);
+    try {
+        const body = await request.json();
+        const path = request.nextUrl.searchParams.get("path") ?? "";
+        const session = await getServerSession(authOptions);
 
-    if (!session) return;
-    const { accessToken} = session;
+        if (!session) return;
+        const { accessToken} = session;
 
-    if (!accessToken)
-        return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!accessToken)
+            return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const res = await fetch(backendUrl + path, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(body),
-    });
-    const result = await res.json();
-    return Response.json(result, { status: res.status });
+        const res = await fetch(backendUrl + path, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(body),
+        });
+        const result = await res.json();
+        return Response.json(result, { status: res.status });
+    }
+    catch {
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
 }
 
 
@@ -67,45 +77,54 @@ export async function POST (request: NextRequest) {
         const data = await res.json();
         return Response.json(data, { status: res.status });
     } catch {
-        throw new Error()
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
 
 
 export async function PATCH (request: NextRequest) {
 
-    const body = await request.json();
-    const path = request.nextUrl.searchParams.get("path") ?? "";
-    const accessToken  = await getAccessTokenFromCookie();
+    try {
+        const body = await request.json();
+        const path = request.nextUrl.searchParams.get("path") ?? "";
+        const accessToken  = await getAccessTokenFromCookie();
 
-   if(!accessToken)
-        return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if(!accessToken)
+            return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const res = await fetch(backendUrl + path, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(body),
-    });
-    return Response.json(res, { status: res.status });
+        const res = await fetch(backendUrl + path, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(body),
+        });
+        return Response.json(res, { status: res.status });
+    }
+    catch {
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
 }
 
 export async function GET( request: NextRequest) {
     
-    const path = request.nextUrl.searchParams.get("path") ?? "";
-    const session = await getServerSession(authOptions);
-    if (!session) return;
-    const { accessToken} = session;
-    if (!accessToken) return Response.json(null, { status: 401 });
+    try {
+        const path = request.nextUrl.searchParams.get("path") ?? "";
+        const session = await getServerSession(authOptions);
+        if (!session) return;
+        const { accessToken} = session;
+        if (!accessToken) return Response.json(null, { status: 401 });
 
-    const res = await fetch(backendUrl + path, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${accessToken}`,
-        },
-    }).then(res => res.json())
-    return Response.json(res, { status: res.status });
-
+        const res = await fetch(backendUrl + path, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+            },
+        }).then(res => res.json())
+        return Response.json(res, { status: res.status });
+    }
+    catch {
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
 }
