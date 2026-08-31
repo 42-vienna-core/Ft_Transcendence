@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+
 
 import { useState } from "react";
 
@@ -25,7 +27,11 @@ export default function ResetCode({ email }: { email: string }) {
                         const res = await fetch(`/api/admin?path=/user/resetCode/`, {
                             method: "POST", body: JSON.stringify({ email, code }),
                         });
-                        if (res.ok) router.push("/login");
+                        if (res.ok)
+                        {
+                            toast.success("Your password has been changed.");
+                            router.push("/login");
+                        }
                         else setError(true);
                     } finally {
                         setLoading(false);

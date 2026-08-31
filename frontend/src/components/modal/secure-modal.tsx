@@ -6,7 +6,7 @@ import { State } from "@/lib/definitions";
 import { useProfile } from "@/providers/ProfileContext";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { toast } from "sonner";
+//import { toast } from "sonner";
 import { X } from "lucide-react";
 import ModalLayout from "./modal-layout";
 import ResetCode from "../reset/resetCode";
@@ -50,16 +50,16 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 body: JSON.stringify({ old: oldPass, new: newPass }),
             });
 
-            const signInResult = await signIn("credentials", {
-                email,
-                password: newPass,
-                redirect: false,
-            });
+            // const signInResult = await signIn("credentials", {
+            //     email,
+            //     password: newPass,
+            //     redirect: false,
+            // });
 
-            if (signInResult?.error) {
-                setState(prev => ({ ...prev, message: "Password changed, but re-login failed. Please sign in again." }));
-                return;
-            }
+            // if (signInResult?.error) {
+            //     setState(prev => ({ ...prev, message: "Password changed, but re-login failed. Please sign in again." }));
+            //     return;
+            // }
             setCode(res.email);
         } catch (error) {
             if (error instanceof Error) {
@@ -70,8 +70,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             return;
         }
 
-        toast.success("Your password has been changed.");
-        onClose();
+        // toast.success("Your password has been changed.");
+        // onClose();
     }
 
 
