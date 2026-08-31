@@ -352,6 +352,8 @@
             "error": "Utente non trovato",
             "all": "Tutti",
             "requests": "Richieste",
+            "requested":"Richiesto",
+            "response": "Rispondi alle richieste",
             "find": "Trova amici",
             "score": "punteggio",
             "inMatch": "In partita",

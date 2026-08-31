@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import LobbyModal from './modal/lobby-modal';
 import { useRoomDataBySocket } from './store/useRoomData';
 import { useGameSocket } from '@/providers/SocketProvider';
+import { SocketResponse } from '@/types/socketTypes';
 
 export default function GlobalLobbyManager() {
     const router = useRouter();
@@ -17,12 +18,15 @@ export default function GlobalLobbyManager() {
         router.refresh();
     };
 
-    const handleCloseLobby = (roomId: string) => {
-        if (!socket || !roomId) return;
+    const handleCloseLobby = () => {
+        if (!socket) return;
 
-        console.log("emit('leave-room', {roomId:",roomId, "}");
-        socket.emit('leave-room', {roomId});
-        clearGameData();
+        console.log("emit('leave-room");
+        socket.timeout(5000).emit('leave-room', (timeoutError: Error | null, response?: SocketResponse) => {
+			if (timeoutError || !response?.success)
+				return;
+			clearGameData();
+		});
     };
 
     return (

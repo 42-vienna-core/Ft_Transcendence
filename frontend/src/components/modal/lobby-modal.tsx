@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { Bot, Users, X, LoaderCircle } from "lucide-react";
 import ModalLayout from "./modal-layout";
 import { GameModeType, RoomData } from "@/types/gameTypes";
-import { useProfile } from "@/providers/ProfileContext";
-
 import { useTranslations } from "next-intl";
 import { useRoomDataBySocket } from "../store/useRoomData";
 
@@ -13,7 +11,7 @@ interface LobbyModalProps {
     isOpen: boolean;
     room: RoomData | null;
     onStartmatch: () => void;
-    onClose: (roomId: string) => void;
+    onClose: () => void;
     gameMode: GameModeType | null;
 }
 
@@ -123,7 +121,7 @@ useEffect(() => {
                 </div>
                 <button
                     type="button"
-                    onClick={() => onClose(room.roomId)}
+                    onClick={() => onClose()}
                     aria-label={LN("close")}
                     className="cursor-pointer rounded-md p-1.5 text-text-tertiary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"
                 >
@@ -187,7 +185,7 @@ useEffect(() => {
                 <button
                     type="button"
                     className="cursor-pointer rounded-lg border border-border-default px-4 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:bg-bg-subtle hover:text-text-primary"
-                    onClick={() => onClose(room.roomId)}
+                    onClick={() => onClose()}
                 >
                     {LN("cancel")}
                 </button>

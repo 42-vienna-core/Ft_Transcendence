@@ -11,6 +11,7 @@ import { useGameSocket } from "@/providers/SocketProvider";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useProfile } from "@/providers/ProfileContext";
 import { useSession } from "next-auth/react";
+import { SocketResponse } from "@/types/socketTypes";
 
 interface MachCard {
     id: GameModeType;
@@ -124,12 +125,13 @@ function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
     const {socket} = useGameSocket();
     const router = useRouter();
-    const {gameMode, setIsLobbyOpen, setGameMode, clearStatus} = useRoomDataBySocket();
+    const {gameMode, setIsLobbyOpen, setGameMode, clearStatus, clearGameData} = useRoomDataBySocket();
     const t = useTranslations("Start_game");
 
     const handleGameMode = async (mode: GameModeType) => {
         if (session.status === "unauthenticated") {
-            window.location.href = "/login"; 
+            window.location.href = "/login";
+			return;
         }
 
         if (!socket) return;
@@ -138,7 +140,11 @@ function StartMatch () {
         setGameMode(mode);
         clearStatus();
 
-        socket.emit('join-match', {mode});
+        //socket.emit('join-match', {mode});
+		socket.timeout(10000).emit('join-match', {mode}, (timeoutError: Error | null, response?: SocketResponse<unknown>) =>{
+			if (timeoutError || !response?.success)
+				clearGameData();
+		})
 
         if (mode === 'CPU') {
             router.push("/arena");

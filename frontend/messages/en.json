@@ -360,6 +360,8 @@
             "error": "User not found",
             "all": "All",
             "requests": "Requests",
+            "requested":"Requested",
+            "response": "Respond in requests",
             "find": "Find friends",
             "score": "score",
             "inMatch": "In match",

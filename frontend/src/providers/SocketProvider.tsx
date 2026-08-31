@@ -3,6 +3,7 @@
 import { useNotificationListener } from "@/components/store/notification";
 import { useRoomDataBySocket } from "@/components/store/useRoomData";
 import { getErrorMessage } from "@/lib/error";
+import { SocketResponse } from "@/types/socketTypes";
 import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -19,11 +20,7 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType | null>(null);
 
-export const SocketProvider = ({
-    children,
-}: {
-    children: React.ReactNode;
-}) => {
+export const SocketProvider = ({children}: {children: React.ReactNode}) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const openNotificationListener = useNotificationListener((state) => state.openNotificationListener);
@@ -61,11 +58,6 @@ export const SocketProvider = ({
                 }
             };
 
-            const onConnectError = (error: Error) => {
-                console.error("🚨 Socket connect_error:", error.message);
-                toast.error("Unable to connect to the game server.", { id: SOCKET_ERROR_TOAST_ID });
-            };
-
             const onException = (payload: unknown) => {
                 const message = typeof payload === "object" && payload !== null && "message" in payload
                     ? getErrorMessage((payload as { message: unknown }).message)
@@ -74,10 +66,24 @@ export const SocketProvider = ({
                 toast.error(message);
             };
 
+			const onSocketException = (response: SocketResponse) => {
+				if (!response.success)
+					console.log("Socket error: ", response.error);
+			};
+
+			const onConnectError = (error: Error) => {
+				console.log("Socket connection error: ", error.message);
+                toast.error("Unable to connect to the game server.", { id: SOCKET_ERROR_TOAST_ID });
+				setIsConnected(false);
+			};
+
             socketInstance.on("connect", onConnect);
             socketInstance.on("disconnect", onDisconnect);
             socketInstance.on("connect_error", onConnectError);
             socketInstance.on("exception", onException);
+
+            socketInstance.on("exception", onSocketException);
+            socketInstance.on("connect_error", onConnectError);
 
             setSocket(socketInstance);
             openNotificationListener(socketInstance);
@@ -90,6 +96,7 @@ export const SocketProvider = ({
 
         return () => {
             if (socketInstance) {
+				socketInstance.removeAllListeners();
                 socketInstance.disconnect();
             }
             setSocket(null);

@@ -352,6 +352,8 @@
             "error": "Benutzer nicht gefunden",
             "all": "Alle",
             "requests": "Anfragen",
+            "requested":"Angefordert",
+            "response": "Auf Anfragen antworten",
             "find": "Freunde finden",
             "score": "Punkte",
             "inMatch": "Im Match",

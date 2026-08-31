@@ -21,7 +21,9 @@ export default function rootLayout({
             className={`${bungee.variable}`} 
             suppressHydrationWarning
         >
-            <body suppressHydrationWarning>
+            <body 
+                className="flex flex-col min-h-screen"
+                suppressHydrationWarning>
                 <Providers>
                     <CustomThemeProvider>
                         {children}

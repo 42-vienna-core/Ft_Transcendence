@@ -82,4 +82,6 @@ frontend/coverage/
 # ========================
 *.pdf
 pdf_script_creator.js
-SUBJECT_COMPLIANCE_STATUS.md
+STATUS.md
+backend/test
+docker-compose.test.yml

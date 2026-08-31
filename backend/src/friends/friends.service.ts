@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 import { ConfigService } from '@nestjs/config';
@@ -86,9 +86,11 @@ export class FriendsService {
 	}
 
 	async acceptRequest(userId: number, requestId: string) {
-		const request = await this.prismaService.friendsRequest.findUniqueOrThrow({
+		const request = await this.prismaService.friendsRequest.findUnique({
 			where: { id: requestId, },
 		})
+		if (!request)
+			throw new NotFoundException('Request not found');
 		if (request.receiverId !== userId)
 			throw new BadRequestException('You are not the receiver of this request');
 		if (request.status !== 'PENDING')
@@ -105,9 +107,11 @@ export class FriendsService {
 	}
 
 	async rejectRequest(userId: number, requestId: string) {
-		const request = await this.prismaService.friendsRequest.findUniqueOrThrow({
+		const request = await this.prismaService.friendsRequest.findUnique({
 			where: { id: requestId, },
 		})
+		if (!request)
+			throw new NotFoundException('Request not found');
 		if (request.receiverId !== userId)
 			throw new BadRequestException('You are not the receiver of this request');
 		if (request.status !== 'PENDING')
@@ -169,7 +173,7 @@ export class FriendsService {
 	}
 
 	async removeFriend(userId: number, friend: number) {
-		const request = await this.prismaService.friendsRequest.findFirstOrThrow({
+		const request = await this.prismaService.friendsRequest.findFirst({
 			where: {
 				status: 'ACCEPTED',
 				OR: [
@@ -178,6 +182,8 @@ export class FriendsService {
 				],
 			},
 		});
+		if (!request)
+			throw new NotFoundException('Request not found');
 		await this.prismaService.friendsRequest.delete({
 			where: {
 				id: request.id,
@@ -220,13 +226,15 @@ export class FriendsService {
 	}
 
 	async cancelRequest(userId: number, receiverId: number) {
-		const request = await this.prismaService.friendsRequest.findFirstOrThrow({
+		const request = await this.prismaService.friendsRequest.findFirst({
 			where: {
 				status: 'PENDING',
 				senderId: userId,
 				receiverId: receiverId,
 			},
 		});
+		if (!request)
+			throw new NotFoundException('Request not found');
 		await this.prismaService.friendsRequest.delete({
 			where: {
 				id: request.id,

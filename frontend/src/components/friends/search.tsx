@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
-import { useProfile } from '@/providers/ProfileContext';
 import { Loader, Search, X } from 'lucide-react';
 import { OnlineStateItem } from '@/ui/online-tracker';
 import { useTranslations } from 'next-intl';
@@ -71,15 +70,15 @@ function FriendCard({ friend, addFriend }: FriendCardProps) {
             )}
 
             {status === 'idle' && friendStatus === 'FRIEND' && (
-                <p className="whitespace-nowrap text-sm text-text-tertiary">Friends</p>
+                <p className="whitespace-nowrap text-sm text-text-tertiary">{LN("friends")}</p>
             )}
 
             {status === 'idle' && friendStatus === 'OUTGOING' && (
-                <p className="whitespace-nowrap text-sm text-text-tertiary">Requested</p>
+                <p className="whitespace-nowrap text-sm text-text-tertiary">{LN("requested")}</p>
             )}
 
             {status === 'idle' && friendStatus === 'INCOMING' && (
-                <p className="whitespace-nowrap text-sm text-text-tertiary">Respond in requests</p>
+                <p className="whitespace-nowrap text-sm text-text-tertiary">{LN("response")}</p>
             )}
 
             {status === 'done' && (
@@ -117,7 +116,7 @@ export default function FindFriends({
     styles,
     handleFindModal
 }: { styles: string, handleFindModal: () => void }) {
-    const userContext = useProfile();
+    //const userContext = useProfile();
     const [message, setMessage] = useState<string>("");
     const [result, setResult] = useState<SearchingData[]>([]);
     const [query, setQuery] = useState<string>("");
@@ -153,16 +152,16 @@ export default function FindFriends({
     }, 300);
 
     async function addFriend(id: number): Promise<boolean> {
-        const senderId = userContext.id;
+        //const senderId = userContext.id;
         const receiverId = id;
 
-        if (!senderId || !receiverId) return false;
+        if (/* !senderId || */ !receiverId) return false;
 
         try {
             await apiFetch('friends/request', {
                 method: 'POST',
                 body: JSON.stringify({
-                    senderId,
+                    //senderId,
                     receiverId
                 })
             });
