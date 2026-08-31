@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Matches} from "class-validator";
 
 export class LoginRequest {
     @IsNotEmpty()
@@ -7,5 +7,8 @@ export class LoginRequest {
 
     @IsNotEmpty()
     @IsString()
+    @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$/, {
+            message: 'Weak password',
+    })
     password!: string;
 }
