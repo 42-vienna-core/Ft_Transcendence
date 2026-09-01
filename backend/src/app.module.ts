@@ -5,7 +5,6 @@ import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { LoggerModule } from './logger/logger.module';
 import { TokenModule } from './token/token.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
@@ -29,7 +28,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       { name: 'short', ttl: 1000, limit: 3, },
       { name: 'long', ttl: 60000, limit: 100, },
     ]),
-    LoggerModule,
     TokenModule,
     AuthModule,
     SocketModule,

@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { LoggerService } from './logger/logger.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
@@ -21,7 +20,6 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.set('trust proxy', 1);
-  app.useLogger(app.get(LoggerService));
 
   app.setGlobalPrefix(prefix);
 
