@@ -83,6 +83,7 @@ export class UserService {
 				name: dto.username,
 				email: dto.email,
 				password: passwordHash,
+				hasPassword: true,
 			},
 			select: {
 				id: true,
@@ -310,6 +311,7 @@ export class UserService {
 				pendingPassword : null,
 				resetCode: null,
             	codeExpire: null,
+				hasPassword: true,
 				resetCodeAttempts: 0,
 			}
 		});
@@ -352,6 +354,7 @@ export class UserService {
 				provider: data.provider,
 				providerId: data.providerId,
 				password: data.passwordHash,
+				hasPassword: false,
 				role: "PLAYER",
 			},
 		});

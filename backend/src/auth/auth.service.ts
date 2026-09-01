@@ -137,8 +137,8 @@ export class AuthService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        if (user.provider)
-            throw new ForbiddenException("Password change is not available for accounts linked to google");
+        if (!user.hasPassword)
+            throw new ForbiddenException("No password set for this account — it uses Google sign-in.");
 
         const isPasswordValid = await verify(user.password, dto.old);
         if (!isPasswordValid) {

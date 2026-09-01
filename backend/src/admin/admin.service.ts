@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { hash } from "argon2"
 import { AdminUpdateUserDto } from 'src/admin/dto/admin-update-user.dto';
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -40,9 +40,12 @@ export class AdminService {
     if (!user || user.role === "ADMIN")
       throw new ForbiddenException('Cannot update admin');
     if (body.password) {
-      body.password = await bcrypt.hash(body.password, 10);
+        body.password = await hash(body.password);
     }
-    return this.prismaService.users.update({ where: {id,}, data: body })
+    return this.prismaService.users.update({
+      where: { id },
+      data: { ...body, ...(body.password ? { hasPassword: true } : {}) },
+    });
   }
 
   async remove(id: number) {

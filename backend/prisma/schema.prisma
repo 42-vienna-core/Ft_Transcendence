@@ -29,6 +29,7 @@ model Users {
   termsAcceptedAt DateTime?
   provider        String?
   providerId      String?
+  hasPassword     Boolean @default(false) @map("has_password")
   resetCode       String?
   codeExpire      DateTime?
   resetCodeAttempts Int @default(0) @map("reset_code_attempts")
