@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
+import { getErrorMessage } from '@/lib/error';
+import { toast } from 'sonner';
 import FindFriends from './search';
 import FriendsContent from './friends-list';
 import { ActiveFilterType, Friend, Request } from '@/types/gameTypes';
@@ -18,7 +20,6 @@ interface SharedBtnProps {
     active: ActiveFilterType;
     onClick: (compType: ActiveFilterType) => void;
 }
-
 
 export function SharedBtn({
     label,
@@ -101,7 +102,7 @@ function FriendsFilter() {
 
             setAllFriends([]);
         } catch (error) {
-            console.log("ERROR getting all friends: ", error);
+            toast.error(getErrorMessage(error, "Couldn't refresh your friends list."));
         }
     }
 
@@ -199,7 +200,7 @@ function FriendsFilter() {
                         style={{ color: "var(--color-text-primary)", fontFamily: "var(--font-sans)" }}
                     >
                         <FindFriends
-                            styles={"absolute top-15 right-0 rounded-md max-w-md min-h-[200px] bg-bg-subtle px-3.5 py-3"}
+                            styles={"absolute top-15 right-0 rounded-md max-w-md bg-bg-subtle px-3.5 py-3"}
                             handleFindModal={handleFindModal}
                         />
                     </div>

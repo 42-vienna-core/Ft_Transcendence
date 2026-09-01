@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, ConflictException, Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { RegisterRequest } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
@@ -65,6 +65,8 @@ export class AuthService {
                 score: user.score,
                 role: user.role,
                 termsAcceptedAt: user.termsAcceptedAt,
+                level: user.level,
+                createdAt: user.createdAt,
             }
         };
     }
@@ -133,10 +135,10 @@ export class AuthService {
 
         const user = await this.userService.findById(userId);
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new NotFoundException('User not found');
         }
-        if (user.provider)
-            throw new BadRequestException("Password change is not available for accounts linked to google");
+        if (!user.hasPassword)
+            throw new ForbiddenException("No password set for this account — it uses Google sign-in.");
 
         const isPasswordValid = await verify(user.password, dto.old);
         if (!isPasswordValid) {

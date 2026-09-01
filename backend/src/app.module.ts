@@ -22,18 +22,11 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
   imports: [
     PrismaModule,
     UserModule,
-	EventEmitterModule.forRoot(),
+	  EventEmitterModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, }),
-    ThrottlerModule.forRoot([{
-      name: 'short',
-      ttl: 1000,
-      limit: 3,
-    },
-    {
-      name: 'long',
-      ttl: 60000,
-      limit: 100,
-    }
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 1000, limit: 3, },
+      { name: 'long', ttl: 60000, limit: 100, },
     ]),
     TokenModule,
     AuthModule,
@@ -42,7 +35,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AvatarModule,
     GameRoomModule,
     FriendsModule,
-	GameModule,
+	  GameModule,
     AdminModule
   ],
   controllers: [AppController],

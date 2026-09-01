@@ -9,10 +9,10 @@ import { useTranslations } from "next-intl";
 
 export default function ResetPass() {
 
-    const router = useRouter();    
-    const [code , setCode] = useState(false);
+    const router = useRouter();
+    const [code, setCode] = useState(false);
     const [error, setError] = useState(false);
-    const [request, setRequest] = useState({email: ""});
+    const [request, setRequest] = useState({ email: "" });
 
     const t = useTranslations("Reset");
 
@@ -32,37 +32,36 @@ export default function ResetPass() {
                   setError(true);
               }}
             >
-                  
-                <div className="relative">
-                  <input  className="peer w-full rounded-xl border border-border-default bg-bg-subtle/50 px-4 pt-5 pb-2 pr-11 text-base text-text-primary autofill:text-text-primary outline-none transition-colors duration-200 focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent-soft"
-                          required id="email" type="email" name="email" placeholder=" "
-                  />
-                  <label htmlFor="email" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-text-tertiary transition-all duration-200 peer-focus:top-2.5 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:text-accent peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:text-xs">
-                      {t("email")}
-                  </label>
-                  <AtSign className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors duration-200 peer-focus:text-accent" />
-                </div>
-
-                <PasswordField  id="password"  name="password"   label={t("newPassword")}/>
-                <PasswordField  id="password"  name="ConfirmPassword"   label={t("confirm_password")}/>
-                  
-                {error && (
-                    <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger-text">
-                        <AlertCircle className="h-4 w-4 shrink-0" />
-                        <p>{t("errorForm")}</p>
+                    <div className="relative">
+                        <input className="peer w-full rounded-xl border border-border-default bg-bg-subtle/50 px-4 pt-5 pb-2 pr-11 text-base text-text-primary autofill:text-text-primary outline-none transition-colors duration-200 focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent-soft"
+                            required id="email" type="email" name="email" placeholder=" " autoComplete="on"
+                        />
+                        <label htmlFor="email" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-text-tertiary transition-all duration-200 peer-focus:top-2.5 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:text-accent peer-[&:not(:placeholder-shown)]:top-2.5 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:text-xs">
+                            {t("email")}
+                        </label>
+                        <AtSign className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors duration-200 peer-focus:text-accent" />
                     </div>
-                )}
-    
-                  <div className="flex flex-col gap-4 pt-1">
-                    <SubmitButton  label={t("submit")}  loadingLabel={t("loading")} 
-                  />
 
-                  <button type="button" onClick={() => router.push("/login")} className="mx-auto cursor-pointer text-sm text-text-tertiary transition-colors duration-200 hover:text-accent hover:underline" >
-                    {t("login")}
-                  </button>
-                </div>
-            </form>
-            ) : ( <ResetCode email={request.email} /> )}
-      </>
-        );
+                    <PasswordField id="password" name="password" label={t("newPassword")} />
+                    <PasswordField id="password" name="ConfirmPassword" label={t("confirm_password")} />
+
+                    {error && (
+                        <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger-text">
+                            <AlertCircle className="h-4 w-4 shrink-0" />
+                            <p>{t("errorForm")}</p>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-4 pt-1">
+                        <SubmitButton label={t("submit")} loadingLabel={t("loading")}
+                        />
+
+                        <button type="button" onClick={() => router.push("/login")} className="mx-auto cursor-pointer text-sm text-text-tertiary transition-colors duration-200 hover:text-accent hover:underline" >
+                            {t("login")}
+                        </button>
+                    </div>
+                </form>
+            ) : (<ResetCode email={request.email} />)}
+        </>
+    );
 }

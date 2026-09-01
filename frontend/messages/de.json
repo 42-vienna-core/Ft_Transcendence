@@ -347,11 +347,13 @@
             "noPlaying": "Keine Freunde spielen gerade",
             "add": "Hinzufügen",
             "name": "Benutzername",
-            "addMessage": "Der Benutzer wurde hinzugefügt",
+            "addMessage": "Die Anfrage wurde gesendet",
             "addError": "Ein unbekannter Fehler ist aufgetreten",
             "error": "Benutzer nicht gefunden",
             "all": "Alle",
             "requests": "Anfragen",
+            "requested":"Angefordert",
+            "response": "Auf Anfragen antworten",
             "find": "Freunde finden",
             "score": "Punkte",
             "inMatch": "Im Match",
@@ -429,6 +431,6 @@
         "seconds": "Sekunden",
         "stillJoin": "Freunde können bis zum Start noch beitreten",
         "cancel": "Abbrechen",
-        "noOne": "Wenn niemand beitritt, spielst du gegen den Computer"
+        "noOne": "Wenn niemand beitritt, kannst du gegen den Computer spielen"
     }
 }

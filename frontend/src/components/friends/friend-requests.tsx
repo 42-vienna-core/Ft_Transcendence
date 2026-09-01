@@ -2,8 +2,11 @@
 
 import { OnlineStateItem } from "@/ui/online-tracker";
 import { apiFetch } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/error";
 import { useNotificationListener } from "../store/notification";
 import { ActiveFilterType, Request} from "@/types/gameTypes";
+import { toast } from "sonner";
+import { Avatar } from "@/ui/ava";
 import { useTranslations } from "next-intl";
 
 interface FriendRequestItemProps {
@@ -28,21 +31,11 @@ function FriendRuquestItem({
     makeDecision
 }: FriendRequestItemProps ) {
     const {name, avatar, isOnline} = sender;
-    const av = name && typeof name === "string" ? name.slice(0, 2) : "";
-    const isAvatar = !!avatar;
     const LN = useTranslations("friends.request");
 
     return (
         <li className="grid grid-cols-[26px_1fr_auto] items-start gap-4 rounded-md border border-border-default bg-bg-surface p-2.5 transition-colors duration-150 hover:border-border-strong">
-            <div>
-                { isAvatar ? (
-                    <img className="size-[32px] rounded-full object-cover" src={avatar ? avatar : ""} alt="avatar" />
-                ) : (
-                    <div className="flex size-[32px] items-center justify-center rounded-full bg-snake-1 text-xs font-medium capitalize text-info-text">
-                        {av}
-                    </div>
-                )}
-            </div>
+            <Avatar name={name} avatar={avatar} style={"size-8"}/>
             <div className="min-w-0">
                 <p className="text-base font-medium">{name}</p>
                 <OnlineStateItem isOnline={isOnline}/>
@@ -106,7 +99,7 @@ function FriendRequests({
 
             removeRequestById(id);
         } catch (error) {
-            console.log("ERROR: ", error);
+            toast.error(getErrorMessage(error, "Couldn't respond to the friend request."));
         }
     }
 

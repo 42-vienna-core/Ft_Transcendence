@@ -12,7 +12,8 @@ declare module 'next-auth' {
             avatar: string | null;
             role: "ADMIN" | "PLAYER";
             termsAcceptedAt: string | null;
-
+            createdAt: string | null;
+            level: number;
         };
     }
     interface User {
@@ -22,6 +23,8 @@ declare module 'next-auth' {
         accessTokenExpiry: number;
         role: "ADMIN" | "PLAYER" ;
         termsAcceptedAt: string | null;
+        createdAt: string | null;
+        level: number;
     }
 }
 

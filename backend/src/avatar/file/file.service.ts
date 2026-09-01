@@ -21,7 +21,7 @@ export class FileService {
             const baseDir = resolve(AVATAR_UPLOAD_DIR);
             const filePath = resolve(baseDir, safeName);
             if (!filePath.startsWith(baseDir)) {
-                throw new Error('Path traversal detected');
+                throw new BadRequestException('Path traversal detected');
             }
             console.log('[FILE][DELETE]', filePath);
             await unlink(filePath);

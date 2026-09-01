@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import LeaderboardList from "./leaderboardList";
 import TopThreePodium from "./topThreePodium";
 import { apiFetch } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/error";
+import { toast } from "sonner";
 import { LeaderboardData } from "@/types/gameTypes";
 import { useTranslations } from "next-intl";
 
@@ -18,7 +20,7 @@ export default function LeaderboardComponent() {
                 const response = await apiFetch('user/leaderboard');
                 setLeaderboard(Array.isArray(response) ? response : []);
             } catch (error) {
-                console.log(error);
+                toast.error(getErrorMessage(error, "Couldn't load the leaderboard."));
             }
         }
         fetchAllLeaderBoard();

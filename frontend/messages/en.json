@@ -355,11 +355,13 @@
             "noPlaying": "No friends are playing",
             "add": "Add",
             "name": "Username",
-            "addMessage": "The user has been added",
+            "addMessage": "Request has been sent",
             "addError": "An unknown error occurred",
             "error": "User not found",
             "all": "All",
             "requests": "Requests",
+            "requested":"Requested",
+            "response": "Respond in requests",
             "find": "Find friends",
             "score": "score",
             "inMatch": "In match",
@@ -428,6 +430,6 @@
         "seconds": "seconds",
         "stillJoin": "Friends can still join until it starts",
         "cancel": "Cancel",
-        "noOne": "If no one joins, you'll play against the computer"
+        "noOne": "If no one joins, you can play against the computer"
     }
 }

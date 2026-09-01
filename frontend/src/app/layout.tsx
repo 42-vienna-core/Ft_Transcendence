@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
 import { bungee, inter } from "../ui/font";
 import { Providers } from "@/providers/providers";
 import "./globals.css"
-import GlobalLobbyManager from "@/components/LobbyManager";
+import AppToaster from "@/components/app-toaster";
+import { CustomThemeProvider } from "@/providers/themeProwider";
 
 export const metadata: Metadata = {
     title: "Snake Multiplayer",
@@ -21,16 +21,14 @@ export default function rootLayout({
             className={`${bungee.variable}`} 
             suppressHydrationWarning
         >
-            <body suppressHydrationWarning>
+            <body 
+                className="flex flex-col min-h-screen"
+                suppressHydrationWarning>
                 <Providers>
-                    <ThemeProvider 
-                        attribute="class"
-                        defaultTheme="system"
-                        enableSystem
-                    >
+                    <CustomThemeProvider>
                         {children}
-                        <GlobalLobbyManager />
-                    </ThemeProvider>
+                        <AppToaster />
+                    </CustomThemeProvider>
                 </Providers> 
             </body>
         </html>
