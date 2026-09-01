@@ -23,7 +23,7 @@ RUN npm run build
 FROM node:20-alpine AS prod
 WORKDIR /app
 COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/standalone/static
-COPY --from=build /app/public ./.next/standalone/public
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
 
 CMD ["node", "server.js"]

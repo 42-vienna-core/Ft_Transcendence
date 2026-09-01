@@ -2,6 +2,11 @@ SHELL := /bin/bash
 
 NVM_URL = https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
 NODE_VERSION = 20
+LOCAL_IP = $(shell ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K[0-9.]+')
+
+ifeq ($(LOCAL_IP),)
+	LOCAL_IP = 127.0.0.1
+endif
 
 all: certs up 
 
@@ -17,6 +22,11 @@ certs:
 ## Copy .env.example to .env if it doesn't exist
 env:
 	@test -f .env || cp .env.example .env && echo "Created .env from .env.example"
+
+prepend_adrr:
+	@touch .env .env.prod
+	@sed -i '/^DOMAIN_NAME=/d' .env .env.prod
+	@sed -i '1i DOMAIN_NAME=$(LOCAL_IP)' .env .env.prod
 
 ## Install NVM and Node.js if not already installed
 setup:
@@ -49,14 +59,11 @@ init_modules:
 admin:
 	docker compose exec backend npm run seed:admin
 
-up: env
+up: env prepend_adrr
 	docker compose up --build
 
-prod:
+prod: prepend_adrr
 	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up --build -d
-
-## Start in background
-	docker compose up --build -d
 
 ## Stop all services
 down:
