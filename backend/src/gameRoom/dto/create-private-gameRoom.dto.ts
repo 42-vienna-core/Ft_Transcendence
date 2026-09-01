@@ -1,7 +1,7 @@
-import { IsString, IsEmpty, IsEnum, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsNumber } from 'class-validator';
 export class CreatePrivateGameRoom {
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   'name': string;
 
   @IsNumber()

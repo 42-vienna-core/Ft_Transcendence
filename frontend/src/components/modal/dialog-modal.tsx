@@ -59,8 +59,7 @@ export default function DialogModal({
     			  		<label className="text-xs text-[var(--color-text-primary)] mb-1.5 block">
     			    		{LN("type")} <b className="font-mono text-[var(--color-warning)]">{username}</b> {LN("confirm")}
     			  		</label>
-    			  		<input
-							type="text"
+    			  		<input autoComplete="off" type="text"
     			    		className="w-full h-9 rounded-md px-2.5 text-[13px] border border-[var(--color-border-default)] bg-transparent px-3 py-2.5 outline-none transition-colors focus:border-[var(--color-focus-ring)]"
     			    		onChange={(e) => setMatches(e.target.value === username)}
     			 	 	/>

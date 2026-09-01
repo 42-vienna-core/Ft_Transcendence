@@ -15,6 +15,7 @@ export function PasswordField({ id, name, label}: PasswordFieldProps) {
     return (
         <div className="relative">
         <input
+                autoComplete="off"
                 required
                 id={id}
                 type={isVisible ? "text" : "password"}

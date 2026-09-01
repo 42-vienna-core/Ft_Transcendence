@@ -5,13 +5,13 @@ export class ResetPasswordDto {
     @IsNotEmpty()
     @IsString()
     @IsEmail()
-    "email": string;
+    email!: string;
 
     @IsNotEmpty()
     @IsString()
     @MinLength(8)
     @MaxLength(128)
-    "password": string;
+    password!: string;
     @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$/, {
         message: 'Weak password',
     })
@@ -23,5 +23,5 @@ export class ResetPasswordDto {
     @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$/, {
         message: 'Weak password',
     })
-    "ConfirmPassword": string;
+    ConfirmPassword!: string;
 }
