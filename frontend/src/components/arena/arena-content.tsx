@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 import { getOrdinal } from "@/ui/utils";
+import { SocketResponse } from "@/types/socketTypes";
 
 const tick_ms_str = process.env.TICK_MS;
 const TICK_MS = tick_ms_str ? Number(tick_ms_str) : 130;

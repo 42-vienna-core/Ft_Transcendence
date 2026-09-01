@@ -23,7 +23,8 @@ const SocketContext = createContext<SocketContextType | null>(null);
 export const SocketProvider = ({children}: {children: React.ReactNode}) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
-    const openNotificationListener = useNotificationListener((state) => state.openNotificationListener);
+    const { openNotificationListener } = useNotificationListener();
+    const { clearGameData } = useRoomDataBySocket();
     const { openRoomListener } = useRoomDataBySocket();
     
     const {data: session} = useSession();
@@ -64,11 +65,14 @@ export const SocketProvider = ({children}: {children: React.ReactNode}) => {
                     : getErrorMessage(payload);
 
                 toast.error(message);
+                clearGameData();
             };
 
 			const onSocketException = (response: SocketResponse) => {
-				if (!response.success)
-					console.log("Socket error: ", response.error);
+				if (!response.success) {
+                    console.log("Socket error: ", response.error);
+                    toast.error(response.error)
+                }
 			};
 
 			const onConnectError = (error: Error) => {
