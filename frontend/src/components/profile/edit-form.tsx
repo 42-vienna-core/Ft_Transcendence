@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
 import { getErrorMessage } from '@/lib/error';
 import { toast } from 'sonner';
@@ -28,7 +28,6 @@ function SubmitFormButton({ isActive }: {isActive: boolean}) {
 }
 
 export default function EditProfileForm () {
-    const [error, setError] = useState<string | null>(null);
     const [tempAvatar, setTempAvatar] = useState<string>("");
     const [isActive, setActive] = useState<boolean>(false);
     const t = useTranslations("Profile");
@@ -38,6 +37,9 @@ export default function EditProfileForm () {
         avatar, 
         nameOnChange,
         status,
+        level,
+        createdAt,
+        hasUpdatedData,
         updateSessionUsername, 
         updateNameOnChange,
         updateAvatar
@@ -56,13 +58,11 @@ export default function EditProfileForm () {
 
         if (file && file.size > 0) {
             if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-                setError(t("formatInvalid"));
                 toast.error(t("formatInvalid"));
                 return;
             }
 
             if (file.size > MAX_FILE_SIZE) {
-                setError(t("longFile"));
                 toast.error(t("longFile"));
                 return;
             }
@@ -110,7 +110,7 @@ export default function EditProfileForm () {
         <form action={handleEditSubmit} className='mb-6'>
             <div className="flex min-h-24 flex-wrap items-center gap-4 border-b border-border-default pb-[18px]">
                 {
-                    status !== 'loading' ? (
+                    hasUpdatedData.current && status === 'authenticated' &&
                         <>
                             <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-info-soft text-[22px] font-medium text-info-text">
                                 <img src={showAvatar ? showAvatar : "#"} alt="avatar" className="h-full w-full rounded-full object-cover" />
@@ -142,20 +142,19 @@ export default function EditProfileForm () {
                                     {username}
                                 </div>
                                 <div className="mt-0.5 text-sm text-text-secondary">
-                                    {t("joined")} Apr 2024
+                                    {t("joined")} {createdAt}
                                 </div>
                                 <div className="mt-2 flex gap-1.5">
                                     <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] text-success-text">
-                                        {t("level")} 12
+                                        {t("level")} {level}
                                     </span>
                                 </div>
                             </div>
                         </>
-                    ) : (
-                        <UserProfileSkeleton/>
-                    )
                 }
-                
+
+
+                {!hasUpdatedData.current && <UserProfileSkeleton/>}
                 <div className="ml-auto flex shrink-0 gap-2">
                     <button
                         type="button"

@@ -11,7 +11,7 @@ import { useNotificationListener } from '@/components/store/notification';
 
 
 export function NavLinks () {
-    const {status, username, avatar } = useProfile();
+    const {status, username, avatar, hasUpdatedData} = useProfile();
     const { gameNotification, beFriendNotification} = useNotificationListener();
     const t = useTranslations("Header");
     const LN = useTranslations("leaderboard")
@@ -28,7 +28,7 @@ export function NavLinks () {
                 label={LN("leaderboard")}
             />
             {
-                status === "authenticated" &&
+                hasUpdatedData.current && status === 'authenticated' &&
                     <Link
                         href="/profile"
                         title={username}
@@ -44,10 +44,8 @@ export function NavLinks () {
                         </span>
                     </Link>
             }
-            {
-                status === "loading" &&
-                    <HeaderProfileSkeleton/>
-            }
+
+            { !hasUpdatedData.current && <HeaderProfileSkeleton/> }
         </>
     )
 }

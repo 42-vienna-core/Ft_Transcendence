@@ -2,7 +2,7 @@ import Nav, { NavAuthLinks, NavLinks } from "@/ui/nav";
 import { ReactNode } from "react";
 import { getServerSession } from 'next-auth';
 import { authOptions } from "@/lib/auth";
-import Footer from "@/components/Footer/Footer";
+import Footer from "@/components/footer/footer";
 
 async function HomeLayout({ children }: { children: ReactNode }) {
     let isAuthorized: boolean = false;

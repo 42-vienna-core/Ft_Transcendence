@@ -65,6 +65,8 @@ export class AuthService {
                 score: user.score,
                 role: user.role,
                 termsAcceptedAt: user.termsAcceptedAt,
+                level: user.level,
+                createdAt: user.createdAt,
             }
         };
     }

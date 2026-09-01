@@ -52,6 +52,9 @@ admin:
 up: env
 	docker compose up --build
 
+prod:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up --build -d
+
 ## Start in background
 	docker compose up --build -d
 

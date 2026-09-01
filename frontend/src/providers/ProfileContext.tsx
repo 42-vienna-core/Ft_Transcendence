@@ -1,7 +1,21 @@
 'use client';
 
+import { apiFetch } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/error";
+import { dateConvertor } from "@/ui/utils";
 import { useSession } from "next-auth/react";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+interface UserData {
+    avatar: string | null;
+    color: string;
+    name: string;
+    role: "ADMIN" | "PLAYER";
+    score: number;
+    level: number;
+    createdAt: string;
+}
 
 interface ProfileContextType {
     id: number;
@@ -9,9 +23,12 @@ interface ProfileContextType {
     email: string;
     nameOnChange: string;
     avatar: string;
+    level: number;
+    createdAt: string | null | undefined;
     status: 'loading' | 'authenticated' | 'unauthenticated';
     role: "ADMIN" | "PLAYER";
     termsAcceptedAt: string | null;
+    hasUpdatedData: {current: boolean};
     updateNameOnChange: (name: string) => void;
     updateSessionUsername: () => Promise<void>;
     updateAvatar: (newUrl: string) => Promise<void>;
@@ -24,6 +41,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const { data: session, update, status } = useSession();
     const [nameOnChange, setNameOnChange] = useState<string>("");
 
+    const hasUpdatedData = useRef<boolean>(false);
+
     useEffect(() => {
         if (session?.user?.username) {
             setNameOnChange(session.user.username);
@@ -31,16 +50,38 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }, [session?.user?.username]);
 
     useEffect(() => {
-        if (process.env.NODE_ENV !== 'production' && session) {
-            console.log("🔄 ProfileProvider: Session is already updated:", session.user);
+        async function updateUserData() {
+            try {
+                const updatedMe = await apiFetch('user/me') as UserData;
+                console.log(updatedMe);
+
+                await update({
+                    user: {
+                        ...session?.user,
+                        ...updatedMe,
+                        username: updatedMe.name
+                    }
+                });
+                hasUpdatedData.current = true;
+            } catch (error) {
+                toast.error(getErrorMessage(error));
+                hasUpdatedData.current = false; 
+            }
         }
-    }, [session]);
+       
+        if (status === "authenticated" && session?.user?.id && !hasUpdatedData.current) {
+            updateUserData();
+        }
+
+    }, [status]);
 
     const id = session?.user?.id ?? 0;
     const username = session?.user?.username ?? "";
     const email = session?.user?.email ?? "";
     const avatar = session?.user?.avatar ?? "/png/default_avatar.png";
     const role = session?.user?.role ?? "PLAYER";
+    const level = session?.user.level ?? 0;
+    const createdAt = dateConvertor(session?.user.createdAt);
     const termsAcceptedAt = session?.user?.termsAcceptedAt ?? null
 
     const updateSessionUsername = async () => {
@@ -69,16 +110,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <ProfileContext.Provider value={{
-            id,
-            username,
+            id, username,
             email,
             avatar,
+            level,
+            createdAt,
             nameOnChange,
             status,
             role,
             termsAcceptedAt,
+            hasUpdatedData,
             updateSession,
-            updateSessionUsername, 
+            updateSessionUsername,
             updateAvatar,
             updateNameOnChange: setNameOnChange
         }}>
