@@ -2,6 +2,7 @@ import { Controller, Post, HttpCode, HttpStatus, Body, Get, Patch, Param, Delete
 import { FriendsService } from './friends.service';
 import { Authorization } from '../common/decorators/authorization.decorator';
 import { Authorized } from '../common/decorators/authorized.decorator';
+import { Throttle } from '@nestjs/throttler';
 import { FriendRequestDto } from './dto/friend-request.dto';
 
 
@@ -9,6 +10,7 @@ import { FriendRequestDto } from './dto/friend-request.dto';
 export class FriendsController {
 	constructor(private readonly friendsService: FriendsService) { }
 
+	@Throttle({ long: { ttl: 60000, limit: 20 } })
 	@Authorization()
 	@HttpCode(HttpStatus.OK)
 	@Post('request')

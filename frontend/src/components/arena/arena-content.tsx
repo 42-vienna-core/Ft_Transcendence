@@ -178,7 +178,8 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
+                
+                {/* <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
                     {roomStatus === 'READY' && (
                         <div className="flex flex-col items-center gap-3 text-text-tertiary">
                             <span>{LN("startAfter")}</span>
@@ -186,7 +187,21 @@ function ArenaContent() {
                         </div>
                     )}
 
-                    <div className="relative w-full">
+                    <div className="relative w-full"> */}
+
+                <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex items-center justify-center overflow-hidden">
+                    <div
+                        id="game-board"
+                        className="relative flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl aspect-square w-full max-w-[60vh] sm:max-w-[65vh] lg:max-w-[calc(100vh-250px)]"
+                    >
+                        {roomStatus === 'READY' && (
+                            <div className="flex flex-col items-center gap-3 text-text-primary">
+                                <span className="text-sm font-medium">{LN("startAfter")}</span>
+                                <h2 className="text-5xl font-bold tabular-nums">{secondsLeft}</h2>
+                            </div>
+                        )}
+                {/* ///////////////////////// */}
+
                         {
                             (roomStatus === 'PLAYING' || roomStatus === 'running') && (
                                 <GameCanvas

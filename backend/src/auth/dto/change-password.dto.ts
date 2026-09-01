@@ -5,15 +5,14 @@ export class ChangePasswordDto {
     @IsString()
     @MinLength(8)
     @MaxLength(128)
-    "old": string;
+    old!: string;
 
     @IsNotEmpty()
     @IsString()
     @MinLength(8)
     @MaxLength(128)
-    // todo Matches with frontend
     @Matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$/, {
         message: 'Weak password',
     })
-    "new": string;
+    new!: string;
 }

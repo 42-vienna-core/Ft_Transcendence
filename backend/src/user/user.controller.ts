@@ -9,12 +9,16 @@ import { SearchUserDto } from './dto/search-user.dto';
 import { UpdateColorDto } from './dto/update-color.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetCodeDto } from './dto/reset-code.dto';
+import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
+
 
 @Controller('user')
 export class UserController {
 
   constructor(private readonly userService: UserService) { }
 
+  @SkipThrottle({ short: true, long: true })
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('me')
@@ -32,6 +36,7 @@ export class UserController {
     return this.userService.update(userId, dto);
   }
 
+  @Throttle({ long: { ttl: 60000, limit: 10 } })
   @Patch('me/avatar')
   @Authorization()
   @UseInterceptors(FileInterceptor('file', avatarMulterOptions))
@@ -59,7 +64,8 @@ export class UserController {
   ) {
     return this.userService.deleteAvatar(userId);
   }
-
+  
+  @Throttle({ short: { ttl: 1000, limit: 5 } })
   @Get('search')
   @Authorization()
   @HttpCode(HttpStatus.OK)
@@ -93,12 +99,14 @@ export class UserController {
     return this.userService.acceptTerms(userId);
   }
   
+  @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post("resetCode")
   async resetCode(@Body() body: ResetCodeDto)
   {
     return this.userService.resetCode(body);
   }
-    
+  
+  @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post("reset")
   async reset(@Body() body: ResetPasswordDto)
   {

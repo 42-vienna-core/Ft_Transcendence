@@ -58,8 +58,8 @@ export default function Admin({ onClose }: { onClose?: () => void }) {
         >
           <div className="relative flex-1">
             <Search size={16} className="pointer-events-none absolute top-1/2 left-3.5 z-10 -translate-y-1/2 text-(--color-text-tertiary)" />
-            <input className="w-full rounded-lg border border-(--color-border-default) bg-(--color-bg-subtle) py-2 pr-3 pl-11 text-sm text-(--color-text-primary) outline-none transition-colors placeholder:text-(--color-text-tertiary) focus:border-(--color-accent) focus:shadow-[0_0_0_3px_var(--color-accent-soft)]"
-              placeholder={adminData("searchPlaceholder")} value={query}
+            <input  autoComplete="off" placeholder={adminData("searchPlaceholder")} value={query}
+              className="w-full rounded-lg border border-(--color-border-default) bg-(--color-bg-subtle) py-2 pr-3 pl-11 text-sm text-(--color-text-primary) outline-none transition-colors placeholder:text-(--color-text-tertiary) focus:border-(--color-accent) focus:shadow-[0_0_0_3px_var(--color-accent-soft)]"
               onChange={(e) => setQuery(e.currentTarget.value)}
             />
           </div>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, GoneException } from '@nestjs/common';
 import { RegisterRequest } from '../auth/dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/updata-user.dto';
@@ -10,7 +10,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from 'src/mail/mail.service';
 import { ResetCodeDto } from './dto/reset-code.dto';
 import { hash } from 'argon2';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
 export interface Leaderboard{
 	id: number,
@@ -83,6 +83,7 @@ export class UserService {
 				name: dto.username,
 				email: dto.email,
 				password: passwordHash,
+				hasPassword: true,
 			},
 			select: {
 				id: true,
@@ -254,9 +255,10 @@ export class UserService {
 			where: { id },
 			data: {
 				pendingPassword,
-				resetCode : code, 
-				codeExpire: new Date(Date.now() + 5 * 60 * 1000), 
-			} 
+				resetCode : code,
+				codeExpire: new Date(Date.now() + 5 * 60 * 1000),
+				resetCodeAttempts: 0,
+			}
 		});
 		await this.mailService.sendResetCode(body.email, code);
 		return  { email: body.email};
@@ -264,27 +266,43 @@ export class UserService {
 
 	async reset(body: ResetPasswordDto)
 	{
+		if (body.ConfirmPassword !== body.password)
+    		throw new BadRequestException(`Passwords do not match`);
 		const user = await this.findByEmail(body.email);
 		if (!user)
-			throw new NotFoundException(`User with email ${body.email} not found`);
-		if (body.ConfirmPassword !== body.password)
-    		throw new BadRequestException("Passwords do not match");
+			return { email: body.email };
 
 		return await this.startPasswordReset(user.id, {email: body.email, password: body.password});
 	}
 
 	async resetCode (body : ResetCodeDto)
 	{
+		const MAX_CODE_ATTEMPTS = 5;
+
 		const user = await this.findByEmail(body.email);
 		if (!user)
-			throw new NotFoundException(`User with Email ${body.email} not found`);
-		if(user.resetCode !== body.code)
-            throw new Error('Wrong code');
+			throw new NotFoundException(`Passwords do not match`);
 
-        if (!user.codeExpire || user.codeExpire < new Date())
-            throw new Error('Code expired');
+		if (!user.resetCode || !user.codeExpire || user.codeExpire < new Date())
+			throw new GoneException('Code expired');
 		if (!user.pendingPassword)
 			throw new BadRequestException("NO pending password change");
+
+		if (user.resetCodeAttempts >= MAX_CODE_ATTEMPTS) {
+			await this.prismaService.users.update({
+				where: { id: user.id },
+				data: { resetCode: null, codeExpire: null, pendingPassword: null, resetCodeAttempts: 0 },
+			});
+			throw new UnauthorizedException('Too many wrong attempts, request a new code');
+		}
+
+		if (user.resetCode !== body.code) {
+			await this.prismaService.users.update({
+				where: { id: user.id },
+				data: { resetCodeAttempts: { increment: 1 } },
+			});
+			throw new UnauthorizedException('Wrong code');
+		}
 
 		await this.prismaService.users.update({
 			where: {id: user.id},
@@ -293,6 +311,8 @@ export class UserService {
 				pendingPassword : null,
 				resetCode: null,
             	codeExpire: null,
+				hasPassword: true,
+				resetCodeAttempts: 0,
 			}
 		});
 		 
@@ -334,6 +354,7 @@ export class UserService {
 				provider: data.provider,
 				providerId: data.providerId,
 				password: data.passwordHash,
+				hasPassword: false,
 				role: "PLAYER",
 			},
 		});
