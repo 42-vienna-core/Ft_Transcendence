@@ -26,7 +26,6 @@ export const useStartGame = create<GameDataState>((set, get) => ({
         if (!socket) return;
         
         set({ isLoading: true, gameMode: mode });
-        console.log("MODE: ", mode);
 
         socket.emit('join-match', { mode });
 
@@ -39,7 +38,6 @@ export const useStartGame = create<GameDataState>((set, get) => ({
     },
 
     handleStartMatch: (pushRoute) => {
-        console.log("Start match");
         pushRoute("/arena");
     }
 }));

@@ -12,7 +12,7 @@ import { Match } from "src/gameRoom/interfaces/room-update.interface";
 
 
 const EXP_TIME = 20_000;
-const COUNTDOWN = 3; // seconds
+const COUNTDOWN = 3;
 
 @Injectable()
 export class MatchStarter {
@@ -465,10 +465,6 @@ export class MatchStarter {
 	}
 
 	async prepareMatch (userId: number, socketId: string, request: MatchRequestDto): Promise<Match> {
-		console.log("mode: ", request.mode);
-		console.log("socketId: ", socketId);
-		console.log("userId: ", userId);
-
 		const lockKey = `lock:prepare-match:${userId}`;
 		const lockId = await this.redisService.acquireLock(lockKey, 30);
 		if (!lockId)

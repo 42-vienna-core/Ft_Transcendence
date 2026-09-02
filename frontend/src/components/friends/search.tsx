@@ -116,7 +116,6 @@ export default function FindFriends({
     styles,
     handleFindModal
 }: { styles: string, handleFindModal: () => void }) {
-    //const userContext = useProfile();
     const [message, setMessage] = useState<string>("");
     const [result, setResult] = useState<SearchingData[]>([]);
     const [query, setQuery] = useState<string>("");

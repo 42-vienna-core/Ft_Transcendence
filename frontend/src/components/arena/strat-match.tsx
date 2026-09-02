@@ -140,7 +140,6 @@ function StartMatch () {
         setGameMode(mode);
         clearStatus();
 
-        //socket.emit('join-match', {mode});
 		socket.timeout(10000).emit('join-match', {mode}, (timeoutError: Error | null, response?: SocketResponse<unknown>) =>{
 			if (timeoutError || !response?.success)
 				clearGameData();

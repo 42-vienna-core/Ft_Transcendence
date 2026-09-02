@@ -21,7 +21,6 @@ export default function RegisterForm() {
 
     const [state, formAction] = useActionState(async (prevState: any, formData: FormData) => {
 
-        console.log(formData);
         const res = await fetchRegister(formData);
         if (!res.success) {
             return { success: false, message: res.message || "Registration failed" };

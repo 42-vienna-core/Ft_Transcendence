@@ -61,7 +61,6 @@ export const useNotificationListener = create<NotificationState>()(
             socket.off('playing-friends-changed');
 
             socket.on('friend-match-status', (data: FrindMatchStatus) => {
-                console.log("friend-match-status", data);
                 get().setStatus(data.status);
 
                 set((state) => {
@@ -84,7 +83,6 @@ export const useNotificationListener = create<NotificationState>()(
             });
 
             socket.on('friend-match-invite', (data: GameRequestData) => {
-                console.log("friend-match-invite: ",data);
                 set((state) => {
                     const updatedGameRequests = [...state.gameRequests, data];
                     return {
@@ -95,7 +93,6 @@ export const useNotificationListener = create<NotificationState>()(
             });
 
             socket.on('friend-request-received', (data: Request) => {
-                console.log("friend-request-received: ", data);
 
                 set((state) => {
                     const updatedFriendRequests = [...state.friendRequests, data];
@@ -113,7 +110,6 @@ export const useNotificationListener = create<NotificationState>()(
 					let data: PlayingFriendRoom[] = [];
 					if (response.data !== undefined && response.data !== null)
 						data = response.data;
-					console.log("get-playing-friends", data);
 
                     const arr = get().playFriends;
 

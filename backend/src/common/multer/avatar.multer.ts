@@ -13,7 +13,6 @@ const allowedMimeTypes = [
 
 export const avatarMulterOptions = {
     storage: diskStorage({
-        //destination: '/uploads/avatars',
         destination: path.join(process.cwd(), 'uploads/avatars'),
 
         filename: (_req: Request, file: Express.Multer.File, cb) => {

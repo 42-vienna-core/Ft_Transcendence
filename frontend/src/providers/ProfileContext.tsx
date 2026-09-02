@@ -53,7 +53,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         async function updateUserData() {
             try {
                 const updatedMe = await apiFetch('user/me') as UserData;
-                console.log(updatedMe);
 
                 await update({
                     user: {

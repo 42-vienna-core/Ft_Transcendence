@@ -12,7 +12,6 @@ export class GameRoomService {
 
   async findAll() {
     const res = await this.db.gameRoom.findMany({
-      //include: { _count: { select: { users: true } } },
     });
     return res;
   }
@@ -20,23 +19,19 @@ export class GameRoomService {
   async findOne(id: string) {
     return this.db.gameRoom.findUnique({
       where: { id },
-      //include: { users: true },
     });
   }
 
   async createRoom(obj: CreateGameRoomDto) {
     const room = await this.db.gameRoom.create({
       data: obj,
-      //include: { _count: { select: { users: true } } },
     });
     return room;
   }
 
   async createPrivateRoom(obj: CreatePrivateGameRoom) {
-    console.log(obj);
     const room = await this.db.gameRoom.create({
       data: obj,
-      //include: { _count: { select: { users: true } } },
     });
     return room;
   }

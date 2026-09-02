@@ -23,7 +23,6 @@ export class FileService {
             if (!filePath.startsWith(baseDir)) {
                 throw new BadRequestException('Path traversal detected');
             }
-            console.log('[FILE][DELETE]', filePath);
             await unlink(filePath);
         } catch (error: any) {
             const err = error as NodeJS.ErrnoException;
