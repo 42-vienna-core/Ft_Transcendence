@@ -97,7 +97,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
   clearSelectedUser: () => set({ selectedUser: null, detailError: '', saveError: '', deleteError: '' }),
   saveUser: async (id, body) => {
-    console.log("in AdminStore ", id, body);
+    ("in AdminStore ", id, body);
     set({ saving: true, saveError: '' });
     try {
       const res = await fetch(`/api/admin?path=/admin/users/${id}`, {

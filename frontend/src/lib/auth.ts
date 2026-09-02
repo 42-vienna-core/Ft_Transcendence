@@ -36,8 +36,6 @@ export const authOptions: NextAuthOptions = {
 
                 if (!res.ok) throw new Error('Error: while logining');
                 const data = await res.json();
-
-                console.log(data);
                 return {
                     id: data.user.id,
                     name: data.user.name,
@@ -56,7 +54,6 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({token, user, trigger, session}) {
-            console.log("=================JWT CALLBACK=======================")
             if (user) {
                 token.sub = user.id;
                 token.name = user.name;
@@ -86,7 +83,6 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
         async session({session, token}) {
-            console.log("=================SESSION CALLBACK=======================")
             if (session.user) {
                 session.user.id = Number(token.sub);
                 session.user.username = token.name as string;

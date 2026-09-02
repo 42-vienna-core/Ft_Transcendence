@@ -15,9 +15,9 @@ export interface Player{
 }
 
 export interface Snake {
-	id: number; //user id
+	id: number;
 	username: string;
-	body: Position[]; //first position 
+	body: Position[];
 	direction: Direction;
 	newDirection: Direction | null;
 	newPosition: Position | null;

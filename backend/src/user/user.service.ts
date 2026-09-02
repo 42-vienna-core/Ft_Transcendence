@@ -51,7 +51,6 @@ export class UserService {
 	}
 
 	public async getUser(id: number) {
-		console.log("~~~~~~~~~~~~~~~~~~~~ getUser me");
 		const user = await this.prismaService.users.findUnique({
 			where: { id },
 			select: {
@@ -61,10 +60,6 @@ export class UserService {
 				score: true,
 				color: true,
 				role: true,
-				// isBot: true,
-				// createdAt: true,
-				// updatedAt: true,
-				// isVerified: true,
 			},
 		});
 		if (!user) {
@@ -153,7 +148,6 @@ export class UserService {
 				score: true,
 			},
 		});
-		// return users;
 		const ids = users.map(u => u.id);
 		const requests = await this.prismaService.friendsRequest.findMany({
 			where: {
@@ -198,7 +192,6 @@ export class UserService {
 	}
 
 	public async deleteUser(userId: number) {
-		console.log('Deleting user with ID:', userId);
 		await this.avatarService.deleteAvatar(userId);
 		await this.sessionService.deleteAllUserSessions(userId);
 		await this.prismaService.users.delete({
@@ -206,11 +199,8 @@ export class UserService {
 				id: userId,
 			},
 		});
-		console.log('User deleted successfully');
 		return { success: true };
 	}
-
-	// Admin routes // 
 
 	async findOneForAdmin(id: number) {
 		return this.prismaService.users.findUnique({

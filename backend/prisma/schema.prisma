@@ -1,7 +1,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output = "../prisma/generated"
 }
 
 datasource db {
@@ -32,10 +31,7 @@ model Users {
 
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-
-  //isVerified Boolean @default(false) @map("is_verified")
-  //isBlocked  Boolean @default(false) @map("is_blocked")
-
+  
   sessions            Sessions[]
 	gameParticipants	  GameParticipants[]
 	gamesWon			      GameResults[] @relation("Winner")

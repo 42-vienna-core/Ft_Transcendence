@@ -162,7 +162,6 @@ function FriendsContent ({friends, filter, removeFriendCard}: FriendsContentProp
 
         clearStatus();
 
-        //socket.emit('join-match', {mode: 'FRIENDS_JOIN', roomId});
 		socket.timeout(10000).emit('join-match', {mode: 'FRIENDS_JOIN', roomId},(timeoutError: Error | null, response?: SocketResponse<unknown>) => {
 			if (timeoutError || !response?.success)
 				clearGameData();

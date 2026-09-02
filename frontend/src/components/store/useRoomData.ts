@@ -64,8 +64,6 @@ export const useRoomDataBySocket = create<GameDataState>()(
 
             socket.on('room-update', (data: RoomData) => {
                 get().setRoomStatus(data.roomStatus);
-
-                console.log("room-update: ", data);
                 if (data.roomStatus === 'ABANDONED') {
                     set({isLobbyOpen: false});
                     get().clearGameData();
@@ -79,7 +77,6 @@ export const useRoomDataBySocket = create<GameDataState>()(
             });
 
             socket.on('countdown', (countdown: CountdownData) => {
-                console.log("COUNTDOWN: ", countdown);
                 
                 set((state) => {
                     if (state.room && state.room.roomId !== countdown.roomId)

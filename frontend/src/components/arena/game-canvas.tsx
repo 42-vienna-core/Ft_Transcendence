@@ -82,8 +82,6 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
 
         currentDirection.current = newDirection;
         setGameDir(newDirection);
-
-        console.log(newDirection);
     
         if (socket && isConnected) {
             advanceSnake(socket, newDirection);
@@ -109,7 +107,6 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
             const currScore = data.snakes.find(s => String(s.id) === String(id))?.score || 0;
 
             if (currScore > prevScore) {
-                console.log("i'm having meal ");
                 playEffect('/sounds/eat.mp3');
             }
 
@@ -124,7 +121,6 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
 
         let rafId: number;
 
-        //const container = document.getElementById('canvas-container');
         const container = document.getElementById("game-board");
         if (!container) return;
 
@@ -157,13 +153,9 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
     }, [socket, isConnected, id, setGameStatus, setGameDir]);
 
     function advanceSnake(socket: Socket, dir: Direction) {
-        //const room = currRef.current?.roomId;
-        //if (!room) return;
 
         socket.emit('change-direction', { 
             direction: dir, 
-        //    roomId: room, 
-        //    userId: id 
         });
     }
 
@@ -186,14 +178,6 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         const mySnake = snakes.find(s => String(s.id) === String(id));
         if (!mySnake || mySnake.body.length === 0) return;
 
-        // const prevMy = prev?.snakes.find(s => String(s.id) === String(id));
-        // const prevHead = prevMy?.body[0] ?? mySnake.body[0];
-        // const myHeadX = lerp(prevHead.x, mySnake.body[0].x, alpha) * CELL + CELL / 2;
-        // const myHeadY = lerp(prevHead.y, mySnake.body[0].y, alpha) * CELL + CELL / 2;
-
-        // const cameraX = myHeadX - SCREEN_WIDTH / 2;
-        // const cameraY = myHeadY - SCREEN_HEIGHT / 2;
-
         const worldScale = Math.min(
                 SCREEN_WIDTH / WORLD_WIDTH,
                 SCREEN_HEIGHT / WORLD_HEIGHT
@@ -201,18 +185,14 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         const worldOffsetX = (SCREEN_WIDTH - WORLD_WIDTH * worldScale) / 2;
         const worldOffsety = (SCREEN_HEIGHT - WORLD_HEIGHT * worldScale) / 2;
 
-        ///////////////////////////////////////////////
 
         ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         ctx.save();
-
-        //ctx.translate(-cameraX, -cameraY);
         
         ctx.translate(worldOffsetX, worldOffsety);
         ctx.scale(worldScale, worldScale);
 
-        ///////////////////////////////////////////////
 
         ctx.strokeStyle = '#1e2224';
         ctx.lineWidth = 8;
@@ -224,17 +204,7 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         ctx.fillStyle = ('#1e2224');
         ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-        // const tileStartX = Math.max(0, Math.floor(cameraX / CELL) * CELL);
-        // const tileEndX = Math.min(WORLD_WIDTH, cameraX + SCREEN_WIDTH + CELL);
-        // const tileStartY = Math.max(0, Math.floor(cameraY / CELL) * CELL);
-        // const tileEndY = Math.min(WORLD_HEIGHT, cameraY + SCREEN_HEIGHT + CELL);
-
-
-        ///////////////////////////////////////////////
-        // drowing floor
-       // for (let x = tileStartX; x < tileEndX; x += CELL) {
         for (let x = 0; x < WORLD_WIDTH; x += CELL) {
-           // for (let y = tileStartY; y < tileEndY; y += CELL) {
             for (let y = 0; y < WORLD_HEIGHT; y += CELL) {
                 ctx.fillStyle = '#0b0f19';
                 ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
@@ -393,7 +363,6 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
     }
 
     return (
-        // <canvas ref={canvasRef} className="rounded-xl cursor-none" />
         <canvas ref={canvasRef} className="block mx-auto rounded-xl cursor-none" />
     );
 }

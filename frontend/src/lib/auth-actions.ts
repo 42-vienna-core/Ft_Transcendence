@@ -53,7 +53,6 @@ export async function resetPassword(formData: FormData)
     const email = formData.get("email");
     const password = formData.get("password");
     
-    console.log(formData, "I am in new fun" );
     return formData;
 }
 
@@ -83,7 +82,6 @@ export async function fetchChangePassword (formData: FormData) {
     const oldPassword = formData.get('oldPassword');
     const newPassword = formData.get('newPassword');
     const confirmPassword = formData.get('confirmPassword');
-    console.log(oldPassword,newPassword,confirmPassword);
 
     const validateFilds = changePasswordSchema.safeParse({oldPassword, newPassword, confirmPassword});
 

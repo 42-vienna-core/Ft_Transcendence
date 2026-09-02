@@ -21,7 +21,6 @@ export default function GlobalLobbyManager() {
     const handleCloseLobby = () => {
         if (!socket) return;
 
-        console.log("emit('leave-room");
         socket.timeout(5000).emit('leave-room', (timeoutError: Error | null, response?: SocketResponse) => {
 			if (timeoutError || !response?.success)
 				return;

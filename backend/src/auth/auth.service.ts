@@ -38,7 +38,6 @@ export class AuthService {
     }
 
     public async login(dto: LoginRequest, userAgent?: string, ip?: string) {
-        // TODO REDIS - Rate Limiting
         const email = dto.email.toLowerCase().trim();
         dto.email = email;
         const user = await this.userService.findByEmail(email);
@@ -81,7 +80,6 @@ export class AuthService {
 
         const cachedTokens = await this.redis.get(cacheKey);
         if (cachedTokens) {
-            console.log("ℹ️ cachedTokens")
             return JSON.parse(cachedTokens) as { accessToken: string; refreshToken: string };
         }
 
@@ -89,10 +87,8 @@ export class AuthService {
         const lockId = await this.redis.acquireLock(lockKey, 10);
 
         if (!lockId) {
-            console.log("ℹ️ !lockId")
             const retryCached = await this.redis.waitForCache(cacheKey, 2500);
             if (retryCached) {
-                console.log("ℹ️ retryCached")
                 return JSON.parse(retryCached) as { accessToken: string; refreshToken: string };
             }
             throw new UnauthorizedException('Concurrent refresh request failed, try again');
@@ -113,20 +109,17 @@ export class AuthService {
             return tokens;
         } finally {
             if (lockId) {
-                console.log("ℹ️ finally releaseLock")
                 await this.redis.releaseLock(lockKey, lockId).catch(() => { });
             }
         }
     }
 
     public async logout(sessionId: string) {
-        console.log("logout")
         const count = await this.sessionService.deleteSession(sessionId);
         return count;
     }
 
     public async logoutAll(userId: number) {
-        console.log("logoutAll")
         const count = await this.sessionService.deleteAllUserSessions(userId);
         return count;
     }

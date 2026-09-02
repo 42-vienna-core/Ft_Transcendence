@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from 'argon2';
-//import 'dotenv/config';
 
 const prisma = new PrismaClient()
 

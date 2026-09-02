@@ -3,7 +3,6 @@ import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { ConfigService } from "@nestjs/config";
 import { JwtPayload } from "../interfaces/jwt.interface";
-// import { RedisService } from "src/redis/redis.service";
 import { SessionService } from "src/session/session.service";
 import { Sessions } from "@prisma/client";
 
@@ -12,7 +11,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
         readonly configService: ConfigService,
         private readonly sessionService: SessionService,
-        // private readonly redisService: RedisService, 
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -30,10 +28,5 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new UnauthorizedException();
         }
         return session;
-        // const isSessionInBlackList = await this.redisService.isSessionBlacklisted(payload.sessionId);
-        // if (isSessionInBlackList) {
-        //     throw new UnauthorizedException();
-        // }
-        // return payload;
     };
 }
