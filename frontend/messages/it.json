@@ -23,9 +23,9 @@
         "settings": {
             "settings": "Impostazioni",
             "lang": "Lingua",
-            "ct": "Tema colore",
+            "ct": "Modalità chiara/scura",
             "da": "Elimina account",
-            "lo": "Esci",
+            "lo": "Log out",
             "sound": "Suoni e musica",
             "on": "Attivo",
             "off": "Disattivo",
