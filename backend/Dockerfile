@@ -4,7 +4,6 @@ RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 COPY package*.json ./
-# Include prisma schema in base so it's available for generation
 COPY prisma ./prisma/ 
 
 RUN npm config set fetch-retries 5 && \
@@ -26,7 +25,6 @@ RUN npm run build
 # Production stage
 FROM node:20-alpine  AS prod
 WORKDIR /app
-# Only copy the necessary production bits
 
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/tsconfig*.json ./

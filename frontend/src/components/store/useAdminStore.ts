@@ -2,7 +2,6 @@ import { create } from 'zustand';
 
 export type Role = "ADMIN" | "PLAYER" | "BOT";
 
-
 export type ListErrorKey = '' | 'forbidden' | 'loadUsersFailed';
 export type DetailErrorKey = '' | 'forbidden' | 'loadUserFailed';
 export type SaveErrorKey = '' | 'forbidden' | 'saveFailed';
@@ -97,7 +96,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
   clearSelectedUser: () => set({ selectedUser: null, detailError: '', saveError: '', deleteError: '' }),
   saveUser: async (id, body) => {
-    ("in AdminStore ", id, body);
+    // ("in AdminStore ", id, body);
     set({ saving: true, saveError: '' });
     try {
       const res = await fetch(`/api/admin?path=/admin/users/${id}`, {
