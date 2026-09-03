@@ -119,11 +119,6 @@ export class AuthService {
         return count;
     }
 
-    public async logoutAll(userId: number) {
-        const count = await this.sessionService.deleteAllUserSessions(userId);
-        return count;
-    }
-
     async changePassword(userId: number, dto: ChangePasswordDto) {
 
         const user = await this.userService.findById(userId);

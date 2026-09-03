@@ -422,12 +422,6 @@ export default function ProfileSettingsContent() {
                     />
                 </SettingBtnContainer>
 
-                {/* Logout of all accounts */}
-                <SettingBtnContainer>
-                    <SettingBatton
-                        labelF={LN('secure.label3')}
-                    />
-                </SettingBtnContainer>
 
                 {/* Delete accounts */}
                 <SettingBtnContainer>

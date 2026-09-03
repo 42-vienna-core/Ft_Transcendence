@@ -116,19 +116,20 @@ The selected modules support the same goal: a complete multiplayer game with sec
 
 ### Configuration
 
-1. Copy `.env.example` to `.env`.
+1. Copy `.env.example` to `.env.prod` for the production evaluation setup.
 2. Fill in the PostgreSQL, JWT, NextAuth, application URL, email, Google OAuth, bot, and administrator values described in the file.
-3. Use strong local secrets and keep `.env` outside version control.
+3. Use strong local secrets and keep `.env.prod` outside version control.
 
 ### Run
 
-After configuration, build and start the complete application with:
+After configuration, generate the local TLS certificate and start the complete application in production mode with:
 
 ```bash
-make
+make certs
+make prod
 ```
 
-This generates the local TLS certificate and starts nginx, the frontend, backend, PostgreSQL, and Redis with Docker Compose. Open `https://localhost` in Google Chrome and accept the local self-signed certificate when prompted.
+`make prod` uses `.env.prod`, builds the production frontend and backend image stages, and starts nginx, the frontend, backend, PostgreSQL, and Redis in the background with Docker Compose. Open `https://localhost` in Google Chrome and accept the local self-signed certificate when prompted. The plain `make` command starts the development configuration and is intended for local development rather than evaluation.
 
 Useful commands:
 
@@ -136,7 +137,7 @@ Useful commands:
 make down             # stop the application
 make logs             # follow service logs
 make log s=backend    # follow one service
-make re               # rebuild and restart
+make prod             # rebuild and restart in production mode
 make admin            # seed configured administrator accounts
 ```
 
