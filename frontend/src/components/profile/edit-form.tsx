@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from '@/lib/api-client';
 import { getErrorMessage } from '@/lib/error';
 import { toast } from 'sonner';
@@ -87,6 +87,8 @@ export default function EditProfileForm () {
         }
 
         if (username != "" && username !== nameOnChange) {
+            if (nameOnChange.length < 3 || nameOnChange.length > 40) return;
+
             try {
                 const res = await apiFetch('user/me', {
                     method: 'PATCH',
@@ -134,7 +136,7 @@ export default function EditProfileForm () {
                                         name="username"
                                         value={nameOnChange || ""}
                                         autoComplete="off"
-                                        onChange={(e) => updateNameOnChange(e.target.value)}
+                                        onChange={(e) => updateNameOnChange(e.target.value.trim())}
                                         className="w-full border-none text-lg text-text-primary outline-none transition-colors duration-200 focus:text-accent"
                                     />
                                 </label>

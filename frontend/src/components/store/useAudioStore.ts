@@ -33,7 +33,7 @@ export const useAudioStore = create<AudioState>(
             bgMusicPlayer = new Audio(src);
             bgMusicPlayer.loop = loop;
             bgMusicPlayer.volume = 0.4;
-            bgMusicPlayer.muted = !get().isMuted;
+            bgMusicPlayer.muted = get().isMuted;
 
             bgMusicPlayer.play()
                 .then(() => set({ isPlaying: true, currentTrack: src }))
@@ -66,7 +66,7 @@ export const useAudioStore = create<AudioState>(
             }
 
             effectTune.volume = 0.5;
-            effectTune.muted = !get().isMuted;
+            effectTune.muted = get().isMuted;
             effectTune.play().catch(() => { });
         },
 
@@ -79,6 +79,7 @@ export const useAudioStore = create<AudioState>(
                 set({ isPlaying: false, currentTrack: null });
             }
         },
+        
         stopEffectMusic: () => {
             if (effectTune) {
                 effectTune.pause();

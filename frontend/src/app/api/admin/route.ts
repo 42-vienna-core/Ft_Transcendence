@@ -41,7 +41,6 @@ export async function PUT (request: NextRequest) {
 
         if (!session) return;
         const { accessToken} = session;
-
         if (!accessToken)
             return  NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -65,6 +64,8 @@ export async function PUT (request: NextRequest) {
 export async function POST (request: NextRequest) {
 
     try {
+        console.log("1111111111111111111111111111");
+
         const body = await request.json();
         const path = request.nextUrl.searchParams.get("path") ?? "";
         const res = await fetch(backendUrl + path, {
@@ -74,9 +75,13 @@ export async function POST (request: NextRequest) {
             },
             body: JSON.stringify(body),
         });
+        console.log("2222222222222222222222222222222");
+
         const data = await res.json();
         return Response.json(data, { status: res.status });
     } catch {
+        console.log("333333333333333333333333333333333");
+
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

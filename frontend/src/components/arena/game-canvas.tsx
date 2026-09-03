@@ -5,7 +5,7 @@ import { useGameSocket } from '@/providers/SocketProvider';
 import { useProfile } from '@/providers/ProfileContext';
 import { Socket } from 'socket.io-client';
 import { useGameControls } from "@/hooks/useGameControls";
-import { ControlType, Direction, Game} from "@/types/gameTypes";
+import { ControlType, Direction, Game } from "@/types/gameTypes";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 
@@ -39,10 +39,10 @@ const lerp = (start: number, end: number, alpha: number): number => {
     return start + (end - start) * alpha;
 };
 
-export default function GameCanvas({control, setGameDir, tick }: GameProps) {
+export default function GameCanvas({ control, setGameDir, tick }: GameProps) {
     const { id } = useProfile();
     const { setGameStatus, gameStatus } = useRoomDataBySocket();
-    const { playMusic, playEffect ,stopBgMusic, stopEffectMusic} = useAudioStore();
+    const { playMusic, playEffect, stopBgMusic, stopEffectMusic } = useAudioStore();
     const { isConnected, socket } = useGameSocket();
 
     const prevRef = useRef<Game | null>(null);
@@ -58,20 +58,20 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
     useEffect(() => {
 
         setGameStatus('START');
-        playMusic('/sounds/tanweraman.mp3');
+        playMusic('/sounds/background.mp3');
 
         return () => {
             stopBgMusic();
             stopEffectMusic();
         }
-    },[playMusic, stopBgMusic, stopEffectMusic])
+    }, [playMusic, stopBgMusic, stopEffectMusic])
 
     const isEnded = () => gameStatus === 'OVER' || gameStatus === 'WIN';
 
     const handleDirectionChange = (newDirection: Direction) => {
         const current = currentDirection.current;
 
-        if (isEnded()) return; 
+        if (isEnded()) return;
 
         if (newDirection === 'UP' && current === 'DOWN') return;
         if (newDirection === 'DOWN' && current === 'UP') return;
@@ -80,7 +80,7 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
 
         currentDirection.current = newDirection;
         setGameDir(newDirection);
-    
+
         if (socket && isConnected) {
             advanceSnake(socket, newDirection);
         }
@@ -96,8 +96,8 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         ctxRef.current = context;
 
         const handleGameState = (data: Game) => {
-            prevRef.current = currRef.current;  
-            currRef.current = data;             
+            prevRef.current = currRef.current;
+            currRef.current = data;
             stateTimeRef.current = performance.now();
             stepRef.current = !stepRef.current;
 
@@ -152,8 +152,8 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
 
     function advanceSnake(socket: Socket, dir: Direction) {
 
-        socket.emit('change-direction', { 
-            direction: dir, 
+        socket.emit('change-direction', {
+            direction: dir,
         });
     }
 
@@ -177,8 +177,8 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         if (!mySnake || mySnake.body.length === 0) return;
 
         const worldScale = Math.min(
-                SCREEN_WIDTH / WORLD_WIDTH,
-                SCREEN_HEIGHT / WORLD_HEIGHT
+            SCREEN_WIDTH / WORLD_WIDTH,
+            SCREEN_HEIGHT / WORLD_HEIGHT
         );
         const worldOffsetX = (SCREEN_WIDTH - WORLD_WIDTH * worldScale) / 2;
         const worldOffsety = (SCREEN_HEIGHT - WORLD_HEIGHT * worldScale) / 2;
@@ -187,7 +187,7 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         ctx.save();
-        
+
         ctx.translate(worldOffsetX, worldOffsety);
         ctx.scale(worldScale, worldScale);
 
@@ -219,7 +219,7 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
             const facing = snake.newDirection ?? snake.direction;
 
             snake.body.forEach((seg, index) => {
-                const prevSeg = prevSnake?.body[index] ?? seg; 
+                const prevSeg = prevSnake?.body[index] ?? seg;
                 const renderX = lerp(prevSeg.x, seg.x, alpha) * CELL;
                 const renderY = lerp(prevSeg.y, seg.y, alpha) * CELL;
 
@@ -295,7 +295,7 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
                         ctx.moveTo(eye2.x + 4, eye2.y);
                         ctx.lineTo(eye2.x, eye2.y + 4);
                         ctx.strokeStyle = "black";
-                        ctx.lineWidth = 2;          
+                        ctx.lineWidth = 2;
                         ctx.stroke();
                     }
 
@@ -350,7 +350,7 @@ export default function GameCanvas({control, setGameDir, tick }: GameProps) {
         }
 
         for (const f of food) {
-            if (f.eaten) continue; 
+            if (f.eaten) continue;
             ctx.beginPath();
             ctx.arc(f.position.x * CELL + CELL / 2, f.position.y * CELL + CELL / 2, CELL / 3, 0, Math.PI * 2);
             ctx.fillStyle = 'red';

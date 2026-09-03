@@ -95,3 +95,4 @@ export async function fetchChangePassword (formData: FormData) {
 
     return {success: true};
 }
+

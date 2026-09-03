@@ -1,6 +1,6 @@
 'use client'
 
-import { useNotificationListener } from "@/components/store/notification";
+import { useNotificationListener } from "@/components/store/useNotification";
 import { useRoomDataBySocket } from "@/components/store/useRoomData";
 import { getErrorMessage } from "@/lib/error";
 import { SocketResponse } from "@/types/socketTypes";

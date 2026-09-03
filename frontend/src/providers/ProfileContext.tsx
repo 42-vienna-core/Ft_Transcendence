@@ -83,6 +83,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     const createdAt = dateConvertor(session?.user.createdAt);
     const termsAcceptedAt = session?.user?.termsAcceptedAt ?? null
 
+    if (nameOnChange && nameOnChange.length < 3) {
+        toast.error("Error: username less then 3");
+    }
+
+    if (nameOnChange && nameOnChange.length > 40) {
+        toast.error("Error: username is too long");
+    }
+
     const updateSessionUsername = async () => {
         if (!session?.user) return;
         await update({
