@@ -9,10 +9,11 @@ import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
 import { ControlType, Direction, Game } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 import { getOrdinal } from "@/ui/utils";
+import { SocketResponse } from "@/types/socketTypes";
 
 const tick_ms_str = process.env.TICK_MS;
 const TICK_MS = tick_ms_str ? Number(tick_ms_str) : 130;
@@ -45,25 +46,29 @@ function ArenaContent() {
 
     const { isConnected, socket } = useGameSocket();
     const router = useRouter();
+    const locale = useLocale();
 
     const players = usePlayerStore((state) => state.players);
     const setPlayers = usePlayerStore((state) => state.setPlayers);
     const resetPlayers = usePlayerStore((state) => state.resetPlayers);
 
     const joinedSocketRef = useRef<Socket | null>(null);
-    
+    const socketRef = useRef<Socket | null>(null);
+    const isConnectedRef = useRef(false);
+    const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const LN = useTranslations("arena");
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const { room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen } = useRoomDataBySocket();
+    const { room, countdown, roomStatus, gameStatus, gameMode, clearStatus, setIsLobbyOpen, clearGameData } = useRoomDataBySocket();
     const { playMusic, toggleMute, stopBgMusic } = useAudioStore();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
 
     useEffect(() => {
-        if (!(gameStatus || roomStatus)) {
-            router.replace('/');
+        if (!(gameStatus || roomStatus || gameMode)) {
+            router.replace(`/${locale}`);
         } else {
             r.current = true;
         }
@@ -102,6 +107,11 @@ function ArenaContent() {
     }, [room, countdown]);
 
     useEffect(() => {
+        socketRef.current = socket;
+        isConnectedRef.current = isConnected;
+    }, [socket, isConnected]);
+
+    useEffect(() => {
         if (!socket || !isConnected) return;
 
         const handleGameState = (data: Game) => {
@@ -126,15 +136,34 @@ function ArenaContent() {
 
         return () => {
             socket.off("game-state", handleGameState);
-            resetPlayers();
         };
     }, [socket, isConnected, setPlayers, router]);
+
+    useEffect(() => {
+        if (leaveTimeoutRef.current) {
+            clearTimeout(leaveTimeoutRef.current);
+            leaveTimeoutRef.current = null;
+        }
+
+        return () => {
+            leaveTimeoutRef.current = setTimeout(() => {
+                if (socketRef.current && isConnectedRef.current) {
+                    socketRef.current.timeout(5000).emit('leave-room', (timeoutError: Error | null, response?: SocketResponse) => {
+                        if (timeoutError || !response?.success)
+                            return;
+                        clearGameData();
+                    });
+                }
+            }, 0);
+            resetPlayers();
+        };
+    }, []);
 
     if (r.current === false) return null;
 
     function handleRestart() {
         clearStatus();
-        router.push('/');
+        router.push(`/${locale}`);
         router.refresh();
     }
 

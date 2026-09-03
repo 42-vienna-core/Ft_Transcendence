@@ -1,11 +1,9 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useGameSocket } from '@/providers/SocketProvider';
 import { useProfile } from '@/providers/ProfileContext';
 import { Socket } from 'socket.io-client';
-import { useRouter } from "next/navigation";
-import { useGameMode } from "@/components/store/useUserStore";
 import { useGameControls } from "@/hooks/useGameControls";
 import { ControlType, Direction, Game} from "@/types/gameTypes";
 import { useRoomDataBySocket } from "../store/useRoomData";

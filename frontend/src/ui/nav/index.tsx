@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import CustomLink from '../link';
 import { useProfile } from '@/providers/ProfileContext';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { HeaderProfileSkeleton } from '../skeletons';
 import Admin from "../../components/admin/Admin";
 import { useNotificationListener } from '@/components/store/notification';
@@ -15,22 +15,23 @@ export function NavLinks () {
     const { gameNotification, beFriendNotification} = useNotificationListener();
     const t = useTranslations("Header");
     const LN = useTranslations("leaderboard")
+    const locale = useLocale();
 
     return (
         <>
             <CustomLink
-                url={"/friends"}
+                url={`/${locale}/friends`}
                 label={t("f")}
                 notification={gameNotification + beFriendNotification}
             />
             <CustomLink
-                url={"/leaderboard"}
+                url={`/${locale}/leaderboard`}
                 label={LN("leaderboard")}
             />
             {
                 hasUpdatedData.current && status === 'authenticated' &&
                     <Link
-                        href="/profile"
+                        href={`/${locale}/profile`}
                         title={username}
                         className="flex max-w-[120px] items-center gap-2 rounded-full border border-border-default py-1 pl-1 pr-1 transition-colors duration-150 hover:border-accent hover:bg-bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-soft sm:w-[180px] sm:pr-4"
                     >
@@ -52,15 +53,16 @@ export function NavLinks () {
 
 export function NavAuthLinks () {
     const t = useTranslations("Header");
+    const locale = useLocale();
 
     return (
         <>
             <CustomLink
-                url={"/login"}
+                url={`/${locale}/login`}
                 label={t("si")}
             />
             <CustomLink
-                url={"/register"}
+                url={`/${locale}/register`}
                 label={t("su")}
             />
         </>
@@ -70,6 +72,7 @@ export function NavAuthLinks () {
 export default function Nav({children}:{children: React.ReactNode}) {
     const { role } = useProfile();
     const common = useTranslations("common");
+    const locale = useLocale();
     const [isAdminOpen, setIsAdminOpen] = useState(false);
     return (
         <nav className="sticky top-0 z-[100] flex items-center justify-between gap-3 px-4 py-3 shadow-[0_8px_24px_0_var(--color-bg-muted)] backdrop-blur-xl after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:animate-[headerBorderShift_8s_ease-in-out_infinite] after:bg-[length:300%_100%] after:bg-[linear-gradient(90deg,var(--color-snake-you),var(--color-snake-1),var(--color-snake-3),var(--color-snake-2))] after:opacity-65 after:content-[''] sm:px-8 sm:py-[18px]">
@@ -90,7 +93,7 @@ export default function Nav({children}:{children: React.ReactNode}) {
                         <div className="relative h-8 w-8 shrink-0 rounded-md bg-accent shadow-[0_0_24px_var(--color-accent)] before:absolute before:left-2 before:top-2 before:h-[5px] before:w-[5px] before:rounded-full before:bg-accent-soft before:content-[''] after:absolute after:right-2 after:top-2 after:h-[5px] after:w-[5px] after:rounded-full after:bg-accent-soft after:content-['']" />
                     )
                 }
-                <Link href="/" className="display truncate text-lg tracking-wide text-text-primary sm:text-2xl">
+                <Link href={`/${locale}`} className="display truncate text-lg tracking-wide text-text-primary sm:text-2xl">
                     Snake.io
                 </Link>
             </div>

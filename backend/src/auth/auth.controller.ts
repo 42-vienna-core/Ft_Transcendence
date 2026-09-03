@@ -67,14 +67,6 @@ export class AuthController {
     const count = await this.authService.logout(sessionId);
     return { success: true, count };
   }
-
-  @Post('logout-all')
-  @HttpCode(HttpStatus.OK)
-  @Authorization()
-  public async logoutAll( @Authorized('userId') userId: number) {
-    const count = await this.authService.logoutAll(userId);
-    return { success: true, count };
-  }
   
   @Throttle({ long: { ttl: 60000, limit: 5 } })
   @Post('change-password')

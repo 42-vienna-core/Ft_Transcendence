@@ -1,7 +1,8 @@
 import {NextConfig} from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-const nextConfig: NextConfig = {    
+const nextConfig: NextConfig = { 
+    output: 'standalone',  
     allowedDevOrigins:process.env.NEXTAUTH_URL
         ? [new URL(process.env.NEXTAUTH_URL).host]
         : undefined,

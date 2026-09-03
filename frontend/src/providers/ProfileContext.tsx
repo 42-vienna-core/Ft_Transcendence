@@ -61,10 +61,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
                         username: updatedMe.name
                     }
                 });
-                hasUpdatedData.current = true;
             } catch (error) {
                 toast.error(getErrorMessage(error));
-                hasUpdatedData.current = false; 
+            } finally {
+                hasUpdatedData.current = true;
             }
         }
        

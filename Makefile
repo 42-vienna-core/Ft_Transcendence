@@ -2,6 +2,11 @@ SHELL := /bin/bash
 
 NVM_URL = https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh
 NODE_VERSION = 20
+LOCAL_IP = $(shell ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K[0-9.]+')
+
+ifeq ($(LOCAL_IP),)
+	LOCAL_IP = 127.0.0.1
+endif
 
 all: certs up 
 
@@ -17,6 +22,11 @@ certs:
 ## Copy .env.example to .env if it doesn't exist
 env:
 	@test -f .env || cp .env.example .env && echo "Created .env from .env.example"
+
+prepend_adrr:
+	@touch .env .env.prod
+	@sed -i '/^DOMAIN_NAME=/d' .env .env.prod
+	@sed -i '1i DOMAIN_NAME=$(LOCAL_IP)' .env .env.prod
 
 ## Install NVM and Node.js if not already installed
 setup:
@@ -46,14 +56,19 @@ init_modules:
 
 ## Build and start all services
 
+## Seed admin accounts (reads ADMIN_1_*, ADMIN_2_*, ... from .env/.env.prod)
 admin:
 	docker compose exec backend npm run seed:admin
 
-up: env
+## Seed bot accounts (bot1@ai.com, bot2@ai.com, bot3@ai.com)
+seed-bots:
+	docker compose exec backend npm run seed
+
+up: env prepend_adrr
 	docker compose up --build
 
-## Start in background
-	docker compose up --build -d
+prod: prepend_adrr
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up --build -d
 
 ## Stop all services
 down:
@@ -113,4 +128,4 @@ update-frontend:
 	docker compose up -d --force-recreate frontend
 	docker container prune -f
 
-.PHONY: all up down logs certs migrate prisma-reset studio clean re
+.PHONY: all up down logs certs migrate prisma-reset studio clean re admin seed-bots

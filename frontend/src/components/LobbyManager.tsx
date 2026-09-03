@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import LobbyModal from './modal/lobby-modal';
 import { useRoomDataBySocket } from './store/useRoomData';
 import { useGameSocket } from '@/providers/SocketProvider';
@@ -8,13 +9,14 @@ import { SocketResponse } from '@/types/socketTypes';
 
 export default function GlobalLobbyManager() {
     const router = useRouter();
+    const locale = useLocale();
     const {socket} = useGameSocket();
     const { isLobbyOpen, room, gameMode, clearGameData, roomStatus} = useRoomDataBySocket();
 
     const handleStartMatch = () => {
         if (!roomStatus) return ;
-        
-        router.push("/arena");
+
+        router.push(`/${locale}/arena`);
         router.refresh();
     };
 

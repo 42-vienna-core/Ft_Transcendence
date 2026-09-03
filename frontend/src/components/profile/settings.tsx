@@ -29,11 +29,11 @@ const langArr: ArrValue[] = [{
     value: 'ru', 
 },
 {
-    id: "Deutschland",
+    id: "Deutsch",
     value: 'de', 
 },
 {
-    id: "Italian",
+    id: "Italiano",
     value: 'it', 
 }];
 
@@ -176,15 +176,15 @@ export default function ProfileSettingsContent() {
     const controlArr: ArrValue[] = [
     {
         id: "1",
-        value: LN("arrow")
+        value: "arrow"
     },
     {
         id: "2",
-        value: LN("WASD")
+        value: "WASD"
     },
     {
         id: "3",
-        value:  LN("arrow + WASD")
+        value: "arrow + WASD"
     }];
 
 
@@ -393,7 +393,7 @@ export default function ProfileSettingsContent() {
                 <SettingBtnContainer>
                     <SettingBatton
                         labelF={LN('controls')}
-                        labelS={LN("changeControl")}
+                        labelS={control}
                         onClick={() => toggleControlMenu()}
                     />
                     
@@ -422,12 +422,6 @@ export default function ProfileSettingsContent() {
                     />
                 </SettingBtnContainer>
 
-                {/* Logout of all accounts */}
-                <SettingBtnContainer>
-                    <SettingBatton
-                        labelF={LN('secure.label3')}
-                    />
-                </SettingBtnContainer>
 
                 {/* Delete accounts */}
                 <SettingBtnContainer>

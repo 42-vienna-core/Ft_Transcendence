@@ -16,6 +16,12 @@ CMD ["npm", "run", "dev"]
 
 # Build stage — produces standalone output
 FROM base AS build
+
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SOCKET_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
+
 COPY . .
 RUN npm run build
 
@@ -25,4 +31,5 @@ WORKDIR /app
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
+
 CMD ["node", "server.js"]
