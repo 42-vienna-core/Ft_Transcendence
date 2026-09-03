@@ -36,7 +36,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	) { }
 
 	async handleConnection(client: AuthenticatedSocket) {
-		console.log('🟣 SOCKET handleConnection');
 		try {
 			const token : unknown = client.handshake.auth.token;
 			if (!token || typeof token !== 'string')
@@ -65,7 +64,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async handleDisconnect(client: AuthenticatedSocket){
 		try {
-			console.log("🟣 SOCKET handleDisconnect");
 			if (client.data.userId === undefined || client.data.sessionId === undefined)
 				return ;
 			await this.redisService.removeOnline(client.data.userId, client.data.sessionId);
@@ -119,13 +117,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			await wait(COUNTDOWN * 1000);
 			await this.matchStarter.startMatch(curMatch.roomId);
 		}
-		console.log("ROOM STATUS: ", match.roomStatus);
 		return {success: true, data: curMatch};
 	}
 
 	@SubscribeMessage('leave-room')
 	async handleLeaveRoom(@ConnectedSocket() client: AuthenticatedSocket) : Promise<SocketResponse> {
-		console.log("LEAVE ROOM CALLED");
 		const roomUser = await this.roomService.findBySocketId(client.id);
 		if (roomUser === null || roomUser.userId !== client.data.userId)
 			return {success: false, error: 'Room user not found'};
@@ -146,7 +142,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@OnEvent('playing-friends.changed')
 	async handlePlayingFrendsChanged(event: {userIds: number[]}){
-		console.log("playing friends changed");
 		const friends = await Promise.all(event.userIds.map((userId) => this.friendsService.getFriends(userId)));
 		const recipients = new Set(friends.flat().map((friend) => friend.id));
 		for (const friend of recipients)
@@ -168,7 +163,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				}
 			});
 		}
-		console.log("FRIEND MATCH: invite sent!");
 	}
 
 	@OnEvent('friend-match.status')
@@ -180,7 +174,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				status: event.status,
 			});
 		}
-		console.log("FRIEND MATCH: updated status sent!");
 	}
 
 	@OnEvent('match.countdown')

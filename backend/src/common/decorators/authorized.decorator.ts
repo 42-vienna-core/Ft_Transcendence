@@ -5,12 +5,9 @@ export const Authorized = createParamDecorator(
         const request = ctx.switchToHttp().getRequest();
         const user = request.user;
 
-        // example: @Authorized('userId') - return userId from JwtPayload
         if (data) {
             return user?.[data];
         }
-
-        // example: @Authorized() - return JwtPayload
         return user;
     },
 );

@@ -8,7 +8,6 @@ export function useOutsideClick(isOpen:boolean, callback: ()=> void) {
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) {
-                console.log("callback");
                 callback();
             }
         };

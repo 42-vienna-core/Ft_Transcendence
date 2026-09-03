@@ -25,8 +25,6 @@ function createExpiredTime(): number {
 }
 
 export async function refreshAccessToken(token: JWT): Promise<JWT> {
-    console.log("================= REFRESH JWT=======================")
-
     try {
         const res = await fetch(`${REFRESH_URL}/refresh`, {
             method: 'POST',
@@ -60,7 +58,6 @@ const intlMiddleware = createIntlMiddleware({
 
 const authMiddleware = withAuth(
     async function middleware (req) {
-        console.log("========MIDDLEWARE============");
         const path = req.nextUrl.pathname;
 
         if (path.startsWith('/api/auth')) {
@@ -78,11 +75,9 @@ const authMiddleware = withAuth(
             const isExpired = Date.now() > expiry;
 
             if (isExpired) {
-                console.log("========TOKEN EXPIRED============"); 
                 const refreshed = await refreshAccessToken(token);
 
                 if (refreshed?.error === 'RefreshAccessTokenError') {
-                    console.log("🚨 REFRESH ERROR — FORCE LOGOUT");
     
                     const currentLocale = path.split('/')[1] || 'en';
                     const localePrefix = locales.includes(currentLocale) ? `/${currentLocale}` : '';
@@ -133,7 +128,6 @@ const authMiddleware = withAuth(
     {
         callbacks: {
             authorized: ({ token, req }) => {
-                // console.log("authorized callback: ",token);
                 const path = req.nextUrl.pathname;
                 if (path.startsWith('/api/auth')) return true;
                 const isPublicPath = /^\/(ru|en|de|it)?\/?(login|register|reset-password|privacy|terms)?$/.test(path);

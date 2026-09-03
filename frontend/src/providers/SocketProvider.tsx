@@ -47,13 +47,11 @@ export const SocketProvider = ({children}: {children: React.ReactNode}) => {
             socketRef.current = socketInstance;
 
             const onConnect = () => {
-                console.log("✅ Socket connected!", socketInstance?.id);
                 setIsConnected(true);
                 toast.dismiss(SOCKET_ERROR_TOAST_ID);
             };
 
             const onDisconnect = (reason: Socket.DisconnectReason) => {
-                console.log("❌ Socket disconnected");
                 setIsConnected(false);
 
                 if (reason !== "io client disconnect") {

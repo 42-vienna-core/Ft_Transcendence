@@ -19,7 +19,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client = new Redis(url);
 
     this.client.on('connect', () => {
-      console.log('Redis connected');
     });
 
     this.client.on('error', (err) => {
@@ -29,15 +28,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     await this.client.ping();
-    console.log("Redis init");
   }
 
   async onModuleDestroy() {
     await this.client.quit();
-    console.log("Redis destroy");
   }
 
-  // Online users
 
   async addOnline(data: OnlineUsersData, sessionId: string) {
     const key = `user:online:${data.id}:${sessionId}`;
@@ -45,21 +41,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   async removeOnline(userId: number, sessionId: string) {
-    console.log("removeOnline", `user:online:${String(userId)}:${sessionId}`)
     await this.del(`user:online:${String(userId)}:${sessionId}`);
   }
 
   async isOnline(userId: number): Promise<boolean> {
     const users = await this.client.keys(`user:online:${userId}:*`);
-    console.log("IS ONLINE", users)
     if (users.length === 0)
       return false;
     else
       return true;
   }
-
-  //// ===========Socket GameRoom =========== /////////
-
 
   async addOnlineUser(data: OnlineUsersData, sessionId: string): Promise<boolean> {
 
@@ -195,7 +186,4 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
     return null;
   }
-
-  ///// ========== Socket GameRoom =========== //////////
-
 }

@@ -6,8 +6,6 @@ export type RoomStatusType = 'WAITING' | 'READY' | 'PLAYING' | 'FINISHED' | 'ABA
 export type GameStatusType  = 'running' | 'finished' | null;
 export type ActiveFilterType = 'All' | 'Online' | 'Playing' | 'Requests';
 
-// Server tick duration in milliseconds — shared so the match clock (arena-content)
-// stays in sync with the animation interpolation step (game-canvas).
 export const TICK_MS = 130;
 
 

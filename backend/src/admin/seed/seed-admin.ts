@@ -42,7 +42,6 @@ async function main() {
   const admins = loadAdminsFromEnv();
 
   if (admins.length === 0) {
-    console.log('No admin users found in environment variables. Skipping seeding.');
     return;
   }
 
@@ -55,11 +54,10 @@ async function main() {
       const existing = await prisma.users.findUnique({ where: { email: admin.email } });
 
       if (existing) {
-        console.log(`Admin already exists (${admin.email}), skipping.`);
         continue;
       }
       const hashedPassword = await hash(admin.password);
-      const created = await prisma.users.create( {
+      await prisma.users.create( {
         data: {
           name: admin.username,
           email: admin.email,
@@ -68,7 +66,6 @@ async function main() {
           termsAcceptedAt: new Date(),
         },
       });
-      console.log(` ✅ Created admin #${created.id} (${created.email}).`);
     }
   } finally {
     await prisma.$disconnect();

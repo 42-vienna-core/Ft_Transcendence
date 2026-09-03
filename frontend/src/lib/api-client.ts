@@ -8,7 +8,6 @@ interface CustomApiOptions extends RequestInit {
 }
 
 export async function apiFetch(endpoint: string, options: CustomApiOptions = {}): Promise<any> {
-    console.log("========================apiFetch============================");
     const baseUrl = process.env.INTERNAL_API_URL;
     const url = `${baseUrl}/${endpoint}`;
 

@@ -8,6 +8,7 @@ import { ActiveFilterType, Request} from "@/types/gameTypes";
 import { toast } from "sonner";
 import { Avatar } from "@/ui/ava";
 import { useTranslations } from "next-intl";
+import { useState } from 'react';
 
 interface FriendRequestItemProps {
     request: Request;
@@ -82,11 +83,14 @@ function FriendRequests({
     filter,
     getListOfFriends
 }: RequestContentProps) {
+	const [isLoading, setIsLoading]  = useState(false);
     const { removeRequestById } = useNotificationListener();
     const LN = useTranslations("friends.request");
 
     async function makeDecision(id: string, isProv: boolean) {
+		if (isLoading) return ;
         if (typeof id === 'string' && id.length === 0) return;
+		setIsLoading(true);
 
         const url = `friends/request/${String(id)}`
         try {
@@ -100,7 +104,9 @@ function FriendRequests({
             removeRequestById(id);
         } catch (error) {
             toast.error(getErrorMessage(error, "Couldn't respond to the friend request."));
-        }
+        } finally {
+			setIsLoading(false);
+		}
     }
 
     if (filter !== 'Requests') return null
