@@ -2,8 +2,8 @@ services:
   frontend:
     build:
       context: ./frontend
-      target: prod  
-    volumes: !override [] 
+      target: prod
+    volumes: !override []
 
   backend:
     build:
@@ -11,3 +11,9 @@ services:
       target: prod  
     volumes:
       - avatars:/uploads/avatars
+    command: >
+      sh -c "
+      npx prisma db push --schema=/app/prisma/schema.prisma &&
+      npx prisma generate --schema=/app/prisma/schema.prisma &&
+      node dist/main.js
+      "

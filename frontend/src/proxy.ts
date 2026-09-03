@@ -24,7 +24,6 @@ function createExpiredTime(): number {
     return Date.now() + REFRESH_AGE;
 }
 
-
 export async function refreshAccessToken(token: JWT): Promise<JWT> {
     console.log("================= REFRESH JWT=======================")
 

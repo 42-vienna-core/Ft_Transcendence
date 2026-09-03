@@ -4,7 +4,7 @@ import { Globe, Cpu, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useGameMode } from "@/components/store/useUserStore";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { GameModeType, RoomData } from "@/types/gameTypes";
 import LobbyModal from "../modal/lobby-modal";
 import { useGameSocket } from "@/providers/SocketProvider";
@@ -125,6 +125,7 @@ function StartMatch () {
     const [loading, setLoading] = useState<boolean>(false);
     const {socket} = useGameSocket();
     const router = useRouter();
+    const locale = useLocale();
     const {gameMode, setIsLobbyOpen, setGameMode, clearStatus, clearGameData} = useRoomDataBySocket();
     const t = useTranslations("Start_game");
 
@@ -140,14 +141,13 @@ function StartMatch () {
         setGameMode(mode);
         clearStatus();
 
-        //socket.emit('join-match', {mode});
-		socket.timeout(10000).emit('join-match', {mode}, (timeoutError: Error | null, response?: SocketResponse<unknown>) =>{
+		socket.timeout(10000).emit('join-match', {mode}, (timeoutError: Error | null, response?: SocketResponse<unknown>) => {
 			if (timeoutError || !response?.success)
 				clearGameData();
 		})
 
         if (mode === 'CPU') {
-            router.push("/arena");
+            router.push(`/${locale}/arena`);
             router.refresh();
             setLoading(false);
             return;

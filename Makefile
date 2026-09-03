@@ -56,8 +56,13 @@ init_modules:
 
 ## Build and start all services
 
+## Seed admin accounts (reads ADMIN_1_*, ADMIN_2_*, ... from .env/.env.prod)
 admin:
 	docker compose exec backend npm run seed:admin
+
+## Seed bot accounts (bot1@ai.com, bot2@ai.com, bot3@ai.com)
+seed-bots:
+	docker compose exec backend npm run seed
 
 up: env prepend_adrr
 	docker compose up --build
@@ -123,4 +128,4 @@ update-frontend:
 	docker compose up -d --force-recreate frontend
 	docker container prune -f
 
-.PHONY: all up down logs certs migrate prisma-reset studio clean re
+.PHONY: all up down logs certs migrate prisma-reset studio clean re admin seed-bots

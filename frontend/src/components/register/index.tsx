@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle, AtSign } from "lucide-react";
 import SubmitButton from "@/ui/submit-btn";
 import { PasswordField } from "../password-field";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 const initialState = {
     message: "",
@@ -16,8 +16,9 @@ const initialState = {
 
 export default function RegisterForm() {
     const router = useRouter();
+    const locale = useLocale();
     const t = useTranslations("Register");
-    
+
 
     const [state, formAction] = useActionState(async (prevState: any, formData: FormData) => {
 
@@ -37,7 +38,7 @@ export default function RegisterForm() {
         }
 
         startTransition(() => {
-            router.push("/");
+            router.push(`/${locale}`);
             router.refresh();
         });
 
@@ -113,7 +114,7 @@ export default function RegisterForm() {
                     <button
                         className="mx-auto cursor-pointer text-sm text-text-tertiary transition-colors duration-200 hover:text-accent hover:underline"
                         type="button"
-                        onClick={() => router.push("/login")}
+                        onClick={() => router.push(`/${locale}/login`)}
                     >
                         {t("login_link")}
                     </button>

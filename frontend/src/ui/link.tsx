@@ -1,5 +1,5 @@
 'use client'
-import { Bell } from 'lucide-react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 

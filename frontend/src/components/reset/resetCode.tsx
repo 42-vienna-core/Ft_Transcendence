@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ export default function ResetCode({ email }: { email: string }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const router = useRouter();
+    const locale = useLocale();
 
     return (
         <div className="w-full flex items-center justify-center">
@@ -30,7 +31,7 @@ export default function ResetCode({ email }: { email: string }) {
                         if (res.ok)
                         {
                             toast.success("Your password has been changed.");
-                            router.push("/login");
+                            router.push(`/${locale}/login`);
                         }
                         else setError(true);
                     } finally {

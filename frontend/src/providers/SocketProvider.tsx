@@ -5,12 +5,11 @@ import { useRoomDataBySocket } from "@/components/store/useRoomData";
 import { getErrorMessage } from "@/lib/error";
 import { SocketResponse } from "@/types/socketTypes";
 import { useSession } from "next-auth/react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 const SOCKET_ERROR_TOAST_ID = "socket-connection";
-
 const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
 
 interface SocketContextType {
@@ -29,10 +28,12 @@ export const SocketProvider = ({children}: {children: React.ReactNode}) => {
     
     const {data: session} = useSession();
     const token = session?.accessToken;
-    let socketInstance: Socket | null = null;
+    const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        if (!token || socketInstance?.connected) return;
+        if (!token || socketRef.current?.connected) return;
+
+        let socketInstance: Socket | null = null;
 
         try {
             if (!socketUrl) {
@@ -43,6 +44,7 @@ export const SocketProvider = ({children}: {children: React.ReactNode}) => {
                 auth: { token },
                 autoConnect: true
             });
+            socketRef.current = socketInstance;
 
             const onConnect = () => {
                 console.log("✅ Socket connected!", socketInstance?.id);
@@ -103,10 +105,13 @@ export const SocketProvider = ({children}: {children: React.ReactNode}) => {
 				socketInstance.removeAllListeners();
                 socketInstance.disconnect();
             }
+            if (socketRef.current === socketInstance) {
+                socketRef.current = null;
+            }
             setSocket(null);
             setIsConnected(false);
         };
-    }, [token, socketInstance]);
+    }, [token]);
 
     return (
         <SocketContext.Provider value={{ isConnected, socket }}>

@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 import { fatchLogin } from "@/lib/auth-actions";
 import SubmitButton from "@/ui/submit-btn";
 import { PasswordField } from "../password-field";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 const initialState = {
     message: "",
@@ -16,6 +16,7 @@ const initialState = {
 
 export default function LoginForm() {
     const router = useRouter();
+    const locale = useLocale();
     const t = useTranslations("Login");
 
     const [state, formAction] = useActionState(
@@ -36,7 +37,7 @@ export default function LoginForm() {
             }
 
             startTransition(() => {
-                router.push("/");
+                router.push(`/${locale}`);
                 router.refresh();
             });
 
@@ -87,7 +88,7 @@ export default function LoginForm() {
                     {t("no_account")}{" "}
                     <button
                         type="button"
-                        onClick={() => router.push("/register")}
+                        onClick={() => router.push(`/${locale}/register`)}
                         className="cursor-pointer font-semibold text-accent transition-colors duration-200 hover:text-accent-hover hover:underline"
                     >
                         {t("register_link")}
@@ -95,7 +96,7 @@ export default function LoginForm() {
                 </p>
                 <button
                     type="button"
-                    onClick={() => router.push("/reset-password")}
+                    onClick={() => router.push(`/${locale}/reset-password`)}
                     className="mx-auto cursor-pointer text-sm text-text-tertiary transition-colors duration-200 hover:text-accent hover:underline"
                 >
                     {t("forgot_password")}

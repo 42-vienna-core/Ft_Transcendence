@@ -9,7 +9,7 @@ import GameCanvas from "./game-canvas";
 import { useRouter } from 'next/navigation';
 import { ControlType, Direction, Game } from "@/types/gameTypes";
 import { useProfile } from "@/providers/ProfileContext";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRoomDataBySocket } from "../store/useRoomData";
 import { useAudioStore } from "../store/useAudioStore";
 import { getOrdinal } from "@/ui/utils";
@@ -46,6 +46,7 @@ function ArenaContent() {
 
     const { isConnected, socket } = useGameSocket();
     const router = useRouter();
+    const locale = useLocale();
 
     const players = usePlayerStore((state) => state.players);
     const setPlayers = usePlayerStore((state) => state.setPlayers);
@@ -59,15 +60,15 @@ function ArenaContent() {
     const LN = useTranslations("arena");
     const r = useRef<boolean>(false);
     const { id } = useProfile();
-    const { room, countdown, roomStatus, gameStatus, clearStatus, setIsLobbyOpen, clearGameData } = useRoomDataBySocket();
+    const { room, countdown, roomStatus, gameStatus, gameMode, clearStatus, setIsLobbyOpen, clearGameData } = useRoomDataBySocket();
     const { playMusic, toggleMute, stopBgMusic } = useAudioStore();
 
     const initCountDown = countdown ? countdown.countdown : 3;
     const [secondsLeft, setSecondsLeft] = useState(initCountDown);
 
     useEffect(() => {
-        if (!(gameStatus || roomStatus)) {
-            router.replace('/');
+        if (!(gameStatus || roomStatus || gameMode)) {
+            router.replace(`/${locale}`);
         } else {
             r.current = true;
         }
@@ -162,7 +163,7 @@ function ArenaContent() {
 
     function handleRestart() {
         clearStatus();
-        router.push('/');
+        router.push(`/${locale}`);
         router.refresh();
     }
 
