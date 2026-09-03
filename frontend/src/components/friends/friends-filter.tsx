@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import FindFriends from './search';
 import FriendsContent from './friends-list';
 import { ActiveFilterType, Friend, Request } from '@/types/gameTypes';
-import { useNotificationListener } from '../store/notification';
+import { useNotificationListener } from '../store/useNotification';
 import { NotificationSign } from '@/ui/link';
 import FriendRequests from './friend-requests';
 import { FriendsContentSkeleton, SkeletonBlock } from '@/ui/skeletons';

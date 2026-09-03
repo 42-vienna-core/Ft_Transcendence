@@ -7,7 +7,7 @@ import { useProfile } from '@/providers/ProfileContext';
 import { useTranslations, useLocale } from 'next-intl';
 import { HeaderProfileSkeleton } from '../skeletons';
 import Admin from "../../components/admin/Admin";
-import { useNotificationListener } from '@/components/store/notification';
+import { useNotificationListener } from '@/components/store/useNotification';
 
 
 export function NavLinks () {

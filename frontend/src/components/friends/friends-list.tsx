@@ -10,7 +10,7 @@ import { OnlineStateItem } from '@/ui/online-tracker';
 import { useGameSocket } from '@/providers/SocketProvider';
 import { ActiveFilterType, Friend } from '@/types/gameTypes';
 import { useRoomDataBySocket } from '../store/useRoomData';
-import { useNotificationListener } from '../store/notification';
+import { useNotificationListener } from '../store/useNotification';
 import { Avatar } from '@/ui/ava';
 import { useTranslations } from 'next-intl';
 import { SocketResponse } from '@/types/socketTypes';

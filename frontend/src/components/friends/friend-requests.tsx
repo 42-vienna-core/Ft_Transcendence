@@ -3,7 +3,7 @@
 import { OnlineStateItem } from "@/ui/online-tracker";
 import { apiFetch } from "@/lib/api-client";
 import { getErrorMessage } from "@/lib/error";
-import { useNotificationListener } from "../store/notification";
+import { useNotificationListener } from "../store/useNotification";
 import { ActiveFilterType, Request} from "@/types/gameTypes";
 import { toast } from "sonner";
 import { Avatar } from "@/ui/ava";

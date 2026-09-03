@@ -124,15 +124,23 @@ export default function FindFriends({
 
 
     const handleSearchRequest = useDebouncedCallback(async (value: string) => {
-        if (value.trim().length < 3) {
+        const trimed = value.trim();
+        if (trimed.length < 3) {
             setResult([]);
             setMessage("");
             setIsSuccess(false);
             return
         }
 
+        if (trimed.length > 40) {
+            setResult([]);
+            setMessage("Username is too long");
+            setIsSuccess(false);
+            return
+        }
+
         try {
-            const res = await apiFetch(`user/search?name=${value}`);
+            const res = await apiFetch(`user/search?name=${trimed}`);
 
             if (Array.isArray(res) && res.length != 0) {
                 setResult(res);

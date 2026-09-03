@@ -75,10 +75,10 @@ function ArenaContent() {
 
         const soundFlagLs = localStorage.getItem('soundtrack');
         if (soundFlagLs) {
-            const parsedSoundFlag = JSON.parse(soundFlagLs)
-            toggleMute(parsedSoundFlag);
+            const parsedSoundFlag = JSON.parse(soundFlagLs) as boolean;
+            toggleMute(!parsedSoundFlag);
         } else {
-            toggleMute(true);
+            toggleMute(false);
             localStorage.setItem('soundtrack', "true");
         }
 
@@ -184,7 +184,7 @@ function ArenaContent() {
     return (
         <div className="grid grid-cols-1 w-full lg:grid-cols-5">
             <div className="lg:col-span-4 lg:mr-[15px]">
-                <div className="flex flex-wrap items-center justify-between gap-y-2 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-y-2 py-4 w-full max-w-[60vh] sm:max-w-[65vh] lg:max-w-[calc(100vh-250px)] mx-auto">
                     <div className="mr-[10px] rounded-full bg-success-soft px-2.5 py-1 ">
                         <p className="trancate items-center text-xs text-success-text">
                             {LN("liveMatch")} {roomName ?? '—'}
@@ -207,17 +207,6 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                
-                {/* <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex flex-col items-center justify-center overflow-hidden bg-game-field rounded-xl">
-                    {roomStatus === 'READY' && (
-                        <div className="flex flex-col items-center gap-3 text-text-tertiary">
-                            <span>{LN("startAfter")}</span>
-                            <h2>{secondsLeft}</h2>
-                        </div>
-                    )}
-
-                    <div className="relative w-full"> */}
-
                 <div id="canvas-container" className="h-[60vh] sm:h-[65vh] lg:col-span-4 lg:h-[calc(100vh-250px)] flex items-center justify-center overflow-hidden">
                     <div
                         id="game-board"
@@ -229,7 +218,6 @@ function ArenaContent() {
                                 <h2 className="text-5xl font-bold tabular-nums">{secondsLeft}</h2>
                             </div>
                         )}
-                {/* ///////////////////////// */}
 
                         {
                             (roomStatus === 'PLAYING' || roomStatus === 'running') && (
@@ -256,7 +244,7 @@ function ArenaContent() {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between py-4 hidden lg:block">
+                <div className="flex items-center justify-between py-4 hidden lg:block w-full max-w-[60vh] sm:max-w-[65vh] lg:max-w-[calc(100vh-250px)] mx-auto">
                     <div className="flex gap-1.5">
                         <Kbd active={gameStatus === 'START'}>{LN("move")}</Kbd>
                         <Kbd active={gameDir === 'LEFT'} activeClass="text-warning-text">←</Kbd>
