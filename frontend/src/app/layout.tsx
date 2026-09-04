@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { bungee, inter } from "../ui/font";
+import { bungee } from "../ui/font";
 import { Providers } from "@/providers/providers";
 import "./globals.css"
 import AppToaster from "@/components/app-toaster";

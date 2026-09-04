@@ -119,6 +119,7 @@ export default function EditProfileForm () {
                                 <label className={`${isActive ? 'flex': 'hidden'} absolute bottom-0 right-0 h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-border-default bg-accent text-text-inverse shadow-lg transition-colors duration-200 hover:bg-accent-hover`}>
                                     <span className="text-xs leading-none">+</span>
                                     <input
+                                        id='avatar'
                                         autoComplete="off"
                                         type="file"
                                         name="avatar"

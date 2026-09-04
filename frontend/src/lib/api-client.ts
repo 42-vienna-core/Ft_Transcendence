@@ -32,7 +32,8 @@ export async function apiFetch(endpoint: string, options: CustomApiOptions = {})
 
     if (!res.ok) {
         const errorMessage = data?.message || data?.error || `Request failed with status ${res.status}`;
-        throw new Error(errorMessage);
+        // throw new Error(errorMessage);
+        return Response.json(res);
     }
 
     return data;

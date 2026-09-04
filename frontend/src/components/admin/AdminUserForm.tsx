@@ -61,21 +61,21 @@ export default function AdminUserForm({ user, onCancel }: { user: AdminUser; onC
         
         <div className="flex flex-col gap-1.5 ">
           <label className={fieldLabelClass}>{adminFormData("username")}</label>
-          <input className={inputClass} autoComplete="off"
+          <input id="admin_username" className={inputClass} autoComplete="off"
             value={userData.name} onChange={(e) => setUserData({...userData, name : e.currentTarget.value})}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className={fieldLabelClass}>{adminFormData("email")}</label>
-          <input className={inputClass} type="email" value={userData.email} autoComplete="off"
+          <input id="admin_email" className={inputClass} type="email" value={userData.email} autoComplete="off"
             onChange={(e) => setUserData({...userData, email : e.currentTarget.value})}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <label className={fieldLabelClass}>{adminFormData("password")}</label>
-          <input className={inputClass} type="password" value={userData.password} autoComplete="off"
+          <input id="admin_password" className={inputClass} type="password" value={userData.password} autoComplete="off"
             onChange={(e) => setUserData({...userData, password: e.currentTarget.value.trim()})}
           />
         </div>

@@ -12,17 +12,6 @@ DOMAIN = $(subst .,-,$(LOCAL_IP)).nip.io
 
 all: certs up 
 
-## Generate self-signed TLS certificates for local development
-# certs:
-# 	mkdir -p nginx/certs
-# 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-# 		-keyout nginx/certs/key.pem \
-# 		-out nginx/certs/cert.pem \
-# 		-subj "/C=AT/ST=Vienna/L=Vienna/O=Vienna42/CN=${LOCAL_IP}" \
-#   		-addext "subjectAltName=IP:${LOCAL_IP}"
-# 	chmod 600 nginx/certs/key.pem 
-# 	chmod 644 nginx/certs/cert.pem 
-
 certs:
 	mkdir -p nginx/certs
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -33,15 +22,9 @@ certs:
 	chmod 600 nginx/certs/key.pem
 	chmod 644 nginx/certs/cert.pem
 
-
 ## Copy .env.example to .env if it doesn't exist
 env:
 	@test -f .env || cp .env.example .env && echo "Created .env from .env.example"
-
-# prepend_adrr:
-# 	@touch .env .env.prod
-# 	@sed -i '/^DOMAIN_NAME=/d' .env .env.prod
-# 	@sed -i '1i DOMAIN_NAME=$(LOCAL_IP)' .env .env.prod
 
 prepend_adrr:
 	@touch .env .env.prod

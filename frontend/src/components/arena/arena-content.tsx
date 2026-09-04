@@ -73,6 +73,8 @@ function ArenaContent() {
             r.current = true;
         }
 
+        setIsLobbyOpen(false);
+
         const soundFlagLs = localStorage.getItem('soundtrack');
         if (soundFlagLs) {
             const parsedSoundFlag = JSON.parse(soundFlagLs) as boolean;
