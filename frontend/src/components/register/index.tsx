@@ -87,8 +87,8 @@ export default function RegisterForm() {
             </div>
 
             {/* Password */}
-            <PasswordField 
-                id="password" 
+            <PasswordField
+                id="register-password"
                 name="password"
                 label={t("password")}    
             />

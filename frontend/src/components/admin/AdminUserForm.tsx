@@ -6,9 +6,9 @@ import { useProfile } from '@/providers/ProfileContext';
 import { useTranslations } from 'next-intl';
 import { Save, Trash2, AlertTriangle } from "lucide-react";
 
-export type Role = "ADMIN" | "PLAYER" | "BOT";
+export type Role = "ADMIN" | "PLAYER";
 
-const ROLES: Role[] = ["PLAYER", "ADMIN", "BOT"];
+const ROLES: Role[] = ["PLAYER", "ADMIN"];
 
 interface AdminUser {
 	id: number;
