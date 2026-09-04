@@ -9,12 +9,12 @@ interface PasswordFieldProps {
     label: string;
 }
 
-export function PasswordField({ id, name, label}: PasswordFieldProps) {
+export function PasswordField({ id, name, label }: PasswordFieldProps) {
     const [isVisible, setIsVisible] = useState(false);
 
     return (
         <div className="relative">
-        <input
+            <input
                 autoComplete="off"
                 required
                 id={id}

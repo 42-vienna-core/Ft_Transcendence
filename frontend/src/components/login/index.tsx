@@ -59,9 +59,9 @@ export default function LoginForm() {
                 <AtSign className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors duration-200 peer-focus:text-accent" />
             </div>
 
-            {/* Password */}
+            {/* Login Password */}
             <PasswordField
-                id="password"
+                id="login-password"
                 name="password"
                 label={t("password")}
             />

@@ -8,18 +8,19 @@ ifeq ($(LOCAL_IP),)
 	LOCAL_IP = 127.0.0.1
 endif
 
+DOMAIN = $(subst .,-,$(LOCAL_IP)).nip.io
+
 all: certs up 
 
-## Generate self-signed TLS certificates for local development
 certs:
 	mkdir -p nginx/certs
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 		-keyout nginx/certs/key.pem \
 		-out nginx/certs/cert.pem \
-		-subj "/C=AT/ST=Vienna/L=Vienna/O=Vienna42/CN=${LOCAL_IP}" \
-  		-addext "subjectAltName=IP:${LOCAL_IP}"
-	chmod 600 nginx/certs/key.pem 
-	chmod 644 nginx/certs/cert.pem 
+		-subj "/C=AT/ST=Vienna/L=Vienna/O=Vienna42/CN=$(DOMAIN)" \
+		-addext "subjectAltName=DNS:$(DOMAIN),IP:$(LOCAL_IP)"
+	chmod 600 nginx/certs/key.pem
+	chmod 644 nginx/certs/cert.pem
 
 ## Copy .env.example to .env if it doesn't exist
 env:
@@ -28,7 +29,7 @@ env:
 prepend_adrr:
 	@touch .env .env.prod
 	@sed -i '/^DOMAIN_NAME=/d' .env .env.prod
-	@sed -i '1i DOMAIN_NAME=$(LOCAL_IP)' .env .env.prod
+	@sed -i '1i DOMAIN_NAME=$(DOMAIN)' .env .env.prod
 
 ## Install NVM and Node.js if not already installed
 setup:
@@ -79,7 +80,6 @@ down:
 ## Stop and remove volumes (wipes database!)
 clean:
 	docker compose down -v
-
 
 ## Remove everythings
 fclean: clean

@@ -42,8 +42,8 @@ export default function ResetPass() {
                         <AtSign className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-tertiary transition-colors duration-200 peer-focus:text-accent" />
                     </div>
 
-                    <PasswordField id="password" name="password" label={t("newPassword")} />
-                    <PasswordField id="password" name="ConfirmPassword" label={t("confirm_password")} />
+                    <PasswordField id="new-password" name="password" label={t("newPassword")} />
+                    <PasswordField id="confirm-password" name="ConfirmPassword" label={t("confirm_password")} />
 
                     {error && (
                         <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger-text">

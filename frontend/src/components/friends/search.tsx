@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { apiFetch } from '@/lib/api-client';
 import { Loader, Search, X } from 'lucide-react';
@@ -121,6 +121,7 @@ export default function FindFriends({
     const [query, setQuery] = useState<string>("");
     const [isSuccess, setIsSuccess] = useState<boolean>(true);
     const LN = useTranslations("friends.lists");
+    const inputId = useId();
 
 
     const handleSearchRequest = useDebouncedCallback(async (value: string) => {
@@ -211,6 +212,7 @@ export default function FindFriends({
             <div className="relative mb-2 flex items-center gap-2 rounded-md border border-border-default bg-bg-surface py-1.5 pl-8 pr-2.5 transition-colors duration-200 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-soft">
                 <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-text-tertiary" />
                 <input
+                    id={inputId}
                     autoComplete="off"
                     type="text"
                     placeholder={LN("name")}
