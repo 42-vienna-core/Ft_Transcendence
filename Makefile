@@ -81,7 +81,6 @@ down:
 clean:
 	docker compose down -v
 
-
 ## Remove everythings
 fclean: clean
 	# This deletes all unused data (containers, networks, and CACHE)
