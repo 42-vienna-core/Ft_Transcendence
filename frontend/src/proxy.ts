@@ -110,5 +110,6 @@ export const config = {
         '/arena/:path*', 
         '/friends/:path*', 
         '/profile/:path*',
+        '/leaderboard/:path*'
     ],
 };
